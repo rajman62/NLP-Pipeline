@@ -1,0 +1,6 @@
+'fell' -> 'price' : nsub
+'fell' -> 'stock' : nsub
+'price' -> 'of' : prep
+'price' -> 'the' : det
+'of' -> 'stock' : pobj
+'stock' -> 'the' : det
