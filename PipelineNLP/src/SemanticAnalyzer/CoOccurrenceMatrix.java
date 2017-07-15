@@ -10,6 +10,7 @@ import java.util.*;
  * Created by MeryemMhamdi on 5/19/17.
  */
 public class CoOccurrenceMatrix {
+    private static String dependenciesInput = "/Users/MeryemMhamdi/Google Drive/Semester Project/4 Results/dependenciesCYK1stPass.ser";
     private ArrayList<String> NAVALemmas;
     private HashMap<ArrayList<String>,Double> counts;
     private HashMap<ArrayList<String>,Double> PMIs;
@@ -37,7 +38,7 @@ public class CoOccurrenceMatrix {
         FileInputStream in = null;
         try {
             // Loading the parsed
-            in = new FileInputStream("/Users/MeryemMhamdi/Google Drive/Semester Project/4 Results/dependenciesCYK1stPass.ser");
+            in = new FileInputStream();
             ObjectInputStream stream = new ObjectInputStream(in);
             ArrayList<ArrayList<SmallConLL>> dependencies = (ArrayList<ArrayList<SmallConLL>>)stream.readObject();
 

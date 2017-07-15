@@ -1,3 +1,9 @@
+/**
+ * OPTIONAL: Helper Class for Graph based Representation of Output (alternative to the adopted Chart Based Representation)
+ * Used in @see LexicalAnalyzer.FSA.BasicOperations#method()
+ * @author Meryem M'hamdi
+ * @date March 2017
+ */
 package LexicalAnalyzer.FSA;
 
 public class Edge{

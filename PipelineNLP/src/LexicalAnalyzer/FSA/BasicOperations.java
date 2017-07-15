@@ -1,10 +1,41 @@
+/*
+ * dk.brics.automaton
+ *
+ * Copyright (c) 2001-2011 Anders Moeller
+ * All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions
+ * are met:
+ * 1. Redistributions of source code must retain the above copyright
+ *    notice, this list of conditions and the following disclaimer.
+ * 2. Redistributions in binary form must reproduce the above copyright
+ *    notice, this list of conditions and the following disclaimer in the
+ *    documentation and/or other materials provided with the distribution.
+ * 3. The name of the author may not be used to endorse or promote products
+ *    derived from this software without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR
+ * IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
+ * OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.
+ * IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY DIRECT, INDIRECT,
+ * INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT
+ * NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+ * DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+ * THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
+ * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ */
+
+
 package LexicalAnalyzer.FSA;
 
 import java.io.Serializable;
 import java.util.*;
 
 /**
- * Basic automata operations.
+ * Basic automata operations (@author: Anders Moeller @date 2001-2011)
+ * Implementations of FSA traversal both implicit and explicit (@author: Meryem M'hamdi @date March 2017)
  */
 final public class BasicOperations {
 	
@@ -613,11 +644,9 @@ final public class BasicOperations {
 	 */
 	public static boolean run(Automaton a, String s) {
 		if (a.isSingleton()) {
-			//System.out.println("Singleton Case");
 			return s.equals(a.singleton);
 		}
 		if (a.deterministic) {
-			//System.out.println("Deterministic Case");
 			State p = a.initial;
 			for (int i = 0; i < s.length(); i++) {
 				State q = p.step(s.charAt(i));
@@ -637,10 +666,7 @@ final public class BasicOperations {
 			ArrayList<State> dest = new ArrayList<State>();
 			boolean accept = a.initial.accept;
 			for (int i = 0; i < s.length(); i++) {
-				//System.out.println("Printing pp =>");
-				//printLinkedList(pp);
 				char c = s.charAt(i);
-				//System.out.println(c);
 				accept = false;
 				pp_other.clear();
 				bb_other.clear();
@@ -669,13 +695,15 @@ final public class BasicOperations {
 		}
 	}
 
-	/**
+	/** ADDITION: FIRST DRAFT OF FSA TRAVERSAL SOLUTION RETURNING A GRAPH BASED REPRESENTATION
 	 *  Traverses the automaton many times to find matching strings in the input
 	 *  otherwise if it doesn't find a matching pattern for a given character or a sequence of characters
 	 *  it will return unknown sequence <unknown> where unknown is either a character or a sequence of characters
-	 * @param a
-	 * @param s
-	 * @return
+	 * @param automaton a
+	 * @param string s
+	 * @return graph based
+	 * @author Meryem M'hamdi
+	 * @date March 2017
 	 */
 	public static ArrayList<ArrayList<String>> traverse(Automaton a, String s) {
 		ArrayList<ArrayList<String>> tokens = new ArrayList<ArrayList<String>>();
@@ -965,13 +993,13 @@ final public class BasicOperations {
 
 
 	}
-	/**
+	/** ADDITION : IMPLEMENTATION OF EXPLICIT VERSION OF TRAVERSAL SOLUTION RETURNING A CHART BASED REPRESENTATION
+	 * OF TOKENIZATION OUTPUT
 	 * This function traverses the given string and returns the corresponding chart
-	 * @param a
-	 * @param s
-	 * @return
+	 * @param automaton a
+	 * @param string s
+	 * @return chart: two dimensional array of edges
 	 */
-	//ArrayList<String>
 	public static ArrayList<ArrayList<BasicOperations.Edge>> traverseExplicitSolution(Automaton a, String s) {
 		ArrayList<ArrayList<BasicOperations.Edge>> chart = new ArrayList<ArrayList<BasicOperations.Edge>>();
 
@@ -1008,14 +1036,12 @@ final public class BasicOperations {
 
 		while (!workingCopy.equals("SE")) { // Check for the end of tokenization condition
 			// Traverse the FSA to find the next states from that character
-			System.out.println("Working Copy =====> " + workingCopy);
 			flag = false;
 			sizeDest = 0;
 			char c = workingCopy.charAt(i);
 
 			pp_other.clear();
 			bb_other.clear();
-			System.out.println("Character " + c);
 			for (State p : pp) {
 				dest.clear();
 				p.step(c, dest);
@@ -1039,20 +1065,15 @@ final public class BasicOperations {
 			bb = bb_other;
 			bb_other = tb;
 
-			//printLinkedList(pp);
-
 			if (i == workingCopy.length() - 1) {
-				//System.out.println("End of Working Copy >>>>");
-				//System.out.println("Case FINAL STATE it gets stuck");
+
 				indices.add(new Edge(start, start + i - 1, flag));
-				//System.out.println("i= "+i);
+
 				if (shortestPrefix.size() > 0) {
-					//System.out.println("shortestPrefix is not empty first index:" + shortestPrefix.get(0));
 					workingCopy = new StringBuilder().append("S").append(workingCopy.substring(shortestPrefix.get(0) + 1, workingCopy.length())).toString();
 					start = start + shortestPrefix.get(0); // Update start index
 					shortestPrefix.clear();
 				} else {
-					//System.out.println("shortestPrefix is EMPTY");
 
 					workingCopy = new StringBuilder().append("S").append(workingCopy.substring(i, workingCopy.length())).toString();
 					start = start + i - 1; // Update start index
@@ -1078,15 +1099,11 @@ final public class BasicOperations {
 					}
 					indices.add(new Edge(start, start + i - 1, flag));
 					if (nextSize == 0) { // If it gets stuck
-						//System.out.println("Case FINAL STATE it gets stuck");
-						//System.out.println("i= "+i);
 						if (shortestPrefix.size() > 0) {
-							//System.out.println("shortestPrefix is not empty first index:"+shortestPrefix.get(0));
 							workingCopy = new StringBuilder().append("S").append(workingCopy.substring(shortestPrefix.get(0) + 1, workingCopy.length())).toString();
 							start = start + shortestPrefix.get(0); // Update start index
 							shortestPrefix.clear();
 						} else {
-							//System.out.println("shortestPrefix is EMPTY");
 							workingCopy = new StringBuilder().append("S").append(workingCopy.substring(i, workingCopy.length())).toString();
 							start = start + i - 1; // Update start index
 						}
@@ -1099,11 +1116,8 @@ final public class BasicOperations {
 						}
 						stuck = false;
 
-					} else {
-						//System.out.println("Adding to Shortest Prefix>>>>>>");
+					} else { //If it doesn't get stuck
 						shortestPrefix.add(i - 1);
-						//System.out.println("Case FINAL STATE it doesn't get stuck: "+i);
-						//If it doesn't get stuck
 						i = i + 1;
 						if (stuck == false) {
 							bottomChart.add(indices.get(indices.size() - 1));
@@ -1112,7 +1126,6 @@ final public class BasicOperations {
 					}
 
 				}
-				//System.out.println("Case NOT");
 				else {
 					i = i + 1;
 				}
@@ -1120,6 +1133,7 @@ final public class BasicOperations {
 		}
 
 
+		// 3. Build the chart
 		chart.add(bottomChart);
 
 		for (int k=1;k<bottomChart.size();k++){
@@ -1245,15 +1259,12 @@ final public class BasicOperations {
 				if (accept_tok == true) {
 					System.out.println("ACCEPT STATE TOKEN");
 					if (i == str.length() - 1) {
-						//System.out.println("ACCEPT"+" i="+i+" shortestPrefix.size()="+shortestPrefix.size());
 						if (bottomChartFlag == false) {
 							bottomChart.add(new Edge(start, i + 1, true));
 						}
 						arcs.add(new Edge(start, i + 1, true));
-						//System.out.println("END");
 						if (shortestPrefix.size() > 0) {
 							bottomChartFlag = false;
-							//System.out.println("NOT EMPTY"+shortestPrefix);
 							i = start = shortestPrefix.iterator().next();
 							shortestPrefix.remove(shortestPrefix.iterator().next());
 						} else {
@@ -1269,18 +1280,13 @@ final public class BasicOperations {
 							sizeDestSeparator += dest_sep.size();
 						}
 						if (sizeDestSeparator > 0) {
-
 							// Found a separator so the token is possible
 							if (bottomChartFlag == false) {
 								System.out.println("Adding EDGE HERE");
 								bottomChart.add(new Edge(start, i + 1, true));
 							}
 							arcs.add(new Edge(start, i + 1, true));
-							/*
-							bottomChart.add(new Edge(i+1, i + 2, true));
-							arcs.add(new Edge(i+1, i + 2, true));
-							shortestPrefix.add(i + 1);
-							*/
+
 							/**
 							 * Check if it gets stuck here
 							 */
@@ -1292,7 +1298,6 @@ final public class BasicOperations {
 							for (State p : pp_tok) {
 								dest_tok.clear();
 								p.step(c, dest_tok);
-								//printLinkedList(dest_tok);
 								sizeDest += dest_tok.size();
 							}
 
@@ -1316,20 +1321,16 @@ final public class BasicOperations {
 								pp_tok.clear();
 								pp_tok.add(tokFSA.initial);
 
-								//System.out.println(shortestPrefix);
 								if (shortestPrefix.size() > 0) {
 									System.out.println("shortestPrefix is NOT empty");
-									//System.out.println(shortestPrefix);
 									if (i >= shortestPrefix.iterator().next()) {
 										i = start = shortestPrefix.iterator().next();
-										//System.out.println(start);
 										shortestPrefix.remove(shortestPrefix.iterator().next());
 									} else {
 										i = i + 1;
 										start = i;
 									}
 								} else {
-									//System.out.println("shortestPrefix is empty");
 									i = i + 1;
 									start = i;
 								}
@@ -1348,9 +1349,6 @@ final public class BasicOperations {
 									start = i;
 
 								} else {
-									//System.out.println(i);
-									//System.out.println(str.length());
-									//System.out.println("It doesn't get stuck");
 									bottomChartFlag = true;
 									shortestPrefix.add(i + 1);
 									i = i + 1;
@@ -1361,8 +1359,6 @@ final public class BasicOperations {
 						}
 					}
 				} else {
-					//System.out.println(shortestPrefix);
-
 					// CHECK IF THERE IS A TRANSITION TO THE NEXT CHARACTER
 					// IF THERE ISN'T ANY BEFORE REACHING THEN SWITCH TO SEPFSA
 					if (i == str.length() - 1 ){//&& sepFSA.run(str.substring(start,i+1))){
@@ -1371,18 +1367,14 @@ final public class BasicOperations {
 							shortestPrefix.remove(i);
 						}
 						if (shortestPrefix.size() > 0) {
-							//System.out.println("shortestPrefix is NOT empty");
-							//System.out.println(shortestPrefix);
 							if (i >= shortestPrefix.iterator().next()) {
 								i = start = shortestPrefix.iterator().next();
-								//System.out.println(start);
 								shortestPrefix.remove(shortestPrefix.iterator().next());
 							} else {
 								flag_sep = true;
 								i = start;
 							}
 						} else {
-							//System.out.println("shortestPrefix is empty");
 							flag_sep = true;
 							i = start;
 						}
@@ -1400,25 +1392,18 @@ final public class BasicOperations {
 						for (State p : pp_tok) {
 							dest_tok.clear();
 							p.step(c_next, dest_tok);
-							//printLinkedList(dest_tok);
 							sizeDest += dest_tok.size();
 						}
 						if (sizeDest == 0) {
-							//System.out.println("No possible TRANSITION FINAL STATE IS FALSE");
-
 							if (shortestPrefix.size() > 0) {
-								//System.out.println("shortestPrefix is NOT empty");
-								//System.out.println(shortestPrefix);
 								if (i >= shortestPrefix.iterator().next()) {
 									i = start = shortestPrefix.iterator().next();
-									//System.out.println(start);
 									shortestPrefix.remove(shortestPrefix.iterator().next());
 								} else {
 									flag_sep = true;
 									i = start;
 								}
 							} else {
-								//System.out.println("shortestPrefix is empty");
 								flag_sep = true;
 								i = start;
 							}
@@ -1494,12 +1479,9 @@ final public class BasicOperations {
 								bottomChart.add(new Edge(start, i + 1, true));
 								arcs.add(new Edge(start, i + 1, true));
 							}
-							//System.out.println("Gets stuck at " + c + "edge=> " + str.substring(start, i + 1));
 
 							String key = new StringBuilder().append(c).toString();
-							//System.out.println("Checking to build chart at key=>" + key);
 							if (specifications.get(key).getEOS()) {
-								//System.out.println("BUILDING CHART");
 								ArrayList<ArrayList<BasicOperations.Edge>> chart = new ArrayList<ArrayList<BasicOperations.Edge>>();
 								ArrayList<BasicOperations.Edge> bottomChartCopy = bottomChart;
 								chart.add(bottomChartCopy);
@@ -1537,24 +1519,10 @@ final public class BasicOperations {
 							}
 							if (sizeDest == 0) {
 								flag_sep = false;
-								/*
-								if (sepFSA.run(str.substring(start,i+1))){
-									//System.out.println("BOTTOMCHARTFLAG=="+bottomChartFlag);
-									if (bottomChartFlag == false && specifications.get(str.substring(i,i+1)).getPersistent()) {
-										//System.out.println("ADDING EDGE>>> "+ start +" -> "+ jjjj);
-										//System.out.println("RUNNED>>> "+start);
-										bottomChart.add(new Edge(start, i + 1, true));
-									}
-									if (specifications.get(str.substring(i, i + 1)).getPersistent()) {
-										arcs.add(new Edge(start, i + 1, true));
-									}
-								}
-								else {*/
 								if (specifications.get(str.substring(i, i + 1)).getPersistent()) {
 									bottomChart.add(new Edge(start, i + 1, true));
 									arcs.add(new Edge(start, i + 1, true));
 								}
-								//System.out.println("Gets stuck at " + c);
 								/**
 								 * Take the end of the shortest arc used to update the pointer
 								 */
@@ -1568,16 +1536,11 @@ final public class BasicOperations {
 								pp_sep.clear();
 								pp_sep.add(sepFSA.initial);
 
-								//System.out.println("CHECKING TO BUILD CHART WITH CHARACTER => "+c);
 
 								/**
 								 * Checking to build Chart
 								 */
-
-								//System.out.println("RIGHT");
 								String key = new StringBuilder().append(c).toString();
-								//if (i<str.length()-1){
-								//if (!sepFSA.run(str.substring(i+1,i+2)) || str.substring(i+1,i+2).equals(" ")) {
 								if (specifications.get(key).getEOS()) {
 									int startIndex = arcs.get(arcs.size() - 1).getStartIndex();
 									int endIndex = arcs.get(arcs.size() - 1).getEndIndex();
@@ -1587,23 +1550,7 @@ final public class BasicOperations {
 											buildChart = false;
 										}
 									}
-									//System.out.println("CHARACTER IS==>"+i);
-									/*
-									if (i <str.length() - 2) {
-										c_next = str.charAt(i + 1);
-										char c_next_next = str.charAt(i+2);
-										//System.out.println("c_next= "+c_next+" c_next_next= "+c_next_next);
-										if ((c_next != ' ' && c_next!='\"' && c_next!='\'' && c_next!=')' && c_next!='(' && c_next!=']' && c_next!='[' && c_next!='}' && c_next!='{'  )|| c_next_next == '-'  ||  Character.isLowerCase(c_next_next) || c_next_next == '\'' || c_next_next == ',' || c_next_next == '”' || Character.isDigit(c_next_next)) {
-											//System.out.println("FALSE");
-											buildChart = false;
-										}
-									}*/
-									/*
-									if (i == str.length() - 2){
-										buildChart = false;
-									}*/
 									if (buildChart == true) {
-										//System.out.println("BUILDING CHART");
 										ArrayList<ArrayList<BasicOperations.Edge>> chart = new ArrayList<ArrayList<BasicOperations.Edge>>();
 										ArrayList<BasicOperations.Edge> bottomChartCopy = bottomChart;
 										chart.add(bottomChartCopy);
@@ -1645,7 +1592,6 @@ final public class BasicOperations {
 					 * CASE 3: Unknown Input
 					 */
 
-					//System.out.println("UNKNOWN INPUT>>>"+c);
 					bottomChart.add(new Edge(start, i + 1, false));
 					start = i = i + 1;
 
@@ -1655,6 +1601,17 @@ final public class BasicOperations {
 		return charts;
 	}
 
+	/**
+	 * ADDITION: IMPLEMENTATION OF IMPLICIT SOLUTION FOR FSA TRAVERSAL EXTENDED WITH END OF SENTENCE MECHANISM
+	 *
+	 * @param tokFSA
+	 * @param sepFSA
+	 * @param specifications
+	 * @param string to be tokenized str
+	 * @author Meryem M'hamdi
+	 * @date March 2017
+	 * @return
+	 */
 	public static ArrayList<ArrayList<ArrayList<BasicOperations.Edge>>> traverseExtendedSolution(Automaton tokFSA, Automaton sepFSA, HashMap<String,SepSpecification> specifications, String str){
 
 		///************************* 1. Initialization Phase ************************///
@@ -1709,13 +1666,7 @@ final public class BasicOperations {
 		///************************* 2. Traversal Phase ************************///
 
 		while(i<str.length()) {
-			/*
-			for (int o=0;o<arcs.size();o++){
-				System.out.println(arcs.get(o));
-			}
-			*/
 			char c = str.charAt(i);
-			//System.out.println("CHARACTER:::::::"+c);
 			/**
 			 * 2.1. Trying with tokFSA
 			 */
@@ -1754,8 +1705,6 @@ final public class BasicOperations {
 			}
 
 			if(sizeDestTok!=0 && flag_sep==false){
-				//System.out.println("POSSIBLE TOKEN");
-
 				Automaton.setStateNumbers(sepStates);
 				pp_sep = new LinkedList<State>();
 				dest_sep = new LinkedList<State>();
@@ -1767,27 +1716,18 @@ final public class BasicOperations {
 
 				if (accept_tok == true) {
 					if (i == str.length() - 1) {
-						//System.out.println("ACCEPT"+" i="+i+" shortestPrefix.size()="+shortestPrefix.size());
 						if (bottomChartFlag == false) {
 							bottomChart.add(new Edge(start, i + 1, true));
 						}
 						arcs.add(new Edge(start, i + 1, true));
-						//System.out.println("END");
 						if (shortestPrefix.size()>0) {
 							bottomChartFlag = false;
-							//System.out.println("NOT EMPTY"+shortestPrefix);
 							i = start = shortestPrefix.iterator().next();
 							shortestPrefix.remove(shortestPrefix.iterator().next());
 						}
 						else {
-							//System.out.println("BUILDING CHART");
 							i  = i + 1;
 
-							/*
-							for (int o=0;o<arcs.size();o++){
-								System.out.println(arcs.get(o));
-							}
-							*/
 							// BUILD CHART
 							ArrayList<ArrayList<BasicOperations.Edge>> chart = new ArrayList<ArrayList<BasicOperations.Edge>>();
 							ArrayList<BasicOperations.Edge> bottomChartCopy = bottomChart;
@@ -1846,7 +1786,6 @@ final public class BasicOperations {
 							for (State p : pp_tok) {
 								dest_tok.clear();
 								p.step(c, dest_tok);
-								//printLinkedList(dest_tok);
 								sizeDest += dest_tok.size();
 							}
 							if (i<str.length()-3){
@@ -1856,7 +1795,6 @@ final public class BasicOperations {
 							}
 
 							if (sizeDest == 0) {
-								//System.out.println("It gets stuck");
 								/**
 								 * Take the end of the shortest arc used to update
 								 */
@@ -1871,18 +1809,14 @@ final public class BasicOperations {
 								pp_tok.add(tokFSA.initial);
 
 								if (shortestPrefix.size() > 0) {
-									//System.out.println("shortestPrefix is NOT empty");
-									//System.out.println(shortestPrefix);
 									if (i >= shortestPrefix.iterator().next()) {
 										i = start = shortestPrefix.iterator().next();
-										//System.out.println(start);
 										shortestPrefix.remove(shortestPrefix.iterator().next());
 									} else {
 										i = i + 1;
 										start = i;
 									}
 								} else {
-									//System.out.println("shortestPrefix is empty");
 									i = i + 1;
 									start = i;
 								}
@@ -1901,9 +1835,6 @@ final public class BasicOperations {
 									start = i;
 
 								} else {
-									//System.out.println(i);
-									//System.out.println(str.length());
-									//System.out.println("It doesn't get stuck");
 									bottomChartFlag = true;
 									shortestPrefix.add(i + 1);
 									i = i + 1;
@@ -1950,7 +1881,6 @@ final public class BasicOperations {
 							for (State p : pp_tok) {
 								dest_tok.clear();
 								p.step(c_next, dest_tok);
-								//printLinkedList(dest_tok);
 								sizeDest += dest_tok.size();
 							}
 							if (sizeDest == 0) {
@@ -2004,21 +1934,16 @@ final public class BasicOperations {
 
 
 				if (sizeDestSep!=0){
-					//System.out.println("POSSIBLE SEP");
 					/**
 					 * CASE 2: Separator Input
 					 */
 
 					if (accept_sep == true) {
 
-						//System.out.println("ACCEPT >>>> "+c);
 
 						if (sepFSA.run(str.substring(start,i+1))){
-							//System.out.println("BOTTOMCHARTFLAG=="+bottomChartFlag);
 							if (bottomChartFlag == false && specifications.get(str.substring(i,i+1)).getPersistent()) {
 								int jjjj= i + 1;
-								//System.out.println("ADDING EDGE>>> "+ start +" -> "+ jjjj);
-								//System.out.println("RUNNED>>> "+start);
 								bottomChart.add(new Edge(start, i + 1, true));
 							}
 							if (specifications.get(str.substring(i, i + 1)).getPersistent()) {
@@ -2033,8 +1958,6 @@ final public class BasicOperations {
 						}
 
 						if (i == str.length() - 1) {
-							//System.out.println("Building CHARTS");
-							//System.out.println("END>>> "+start);
 							ArrayList<ArrayList<BasicOperations.Edge>> chart = new ArrayList<ArrayList<BasicOperations.Edge>>();
 							ArrayList<BasicOperations.Edge> bottomChartCopy = bottomChart;
 							chart.add(bottomChartCopy);
@@ -2058,7 +1981,6 @@ final public class BasicOperations {
 							i = i + 1;
 
 						} else {
-							//System.out.println("TIMBO");
 							/**
 							 * Check if it gets stuck here
 							 */
@@ -2071,7 +1993,6 @@ final public class BasicOperations {
 								sizeDest += dest_sep.size();
 							}
 							if (sizeDest == 0) {
-								//System.out.println("Gets stuck");
 								/**
 								 * Take the end of the shortest arc used to update
 								 */
@@ -2096,13 +2017,10 @@ final public class BasicOperations {
 										start = i;
 									}
 								} else {
-									//System.out.println("CHECKING TO BUILD CHART WITH CHARACTER => "+c);
-
 									/**
 									 * Checking to build Chart
 									 */
 
-									//System.out.println("RIGHT");
 									String key = new StringBuilder().append(c).toString();
 									if (i<str.length()-1){
 										if (!sepFSA.run(str.substring(i+1,i+2)) || str.substring(i+1,i+2).equals(" ")) {
@@ -2115,13 +2033,10 @@ final public class BasicOperations {
 														buildChart = false;
 													}
 												}
-												//System.out.println("CHARACTER IS==>"+i);
 												if (i <str.length() - 2) {
 													c_next = str.charAt(i + 1);
 													char c_next_next = str.charAt(i+2);
-													//System.out.println("c_next= "+c_next+" c_next_next= "+c_next_next);
 													if ((c_next != ' ' && c_next!='\"' && c_next!='\'' && c_next!=')' && c_next!='(' && c_next!=']' && c_next!='[' && c_next!='}' && c_next!='{'  )|| c_next_next == '-'  ||  Character.isLowerCase(c_next_next) || c_next_next == '\'' || c_next_next == ',' || c_next_next == '”' || Character.isDigit(c_next_next)) {
-														//System.out.println("FALSE");
 														buildChart = false;
 													}
 												}
@@ -2129,7 +2044,6 @@ final public class BasicOperations {
 													buildChart = false;
 												}
 												if (buildChart == true) {
-													//System.out.println("BUILDING CHART");
 													counter++;
 													ArrayList<ArrayList<BasicOperations.Edge>> chart = new ArrayList<ArrayList<BasicOperations.Edge>>();
 													ArrayList<BasicOperations.Edge> bottomChartCopy = bottomChart;
@@ -2195,8 +2109,6 @@ final public class BasicOperations {
 						i = i + 1;
 					}
 				} else{
-					//System.out.println("CHECKING TO BUILD CHART WITH CHARACTER => "+c);
-					//System.out.println("CHARACTER= "+c);
 					if (i == str.length() - 1) {
 						ArrayList<ArrayList<BasicOperations.Edge>> chart = new ArrayList<ArrayList<BasicOperations.Edge>>();
 						ArrayList<BasicOperations.Edge> bottomChartCopy = bottomChart;
@@ -2218,13 +2130,11 @@ final public class BasicOperations {
 							chart.add(partChart);
 						}
 						charts.add(chart);
-						//System.out.println("ADDED CHART>>> "+charts.size());
 					}
 					/**
 					 * CASE 3: Unknown Input
 					 */
 
-					//System.out.println("UNKNOWN INPUT>>>"+c);
 					arcs.add(new Edge(start,i+1,false));
 					start = i = i + 1;
 
@@ -2237,7 +2147,14 @@ final public class BasicOperations {
 
 	}
 
-	public static ArrayList<BasicOperations.Edge> traverseImplicitSolution(Automaton nonSep, Automaton sep, String str) {
+	/**
+	 * ADDITION: IMPLEMENTATION OF IMPLICIT SOLUTION WITHOUT END OF SENTENCE MECHANISM
+	 * @param nonSep
+	 * @param sep
+	 * @param str
+	 * @return
+	 */
+	public static ArrayList<ArrayList<BasicOperations.Edge>> traverseImplicitSolution(Automaton nonSep, Automaton sep, String str) {
 		ArrayList<ArrayList<BasicOperations.Edge>> chart = new ArrayList<ArrayList<BasicOperations.Edge>>();
 
 		// 1. Trying with each FSA to determine which one is the right one to start with and store it in workingAutomaton
@@ -2252,7 +2169,6 @@ final public class BasicOperations {
 		while(sizeDestNonSep==0 && sizeDestSep==0 && i<str.length()) {
 			sizeDestNonSep = sizeDestSep = 0; // Setting Counters to 0
 			c = str.charAt(i);
-			//System.out.println("Character " + c);
 
 			// 1.1. Trying with nonSep FSA
 			Set<State> states = nonSep.getStates();
@@ -2283,15 +2199,12 @@ final public class BasicOperations {
 
 
 			if (sizeDestNonSep != 0) {
-				//System.out.println("sizeDestNonSep != 0");
 				workingAutomaton = nonSep;
 				nextAutomaton = sep;
 			} else if (sizeDestSep != 0) {
-				//System.out.println("sizeDestSep != 0");
 				workingAutomaton = sep;
 				nextAutomaton = nonSep;
 			} else if (sizeDestNonSep == 0 && sizeDestSep==0) {
-				//System.out.println("sizeDestNonSep == 0 && sizeDestSep==0");
 				indices.add(new Edge(i, i + 1, false));
 				i = i + 1;
 			}
@@ -2318,9 +2231,6 @@ final public class BasicOperations {
 
 			pp.add(workingAutomaton.initial);
 
-			//printLinkedList(pp);
-
-
 			while (i < str.length()) { // Check for the end of tokenization condition
 				// 2. Traverse the FSA to find the next states from that character using the working Automaton
 				accept = false;
@@ -2329,14 +2239,6 @@ final public class BasicOperations {
 				pp_other.clear();
 				bb_other.clear();
 				System.out.println("Character " + c);
-				/*
-				System.out.println("START OF PRINTING AUTOMATON");
-				if (c==' ') {
-					System.out.println(workingAutomaton.toString());
-				}
-				System.out.println("END OF PRINTING AUTOMATON");
-				printLinkedList(pp);
-				*/
 				for (State p : pp) {
 					dest.clear();
 					p.step(c, dest);
@@ -2359,21 +2261,16 @@ final public class BasicOperations {
 				bb = bb_other;
 				bb_other = tb;
 
-				//printLinkedList(pp);
-				//System.out.println("---------------------------------------------------------");
-
 				if (accept == true) {
 					System.out.println("Final State");
 					LinkedList<State> ppSep = new LinkedList<State>();
 					int sizeDest = 0;
 					ppSep.add(nextAutomaton.initial);
-					//printLinkedList(ppSep);
 					if (i < str.length() - 1) {
 						c = str.charAt(i + 1);
 						for (State p : ppSep) {
 							dest.clear();
 							p.step(c, dest);
-							//printLinkedList(dest);
 							sizeDest += dest.size();
 						}
 
@@ -2388,13 +2285,9 @@ final public class BasicOperations {
 							c = str.charAt(i + 1);
 							System.out.println(c);
 
-							//System.out.println("kkkkkkkkkkkkkkk");
-							//pp.clear();
 							for (State p : pp) {
-								//System.out.println(p);
 								dest.clear();
 								p.step(c, dest);
-								//printLinkedList(dest);
 								sizeDest += dest.size();
 							}
 							if (sizeDest == 0) { // Stuck
@@ -2406,11 +2299,7 @@ final public class BasicOperations {
 
 								pp.clear();
 								pp.add(workingAutomaton.initial);
-								/*
-								System.out.println("<<<<<<<PRINTING PPPPPPPPPP");
-								printLinkedList(pp);
-								System.out.println("PRINTING PPPPPPPPPP>>>>>");
-								*/
+
 								states = workingAutomaton.getStates();
 								Automaton.setStateNumbers(states);
 								bb = new BitSet(states.size());
@@ -2452,10 +2341,6 @@ final public class BasicOperations {
 
 							pp.clear();
 							pp.add(workingAutomaton.initial);
-							/*
-							System.out.println("<<<<<<<PRINTING PPPPPPPPPP");
-							printLinkedList(pp);
-							System.out.println("PRINTING PPPPPPPPPP>>>>>");*/
 							states = workingAutomaton.getStates();
 							Automaton.setStateNumbers(states);
 							bb = new BitSet(states.size());
@@ -2472,7 +2357,7 @@ final public class BasicOperations {
 			}
 		}
 
-		/*chart.add(bottomChart);
+		chart.add(bottomChart);
 
 		for (int k = 1; k < bottomChart.size(); k++) {
 			ArrayList<BasicOperations.Edge> partChart = new ArrayList<BasicOperations.Edge>();
@@ -2488,9 +2373,9 @@ final public class BasicOperations {
 
 			}
 			chart.add(partChart);
-		}*/
+		}
 
-		return indices;
+		return chart;
 	}
 
 
@@ -2533,8 +2418,6 @@ final public class BasicOperations {
 				ArrayList<ArrayList<Integer>> nbitsComb = bitsStr.nBits(indices.size());
 
 				ArrayList<List<String>> partitionsList = new ArrayList<List<String>>();
-				//System.out.println(indices);
-				//System.out.println(tokenList);
 
 				ArrayList<Integer> newIndices = new ArrayList<Integer>();
 				for (int j=0;j<indices.size();j++){
@@ -2542,14 +2425,11 @@ final public class BasicOperations {
 				}
 
 				String tokenJoined = String.join(",",tokenList);
-				//System.out.println("Printed tokenJoined>>>>>"+tokenJoined);
-				//System.out.println("Printed newIndices>>>>>"+newIndices);
 				for (int j=0;j<nbitsComb.size();j++){
 					for (int l=0;l<indices.size();l++){
 						newIndices.set(l,Integer.parseInt(indices.get(l))+l);
 					}
 					tokenJoined = String.join(",",tokenList);
-					//System.out.println("Case nbitsComb >>>>"+nbitsComb.get(j));
 					for (int k=0;k<nbitsComb.get(j).size();k++){
 						if (nbitsComb.get(j).get(k)==0){
 							tokenJoined = tokenJoined.substring(0,newIndices.get(k))+tokenJoined.substring(newIndices.get(k)+1);
@@ -2557,23 +2437,17 @@ final public class BasicOperations {
 								newIndices.set(l,newIndices.get(l)-1);
 							}
 						}
-						//System.out.println("tokenJoined:"+tokenJoined);
 					}
 					// Transform partition to a list by adding the splittings of the string
 					List<String> partition = Arrays.asList(tokenJoined.split(","));
-					//System.out.println("partition >>>>"+partition);
 					partitionsList.add(partition);
 				}
-				//System.out.println("partitionsList");
 
-				//System.out.println(partitionsList);
 				ArrayList<Integer> indicesRemove = new ArrayList<Integer>();
 				for (int j=0;j<partitionsList.size();j++){
 					for (int k=0;k<partitionsList.get(j).size();k++){
 							String partition = partitionsList.get(j).get(k);
-							//System.out.println(partition);
 							if (run(a, partition)==false){
-								//System.out.println("FALSE RUN");
 								indicesRemove.add(j);
 								break;
 							}
@@ -2592,7 +2466,6 @@ final public class BasicOperations {
 					partitionsList.remove(arrIndicesRemove[j]);
 				}
 
-				//System.out.println(partitionsList);
 				List<Node> newParentsList = new ArrayList<Node>();
 				for (int parent=0;parent<parentsList.size();parent++) {
 					Node parentCopy;
@@ -2619,20 +2492,6 @@ final public class BasicOperations {
 
 	}
 
-	/*
-		private Node<T> root;
-		for (int m=0;m<tokens.size();m++){
-			System.out.println(positionList);
-			if (!positionList.contains(String.valueOf(m))){
-				System.out.println("Token: "+tokens.get(m)+" doesn't have replacement");
-				// Add one leaf node to the leaves of the tree
-			}
-			else {
-				System.out.println("Token: "+tokens.get(m)+"has replacement");
-			}
-		}*/
-	//Map<ArrayList<String>,ArrayList<String>> tokensCandidates = HashMap <Map<ArrayList<String>,ArrayList<String>>();
-	//tokensCandidates.put(tokens,candidates);
 	public static void printBitSet(BitSet bi){
 		StringBuilder s = new StringBuilder();
 		for( int i = 0; i < bi.length();  i++ )
@@ -2643,11 +2502,6 @@ final public class BasicOperations {
 		System.out.println( s );
 
 	}
-	public static List<String> traverseShortest(Automaton a, String s) {
-		ArrayList<String> tokens = new ArrayList<String>();
-
-		return tokens;
-	}
 
 
 	public static String getStringRepresentation(ArrayList<Character> list) {
@@ -2657,11 +2511,6 @@ final public class BasicOperations {
 			builder.append(ch);
 		}
 		return builder.toString();
-	}
-	public static void printLinkedList(LinkedList<State> linkedList){
-		for (int i=0;i<linkedList.size();i++){
-			System.out.println(linkedList.get(i));
-		}
 	}
 
 	public static ArrayList<ArrayList<String>> buildChart(Automaton a, ArrayList<ArrayList<String>> tokens){
