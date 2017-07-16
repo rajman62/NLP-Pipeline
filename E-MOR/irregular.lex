@@ -1,0 +1,17 @@
+be<VB>:<>
+b:ie:s<VBZ>:<>
+b:ae:r<>:e<VBP>:<>
+b:ae:m<VBP>:<>
+b:\'e:m<VBP>:<>
+b:\'e:r<>:e<VBP>:<>
+be<>:i<>:n<>:g<VBG>:<>
+b:we:a<>:s<VBN>:<>
+b:we:e<>:r<>:e<VBN>:<>
+b:we:a<>:s<VBD>:<>
+b:we:e<>:r<>:e<VBD>:<>
+hav:se:<><VBZ>:<>
+have<VB>:<>
+have<VBP>:<>
+have:i<>n:<>:g<VBG>:<>
+hav:de:<>:<VBD>:<>
+hav:de:<><VBN>:<>
