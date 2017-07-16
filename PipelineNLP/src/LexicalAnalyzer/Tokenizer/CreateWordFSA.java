@@ -39,9 +39,6 @@ public class CreateWordFSA {
             Automaton wordFSA = tok.toAutomaton();
 
             for (int i = 1; i < cleanedWordEntries.size(); i++) {
-                //if (i % 100 == 0) {
-                    System.out.println(cleanedWordEntries.get(i));
-                //}
                 tok = new RegExp(cleanedWordEntries.get(i).toString());
                 wordFSA = wordFSA.union(tok.toAutomaton());
             }

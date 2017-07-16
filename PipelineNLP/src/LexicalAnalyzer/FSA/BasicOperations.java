@@ -695,12 +695,74 @@ final public class BasicOperations {
 		}
 	}
 
+	/** ADDITION: INNER CLASS TO ENCAPSULATE EDGE USED AS A DATA STRUCTURE TO REPRESENT A TOKENIZATION ARC
+	 *
+	 */
+	public static class Edge implements Serializable{
+		int startIndex;
+		int endIndex;
+		boolean isKnown;
+
+		public Edge(){
+
+		}
+
+		public Edge(int start, int end, boolean known){
+			startIndex = start;
+			endIndex = end;
+			isKnown = known;
+		}
+
+		public int getStartIndex(){
+			return startIndex;
+		}
+
+		public int getEndIndex(){
+			return endIndex;
+		}
+
+		public boolean getIsKnown(){
+			return isKnown;
+		}
+
+		public void setStartIndex(int start){
+			startIndex = start;
+		}
+
+		public void setEndIndex(int end){
+			endIndex = end;
+		}
+
+		public void setIsKnown(int isKnown){
+			isKnown = isKnown;
+		}
+
+		@Override
+		public String toString(){
+			return this.startIndex+"->"+this.endIndex+" "+this.isKnown;
+		}
+
+		@Override
+		public boolean equals (Object object) {
+			boolean sameSame = false;
+
+			if (object != null && object instanceof BasicOperations.Edge)
+			{
+				sameSame = ((this.getStartIndex() == ((BasicOperations.Edge) object).getStartIndex()) && (this.getEndIndex() == ((BasicOperations.Edge) object).getEndIndex())&&(this.getIsKnown() == ((BasicOperations.Edge) object).getIsKnown()));
+			}
+
+			return sameSame;
+		}
+
+
+	}
+
 	/** ADDITION: FIRST DRAFT OF FSA TRAVERSAL SOLUTION RETURNING A GRAPH BASED REPRESENTATION
 	 *  Traverses the automaton many times to find matching strings in the input
 	 *  otherwise if it doesn't find a matching pattern for a given character or a sequence of characters
 	 *  it will return unknown sequence <unknown> where unknown is either a character or a sequence of characters
-	 * @param automaton a
-	 * @param string s
+	 * @param a automaton
+	 * @param s string
 	 * @return graph based
 	 * @author Meryem M'hamdi
 	 * @date March 2017
@@ -935,69 +997,11 @@ final public class BasicOperations {
 		return tokens;
 	}
 
-	public static class Edge implements Serializable{
-		int startIndex;
-		int endIndex;
-		boolean isKnown;
-
-		public Edge(){
-
-		}
-
-		public Edge(int start, int end, boolean known){
-			startIndex = start;
-			endIndex = end;
-			isKnown = known;
-		}
-
-		public int getStartIndex(){
-			return startIndex;
-		}
-
-		public int getEndIndex(){
-			return endIndex;
-		}
-
-		public boolean getIsKnown(){
-			return isKnown;
-		}
-
-		public void setStartIndex(int start){
-			startIndex = start;
-		}
-
-		public void setEndIndex(int end){
-			endIndex = end;
-		}
-
-		public void setIsKnown(int isKnown){
-			isKnown = isKnown;
-		}
-
-		@Override
-		public String toString(){
-			return this.startIndex+"->"+this.endIndex+" "+this.isKnown;
-		}
-
-		@Override
-		public boolean equals (Object object) {
-			boolean sameSame = false;
-
-			if (object != null && object instanceof BasicOperations.Edge)
-			{
-				sameSame = ((this.getStartIndex() == ((BasicOperations.Edge) object).getStartIndex()) && (this.getEndIndex() == ((BasicOperations.Edge) object).getEndIndex())&&(this.getIsKnown() == ((BasicOperations.Edge) object).getIsKnown()));
-			}
-
-			return sameSame;
-		}
-
-
-	}
 	/** ADDITION : IMPLEMENTATION OF EXPLICIT VERSION OF TRAVERSAL SOLUTION RETURNING A CHART BASED REPRESENTATION
 	 * OF TOKENIZATION OUTPUT
 	 * This function traverses the given string and returns the corresponding chart
-	 * @param automaton a
-	 * @param string s
+	 * @param a automaton
+	 * @param a string
 	 * @return chart: two dimensional array of edges
 	 */
 	public static ArrayList<ArrayList<BasicOperations.Edge>> traverseExplicitSolution(Automaton a, String s) {
@@ -1607,7 +1611,7 @@ final public class BasicOperations {
 	 * @param tokFSA
 	 * @param sepFSA
 	 * @param specifications
-	 * @param string to be tokenized str
+	 * @param str string to be tokenized
 	 * @author Meryem M'hamdi
 	 * @date March 2017
 	 * @return
@@ -2378,132 +2382,6 @@ final public class BasicOperations {
 		return chart;
 	}
 
-
-	public static Graph buildGraph(Automaton a, ArrayList<ArrayList<String>> tokens){
-		Node node = new Node(0,"ROOT");
-		Graph tokensGraph = new Graph();
-		List<Node> parentsList = new ArrayList<Node>();
-		int counter = 0;
-		parentsList.add(node);
-		tokensGraph.addNode(node);
-		for (int i=0;i<tokens.size();i++){
-			// Check each element in the list of tokens if it has a list of indices
-			if(tokens.get(i).size()==1){ // Case 1: it doesn't have it
-				// Build a tree by adding a node to the tree
-				counter ++;
-				Node newNode = new Node(counter,tokens.get(i).get(0));
-				for (int parent=0;parent<parentsList.size();parent++) {
-					tokensGraph.addEdge(parentsList.get(parent),newNode);
-				}
-				parentsList.clear();
-				parentsList.add(newNode);
-			}
-			else { // Case 2: it has a list of indices
-				// Search for all possible subset tokenizations
-				ArrayList<String> tokenList = new ArrayList<String>();
-				String tokenStr = tokens.get(i).get(0);
-				List<String> indices = tokens.get(i).subList(1,tokens.get(i).size());
-				tokenList.add(tokenStr.substring(0,Integer.parseInt(indices.get(0))));
-				int nextIndex = Integer.parseInt(indices.get(0));
-				for (int j=0;j<indices.size();j++){
-					if (j==indices.size()-1){
-						tokenList.add(tokenStr.substring(nextIndex,tokenStr.length()));
-					}
-					else {
-						tokenList.add(tokenStr.substring(nextIndex,Integer.parseInt(indices.get(j+1))));
-						nextIndex = Integer.parseInt(indices.get(j+1));
-					}
-				}
-				NbitsStrings bitsStr = new NbitsStrings(indices.size());
-				ArrayList<ArrayList<Integer>> nbitsComb = bitsStr.nBits(indices.size());
-
-				ArrayList<List<String>> partitionsList = new ArrayList<List<String>>();
-
-				ArrayList<Integer> newIndices = new ArrayList<Integer>();
-				for (int j=0;j<indices.size();j++){
-					newIndices.add(Integer.parseInt(indices.get(j))+j);
-				}
-
-				String tokenJoined = String.join(",",tokenList);
-				for (int j=0;j<nbitsComb.size();j++){
-					for (int l=0;l<indices.size();l++){
-						newIndices.set(l,Integer.parseInt(indices.get(l))+l);
-					}
-					tokenJoined = String.join(",",tokenList);
-					for (int k=0;k<nbitsComb.get(j).size();k++){
-						if (nbitsComb.get(j).get(k)==0){
-							tokenJoined = tokenJoined.substring(0,newIndices.get(k))+tokenJoined.substring(newIndices.get(k)+1);
-							for (int l=k;l<newIndices.size();l++){
-								newIndices.set(l,newIndices.get(l)-1);
-							}
-						}
-					}
-					// Transform partition to a list by adding the splittings of the string
-					List<String> partition = Arrays.asList(tokenJoined.split(","));
-					partitionsList.add(partition);
-				}
-
-				ArrayList<Integer> indicesRemove = new ArrayList<Integer>();
-				for (int j=0;j<partitionsList.size();j++){
-					for (int k=0;k<partitionsList.get(j).size();k++){
-							String partition = partitionsList.get(j).get(k);
-							if (run(a, partition)==false){
-								indicesRemove.add(j);
-								break;
-							}
-					}
-
-				}
-				Collections.sort(indicesRemove);
-				int [] arrIndicesRemove = new int [indicesRemove.size()];
-				int p = 0;
-				for (int index=0;index<indicesRemove.size();index++){
-					arrIndicesRemove[p] = indicesRemove.get(index);
-					p++;
-				}
-				System.out.println(partitionsList);
-				for (int j = arrIndicesRemove.length-1; j >= 0; j--) {
-					partitionsList.remove(arrIndicesRemove[j]);
-				}
-
-				List<Node> newParentsList = new ArrayList<Node>();
-				for (int parent=0;parent<parentsList.size();parent++) {
-					Node parentCopy;
-					for (int j = 0; j < partitionsList.size(); j++) {
-						parentCopy = parentsList.get(parent);
-						for (int k = 0; k < partitionsList.get(j).size(); k++) {
-							counter ++;
-							Node newNode = new Node(counter,partitionsList.get(j).get(k));
-							tokensGraph.addNode(newNode);
-							tokensGraph.addEdge(parentCopy,newNode);
-							parentCopy = newNode;
-						}
-						newParentsList.add(parentCopy);
-					}
-				}
-
-				parentsList.clear();
-				parentsList.addAll(newParentsList);
-			}
-		}
-
-		return tokensGraph;
-
-
-	}
-
-	public static void printBitSet(BitSet bi){
-		StringBuilder s = new StringBuilder();
-		for( int i = 0; i < bi.length();  i++ )
-		{
-			s.append( bi.get( i ) == true ? 1: 0 );
-		}
-
-		System.out.println( s );
-
-	}
-
-
 	public static String getStringRepresentation(ArrayList<Character> list) {
 		StringBuilder builder = new StringBuilder(list.size());
 		for(Character ch: list)
@@ -2513,130 +2391,4 @@ final public class BasicOperations {
 		return builder.toString();
 	}
 
-	public static ArrayList<ArrayList<String>> buildChart(Automaton a, ArrayList<ArrayList<String>> tokens){
-		// 1. Construct the list of words at the basis of the chart
-		ArrayList<String> words = new ArrayList<String>();
-		for (int i=0;i<tokens.size();i++) {
-			// Check each element in the list of tokens if it has a list of indices
-			if (tokens.get(i).size() > 2) { // Case 1: it doesn't have it
-				// Build a tree by adding a node to the tree
-				if (i == 0) { // take both start and end separators
-					int index1 = Integer.parseInt(tokens.get(i).get(1));
-					String sep1 = tokens.get(i).get(0).substring(0, index1 + 1);
-					words.add(sep1);
-					int index2 = Integer.parseInt(tokens.get(i).get(tokens.get(i).size()-1));
-					int k = 0;
-					for (String index: tokens.get(i).subList(2,tokens.get(i).size())) {
-						String nonsep = tokens.get(i).get(0).substring(k+1,Integer.parseInt(index)); // .substring(index1+1,index2);
-						words.add(nonsep);
-						k = Integer.parseInt(index);
-						String sep = tokens.get(i).get(0).substring(k, k+1);
-						words.add(sep);
-					}
-				} else { // take only end separator
-					int index2 = Integer.parseInt(tokens.get(i).get(tokens.get(i).size()-1));
-					int k = 0;
-					for (String index: tokens.get(i).subList(2,tokens.get(i).size())) {
-						System.out.println("index="+index);
-						String nonsep = tokens.get(i).get(0).substring(k+1,Integer.parseInt(index)); // .substring(index1+1,index2);
-						words.add(nonsep);
-						k = Integer.parseInt(index);
-						String sep = tokens.get(i).get(0).substring(k, k+1);
-						words.add(sep);
-					}
-				}
-			}
-			else {
-				String nonsep = tokens.get(i).get(0);
-				words.add(nonsep);
-			}
-		}
-
-		int length = words.size();
-		ArrayList<String>[][] table = new ArrayList[length][];
-
-		for (int i = 0; i < length; ++i) {
-			table[i] = new ArrayList[length];
-			for (int j = 0; j < length; ++j) {
-				table[i][j] = new ArrayList<String>();
-			}
-		}
-		int i = 0;
-		for (String word : words) {
-			table[0][i].add(word);
-			i ++;
-		}
-
-		// Embedding elements of Upper levels in the chart
-		int counter = 0;
-		int nextLayer=0;
-		ArrayList<Integer> indices = new ArrayList<Integer>();
-		for (i=0;i<tokens.size();i++) {
-			if (tokens.get(i).size() > 2) {
-				nextLayer ++;
-				counter += Integer.parseInt(tokens.get(i).get(tokens.get(i).size()-1));
-				indices.add(counter);
-			}
-		}
-		if(nextLayer>0) {
-			ArrayList<Integer> chartIndices = new ArrayList<Integer>();
-			System.out.println("indices:" + indices);
-			String accumulator = "";
-			int index = indices.get(0);
-			int increment = 1;
-			for (int k = 0; k < words.size(); k++) {
-				accumulator = new StringBuilder().append(accumulator).append(words.get(k)).toString();
-				System.out.println("accumulator: " + accumulator);
-				System.out.println("increment: " + increment);
-				int accLength = accumulator.length() - 1;
-				System.out.println("accumulator.length()-1: " + accLength);
-				if (accumulator.length() - 1 == index) {
-					chartIndices.add(k);
-					if (increment < indices.size()) {
-						index = indices.get(increment);
-						increment++;
-					}
-				}
-			}
-
-			System.out.println("chartIndices:" + chartIndices);
-			int start = 0;
-			for (Integer chartIndex : chartIndices) {
-				System.out.println("Chart Index>>>>" + chartIndex);
-				for (int l = 1; l < chartIndex + 1; l++) {
-					for (int p = start; p < chartIndex + 1 - l; p++) {
-						int sum = p + l;
-						System.out.println("p=" + p + " p+l=" + sum);
-						String candidate = table[0][p].get(0);
-						for (int m = p + 1; m < p + l + 1; m++) {
-							candidate = new StringBuilder().append(candidate).append(table[0][m].get(0)).toString();
-						}
-						System.out.println("Candidate: " + candidate);
-						if (run(a, candidate) == true) {
-							System.out.println("Adding at p="+p+" and l="+l+" to chart>>>>"+candidate);
-							table[p + l][p].add(candidate.substring(1, candidate.length() - 1));
-						}
-					}
-				}
-				start = chartIndex;
-			}
-		}
-
-		System.out.println("Length of table:"+table.length);
-
-		ArrayList<ArrayList<String>> chart = new ArrayList<ArrayList<String>>();
-		for (int h=0;h<length;h++) {
-			ArrayList<String> subChart = new ArrayList<String> ();
-			for (int j = 0; j < length; ++j) {
-				if (table[h][j].size()>0) {
-					subChart.add(table[h][j].get(0));
-				}else{
-					subChart.add("");
-				}
-			}
-			chart.add(subChart);
-		}
-
-		return chart;
-	}
 }

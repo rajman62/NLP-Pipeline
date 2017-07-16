@@ -957,28 +957,33 @@ public class Automaton implements Serializable, Cloneable {
 		return BasicOperations.run(this, s);
 	}
 
-	/**
+	/** ADDITION:
 	 * See {@link BasicOperations#traverse(Automaton, String)}.
 	 */
 	public ArrayList<ArrayList<String>> traverse(String s) {
 		return BasicOperations.traverse(this, s);
 	}
 
+	/** ADDITION:
+	 * See {@link BasicOperations#traverseExtendedSolution(Automaton, Automaton , HashMap , String )}.
+	 */
 	public ArrayList<ArrayList<ArrayList<BasicOperations.Edge>>> traverseExtendedSolution(Automaton tokFSA, Automaton sepFSA, HashMap<String,SepSpecification> specifications, String str){return BasicOperations.traverseExtendedSolution(tokFSA,sepFSA, specifications,str);}
 
+	/** ADDITION:
+	 * See {@link BasicOperations#traverseShortSolution(Automaton, Automaton , HashMap, String )}.
+	 */
 	public ArrayList<ArrayList<ArrayList<BasicOperations.Edge>>> traverseShortSolution(Automaton tokFSA, Automaton sepFSA, HashMap<String,SepSpecification> specifications, String str){return BasicOperations.traverseShortSolution(tokFSA,sepFSA, specifications,str);}
 
-
+	/** ADDITION:
+	 * See {@link BasicOperations#traverseExplicitSolution(Automaton, String )}.
+	 */
 	public ArrayList<ArrayList<BasicOperations.Edge>> traverseExplicitSolution(String s){return BasicOperations.traverseExplicitSolution(this, s);}
 
-
+	/** ADDITION:
+	 * See {@link BasicOperations#traverseImplicitSolution(Automaton, Automaton, String )}.
+	 */
 	public ArrayList<ArrayList<BasicOperations.Edge>> traverseImplicitSolution(Automaton nonSep, Automaton sep, String s){return BasicOperations.traverseImplicitSolution(nonSep, sep, s);}
 
-
-	public ArrayList<ArrayList<String>> buildChart(ArrayList<ArrayList<String>> tokens){return BasicOperations.buildChart(this, tokens);
-}
-
-	public Graph buildGraph(ArrayList<ArrayList<String>> tokens) {return BasicOperations.buildGraph(this, tokens);}
 	/**
 	 * See {@link MinimizationOperations#minimize(Automaton)}.
 	 */

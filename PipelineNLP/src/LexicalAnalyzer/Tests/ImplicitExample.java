@@ -42,7 +42,7 @@ public class ImplicitExample {
         System.out.println("**************************************************************");
         */
 
-        ArrayList<BasicOperations.Edge> indices = sepAutomaton.traverseImplicitSolution(nonSepAutomaton,sepAutomaton,test);
+        ArrayList<ArrayList<BasicOperations.Edge>> indices = sepAutomaton.traverseImplicitSolution(nonSepAutomaton,sepAutomaton,test);
 
         /*
         System.out.println("=====================Printing Chart=================");

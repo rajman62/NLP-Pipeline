@@ -19,7 +19,8 @@ public class DependencyGraphTrainSample {
     private static String PATH_TRAIN_CONLL =  DATASET_LOCATION + "parsedDependenciesConLL_train_true.conllu";
     private static String PATH_LIST_PROJECTIVE_TRAIN = OUTPUT_PATH_FOLDER+ "projective_indices_train.ser";
     private static String PATH_LIST_PROJECTIVE_TEST = OUTPUT_PATH_FOLDER+ "projective_indices_test.ser";
-    //private static String PATH_PROJECTIVE_TRAIN_SENTENCES = OUTPUT_PATH_FOLDER+"sentences_projective_train.ser";
+
+    private static String PATH_PROJECTIVE_TRAIN_SENTENCES = OUTPUT_PATH_FOLDER+"sentences_projective_train.ser";
     private static String PATH_PROJECTIVE_TEST_SENTENCES = OUTPUT_PATH_FOLDER+"sentences_projective_test.ser";
 
     private static String PATH_DEP_GRAMMAR_STREAM = OUTPUT_PATH_FOLDER+"Dependency_Grammar_TRAIN_ROOT.ser";
@@ -60,7 +61,6 @@ public class DependencyGraphTrainSample {
             ArrayList<ArrayList<DependencyConLL>> projectiveSentences = new ArrayList<ArrayList<DependencyConLL>>();
             for (int k: trainIndices) { //
                 System.out.println("Progress is=>" + k);
-                //DependencyNode[][] dependencyChart = dg.transformTree(parsedDependenciesConLL.get(k));
 
                 ArrayList<GrammaticalRule> grammaticalRules = dg.buildGrammaticalRules(parsedDependenciesConLL.get(k));
 
@@ -68,7 +68,6 @@ public class DependencyGraphTrainSample {
                     count = count + 1;
                     projectiveSentences.add(parsedDependenciesConLL.get(k));
                     System.out.println(grammaticalRules.toString());
-
 
                     // CONVERTING RULES WITH MORE THAN TWO RIGHT HANDSIDES
                     for (int j = 0; j < grammaticalRules.size(); j++) {
@@ -144,24 +143,7 @@ public class DependencyGraphTrainSample {
                             dg.grammar.add(grammaticalRule);
                         }
                     }
-                    /*
-                    // CONVERTING ONE RULE OF ROOT TO CNF
-                    for (int j = 0; j < grammaticalRules.size(); j++) {
-                        if (Double.compare(grammaticalRules.get(j).getLeftHandSide().getId(), 0.0) == 0) {
-                            NonTerminal leftRoot = grammaticalRules.get(j).getLeftHandSide();
-                            NonTerminal rightRoot = grammaticalRules.get(j).getRightHandSide().get(0);
-                            for (int i = 0; i < dg.grammar.size(); i++) {
-                                if (dg.grammar.get(i).getLeftHandSide().equals(rightRoot)) {
-                                    ArrayList<NonTerminal> rightHandSide = dg.grammar.get(i).getRightHandSide();
-                                    GrammaticalRule grammaticalRule = new GrammaticalRule(leftRoot, rightHandSide);
-                                    if (!dg.grammar.contains(grammaticalRule)) {
-                                        dg.grammar.add(grammaticalRule);
-                                    }
-                                }
 
-                            }
-                        }
-                    }*/
                     // Constructing One Sided Rules
                     for (int i = 0; i < dg.grammar.size(); i++) {
                         String pos = dg.grammar.get(i).getLeftHandSide().getXpostag();
@@ -199,16 +181,14 @@ public class DependencyGraphTrainSample {
 
 
             // SAVING TRAIN PROJECTIVE SENTENCES
-            /*
             FileOutputStream fos = new FileOutputStream(PATH_PROJECTIVE_TRAIN_SENTENCES);
             ObjectOutputStream outputStream = new ObjectOutputStream(fos);
             outputStream.writeObject(projectiveSentences);
             outputStream.flush();
-            */
 
             // SAVING TEST PROJECTIVE SENTENCES
-            FileOutputStream fos = new FileOutputStream(PATH_PROJECTIVE_TEST_SENTENCES);
-            ObjectOutputStream outputStream = new ObjectOutputStream(fos);
+            fos = new FileOutputStream(PATH_PROJECTIVE_TEST_SENTENCES);
+            outputStream = new ObjectOutputStream(fos);
             outputStream.writeObject(parsedDependenciesConLLTEST);
             outputStream.flush();
 

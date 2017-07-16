@@ -14,8 +14,7 @@ import java.io.*;
  */
 public class CreateFSAs {
     private static String PATH_FOLDER = "/Users/MeryemMhamdi/Google Drive/Semester Project/4 Results" +
-            "/Tokenization Analysis/UDC/Train/";
-    private static String PATH_MISSING_ENTRIES = PATH_FOLDER+"missingWordsUDCFSA.txt";
+            "/Tokenization Analysis/UDC/Train/"; // TO BE REPLACED
     private static String PATH_WORD_FSA = PATH_FOLDER+"UDCwordFSA.ser";
     private static String PATH_TOK_FSA = PATH_FOLDER+"UDCtokFSA.ser";
     private static String PATH_SEP_FSA = PATH_FOLDER+"UDCsepFSA.ser";
@@ -36,12 +35,6 @@ public class CreateFSAs {
                 Automaton automaton = new Automaton();
                 Automaton wordFSA = automaton.load(in);
 
-                /*
-                Automaton wordFSA = new RegExp("Hilla|story").toAutomaton();
-                Automaton testFSA = new RegExp("AP").toAutomaton();
-                */
-
-                Automaton alpha = new RegExp("[a-zA-Z]+").toAutomaton(); // OKAY
                 Automaton date = new RegExp("Jan[.] 1(st)?|Jan[.] 2(nd)?|Jan[.] 3(rd)?|Jan[.] [1-9]+(th)?").toAutomaton(); // OKAY
                 Automaton date2 = new RegExp("Feb[.] 1(st)?|Feb[.] 2(nd)?|Feb[.] 3(rd)?|Feb[.] [1-9]+(th)?").toAutomaton(); // OKAY
                 Automaton date3 = new RegExp("Mar[.] 1(st)?|Mar[.] 2(nd)?|Mar[.] 3(rd)?|Mar[.] [1-9]+(th)?").toAutomaton(); // OKAY
@@ -103,11 +96,6 @@ public class CreateFSAs {
                                                         "|[0-9]+[.][0-9]+[.][0-9]+[.][0-9]+|D[.]C[.]|11th|l/c|S\\&S|w/out|=|sh\\*t").toAutomaton();
 
 
-
-                // (http:\/\/|www[.])([a-zA-Z\#]+|[.]|\/|[0-9]+|-|\?|=|,|_)+|http:\/\/www[.]solutions[.]com\/jump[.]jsp\?
-                // ymsgr:sendIM\?\mayursha\&__Hi\+Mayur[.][.][.]
-
-                // PROBLEMATIC: As the American public gradually wearies of the Iraq crisis , some have begun worrying that the war could blow back on the US by creating the conditions for anti-American terrorism .
                 Automaton emails = new RegExp("percell\\@swbell[.]net|mailto:amy[.]cornell\\@compaq[.]com|mailto:mayur[.][.][.]\\@yahoo[.]com|mailto:galen[.]torneby\\@nepco[.]com|kaplan\\@iepa[.]com|jermeier\\@earthlink[.]net" +
                         "|mailto:rosario[.]gonzales\\@compaq[.]com|$online\\?\\u=mayursha\\&m=g\\&t=1|carol[.]st[.]clair@enron[.]com|leporjj@selectenergy[.]com|" +  // OKAY
                         "ymsgr:sendIM\\?\\mayursha\\&__Hi\\+Mayur[.][.][.]|dmetcalfe\\@cullenanddykman[.]com|kenneth[.]lay\\@enron[.]com|Jgerma5\\@aol[.]com|francisco[.]pinto[.]leite\\@enron[.]com|skush\\@swbell[.]net").toAutomaton(); // PPPPPPPRRRRRROBLEEEEEEEEEEEEEEEEEEEEEEEEEEEM
@@ -244,17 +232,6 @@ public class CreateFSAs {
                         "\\]|\\[|[.]\\?|[.][.][.][.]").toAutomaton(); // |[\|]
 
 
-
-
-                /*
-                BufferedReader br = new BufferedReader(new FileReader(PATH_MISSING_ENTRIES));
-                String line = br.readLine();
-                while (line != null) {
-                    if (!tokFSA.run(line) && !sepFSA.run(line)){
-                        System.out.println(line);
-                    }
-                    line = br.readLine();
-                }*/
 
                 FileOutputStream fos = new FileOutputStream(PATH_TOK_FSA);
                 ObjectOutputStream os = new ObjectOutputStream(fos);

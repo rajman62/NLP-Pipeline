@@ -11,7 +11,6 @@ public class DependencyNodeComparer implements Comparator<DependencyNode> {
             return compare(x.getId(),y.getId());
         }
 
-        // I don't know why this isn't in Long...
         private static int compare(double a, double b) {
             return a < b ? -1
                     : a > b ? 1

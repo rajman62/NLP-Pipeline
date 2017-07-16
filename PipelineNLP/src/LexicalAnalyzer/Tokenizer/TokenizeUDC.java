@@ -112,13 +112,10 @@ public class TokenizeUDC {
 
             int start = 0;
             int end = sentences.size();
-            //String sentence = "*** Bush also nominated A. Noel Anketell Kramer for a 15-year term as associate judge of the District of Columbia Court of Appeals, replacing John Montague Steadman.";
-                    //" *** Bush also nominated A. Noel Anketell Kramer for a 15-year term as associate " +
-                    //"judge of the District of Columbia Court of Appeals, replacing John Montague Steadman.";
-            for (int i=start;i<end;i++) { //sentences.size()
-                //if (i%100==0){
-                System.out.println("\nSENTENCE TO BE TOKENIZED>>> "+sentences.get(i));
-                //}
+               for (int i=start;i<end;i++) {
+                if (i%100==0){
+                    System.out.println("\nSENTENCE TO BE TOKENIZED>>> "+sentences.get(i));
+                }
                 ArrayList<ArrayList<ArrayList<BasicOperations.Edge>>> subCharts = tokFSA.traverseExtendedSolution(tokFSA, sepFSA, specifications,sentences.get(i).toString());
                 ArrayList<ArrayList<ArrayList<BasicOperations.Edge>>> filteredSubCharts = new ArrayList<ArrayList<ArrayList<BasicOperations.Edge>>>();
                 for (int l=0;l<subCharts.size();l++){
@@ -191,8 +188,6 @@ public class TokenizeUDC {
             s = new ObjectOutputStream(fos);
             s.writeObject(charts);
             s.flush();
-
-
 
 
         } catch (FileNotFoundException e) {

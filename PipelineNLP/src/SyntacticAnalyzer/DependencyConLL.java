@@ -3,7 +3,8 @@ package SyntacticAnalyzer;
 import java.io.Serializable;
 
 /**
- * Created by MeryemMhamdi on 5/13/17.
+ * @author MeryemMhamdi
+ * @date 5/13/17.
  */
 public class DependencyConLL implements Serializable {
 
@@ -128,12 +129,11 @@ public class DependencyConLL implements Serializable {
             return false;
         }
     }
-/*
+
     public String toString(){
-        return "id= "+this.id+ " form= "+this.form;
-                " +lemma= "+this.lemma + " upostag= "+ this.upostag
+        return "id= "+this.id+ " form= "+this.form
+                +" +lemma= "+this.lemma + " upostag= "+ this.upostag
                 + " xpostag= "+this.xpostag + " feats= "+this.feats +" head= "+ String.valueOf(this.head)
                 + " deprel= "+this.deprel +" deps= "+this.deps + " misc= "+this.misc;
     }
-*/
 }

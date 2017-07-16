@@ -1,32 +1,17 @@
 package SyntacticAnalyzer;
 
-//for number in "1" "2" "3" "4" "5" "6" "7" "8" "9" "10" "11" "12" "13" "14" "15" "16" "17" "18" "19" "20" "21" "22" "23" "24" "25" "26" "27" "28" "29" "30" "31" "32" "33" "34" "35" "36" "37" "38" "39" "40" "41" "42" "43" "44" "45" "46" "47" "48" "49" "50" "51" "52" "53" "54" "55" "56" "57" "58" "59" "60" "61" "62" "63";
-// do for start in 0 200 400 600 800 1000 1200 1400 1600 1800 2000 2200 2400 2600 2800 3000 3200 3400 3600 3800 4000 4200 4400 4600 4800 5000 5200 5400 5600 5800 6000 6200 6400 6600 6800 7000 7200 7400 7600 7800 8000 8200 8400 8600 8800 9000 9200 9400 9600 9800 10000 10200 10400 10600 10800 11000 11200 11400 11600 11800 12000 12200 12400
-// ; do for end in 200 400 600 800 1000 1200
-// 1400 1600 1800 2000 2200 2400 2600 2800 3000
-// 3200 3400 3600 3800 4000 4200 4400 4600 4800
-// 5000 5200 5400 5600 5800 6000 6200 6400 6600
-// 6800 7000 7200 7400 7600 7800 8000 8200 8400
-// 8600 8800 9000 9200 9400 9600 9800 10000 10200
-// 10400 10600 10800 11000 11200 11400 11600 11800
-// 12000 12200 12400 12543; do
-// printf "java SyntacticAnalyzer/DependencyGraph %s %04d %04d" $number $start $end | "sh"; done; done; done;
-
-//for number in 0 200 400 600 800 1000 1200 1400 1600 1800 2000 2200 2400 2600 2800 3000 3200 3400 3600 3800 4000 4200 4400 4600 4800 5000 5200 5400 5600 5800 6000 6200 6400 6600 6800 7000 7200 7400 7600 7800 8000 8200 8400 8600 8800 9000 9200 9400 9600 9800 10000 10200 10400 10600 10800 11000 11200 11400 11600 11800 12000 12200; do printf "java SyntacticAnalyzer/DependencyGraph %04d %04d %04d" $number $number $number| "sh"; done;
 import java.io.*;
 import java.lang.reflect.Array;
 import java.util.*;
 
 /**
- * Dependencies Structures written in ConLL format
+ * Class to extract Dependencies  from written in ConLL format
  * @author MeryemMhamdi
  * @date 5/10/17.
  */
 public class DependencyGraph {
     public ArrayList<GrammaticalRule> grammar;
     public Map<String,ArrayList<String>> oneSidedRules;
-    private static String OUTPUT_PATH_FOLDER1 = "/Users/MeryemMhamdi/Google Drive/Semester Project/4 Results" +
-            "/Syntactic Analysis/UDC/Train/";
     private static String OUTPUT_PATH_FOLDER = "/Users/MeryemMhamdi/EPFL/Spring2017/SemesterProject/Results/Big Data/";
     private static String DATASET_LOCATION = "/Users/MeryemMhamdi/Google Drive/Semester Project" +
             "/3 Implementation & Algorithms/Datasets/UDC/";
@@ -59,13 +44,11 @@ public class DependencyGraph {
             String line = br.readLine();
             while (line != null){
                 if (line.length()==0){
-                    //System.out.println("DETECTING NEWLINE");
                     listDependenciesConLL.add(dependenciesConLL);
                     dependenciesConLL = new ArrayList<DependencyConLL>();
                 }
                 else {
                     if (Character.isDigit(line.charAt(0))) {
-                        //System.out.println("DETECTING DEPENDENCY LINE");
                         String[] conLLElements = line.split("\\t", -1);
                         int head;
                         if (conLLElements[6].equals("_")){
@@ -115,7 +98,6 @@ public class DependencyGraph {
                     // Looking for Rightward Dependency Rule
                     if (cykChart[i - k - 1][j]!=null && cykChart[k][i + j - k]!=null) {
                         if (dependenciesEdges.get(cykChart[i - k - 1][j].getId()) == cykChart[k][i + j - k].getId()) {
-                            //System.out.println("Checking for Rightward Dependency Rule");
                             double id = cykChart[k][i + j - k].getId();
                             String lemma = cykChart[k][i + j - k].getLemma();
                             String xpostag = cykChart[k][i + j - k].getXpostag();
@@ -133,7 +115,6 @@ public class DependencyGraph {
 
                             count = count + i;
                         } else if (dependenciesEdges.get(cykChart[k][i + j - k].getId()) == cykChart[i - k - 1][j].getId()) {
-                            //System.out.println("Checking for Leftward Dependency Rule");
                             double id = cykChart[i - k - 1][j].getId();
                             String lemma = cykChart[i - k - 1][j].getLemma();
                             String xpostag = cykChart[i - k - 1][j].getXpostag();
@@ -145,8 +126,6 @@ public class DependencyGraph {
                                 pointer = k;
                             }
                             cykChart[i][j] = new DependencyNode(id,lemma,xpostag,deprel,pointer);
-                            //System.out.println("ADDING NEW CONTENT "+cykChart[i][j].getLemma() +"to i= "+i+" j= "+j);
-                            //System.out.println("cykChart[k][i + j - k].getId()= "+cykChart[k][i + j - k].getId());
                             deprel = dependenciesConLL.get((int)Math.round(Math.floor(cykChart[k][i + j - k].getId()-1))).getDeprel();
                             cykChart[k][i + j - k].setDeprel(deprel);
                             count = count + i;
@@ -161,7 +140,6 @@ public class DependencyGraph {
     public boolean checkForProjectivity(HashMap<DependencyNode,ArrayList<DependencyNode>> grammaticalRules
             , ArrayList<DependencyConLL> dependenciesConLL){
         boolean flag = true;
-        System.out.println("grammaticalRules= "+grammaticalRules);
         HashMap<Double,ArrayList<Double>> doublePaths = new HashMap<Double,ArrayList<Double>>();
         for (DependencyNode key: grammaticalRules.keySet()) {
             for (DependencyNode node : grammaticalRules.get(key)) {
@@ -185,8 +163,6 @@ public class DependencyGraph {
         for(int i=0;i<dependenciesConLL.size();i++){
             truePaths.add(dependenciesConLL.get(i).getId());
         }
-        //System.out.println("doublePaths= "+doublePaths);
-        //System.out.println("grammaticalRules.size()= "+grammaticalRules.size());
         while (visited.size()<grammaticalRules.size()){
             for (int i = 0; i < paths.size(); i++) {
                 if (doublePaths.containsKey(paths.get(i)) && !visited.contains(paths.get(i))) {
@@ -202,20 +178,16 @@ public class DependencyGraph {
             paths = swapList(paths,swapPaths);
             swapPaths = new ArrayList<Double>();
         }
-        //System.out.println("paths=> "+truePaths);
-        //System.out.println("truePaths=> "+paths);
 
         if (paths.size()==truePaths.size()) {
             for (int i = 0; i < truePaths.size(); i++) {
                 if (Double.compare(truePaths.get(i), paths.get(i))!=0){
-                    //System.out.println("FALSE "+paths.get(i)+ " "+truePaths.get(i));
                     flag = false;
                 }
             }
         } else {
             flag = false;
         }
-        //System.out.println("FLAG=> "+flag);
         return flag;
     }
 
@@ -223,10 +195,6 @@ public class DependencyGraph {
         ArrayList<Double> tmpList = new ArrayList<Double>(list1);
         list1 = new ArrayList<Double>();
         list1.addAll(list2);
-        /*
-        list2 = new ArrayList<Double>();
-        list2.addAll(tmpList);
-        */
         return list1;
     }
 
@@ -293,7 +261,6 @@ public class DependencyGraph {
                 }
             }
         }
-        //System.out.println("dependents= "+dependents);
         if (checkForProjectivity(rules,dependenciesConLL)){
             for (DependencyNode key: rules.keySet()){
                 ArrayList<NonTerminal> nonTerminals = new ArrayList<NonTerminal>();
@@ -311,35 +278,15 @@ public class DependencyGraph {
     public static void main (String args[]){
 
         DependencyGraph dg = new DependencyGraph();
-        //ArrayList<ArrayList<DependencyConLL>> parsedDependenciesConLL = dg.parseDependencyConLL(PATH_TRAIN_CONLL);
-
         try {
             FileInputStream in = new FileInputStream(PATH_TRAIN_CONLL);
             ObjectInputStream stream = new ObjectInputStream(in);
             ArrayList<ArrayList<DependencyConLL>> parsedDependenciesConLL = (ArrayList<ArrayList<DependencyConLL>>) stream.readObject();
 
 
-            String number = "oldCNF";//Integer.parseInt(args[0]); //"15";
-            int start = 0;//Integer.parseInt(args[1]);//3400;
-            int end = parsedDependenciesConLL.size();//Integer.parseInt(args[2])+200; //+ 200;//3600;
-
-            //System.out.println("number=> "+number+" start=> "+start+" end=> "+end);
-
-            /*
-
-            parsedDependenciesConLL = new ArrayList<ArrayList<DependencyConLL>>();
-            ArrayList<DependencyConLL> testdependency = new ArrayList<DependencyConLL>();
-            testdependency.add(new DependencyConLL(1,"The","the","DET","DT","-",2,"det","-","-"));
-            testdependency.add(new DependencyConLL(2,"cat","cat","NOUN","NN","-",3,"nsubj","-","-"));
-            testdependency.add(new DependencyConLL(3,"ate","eat","VERB","VBD","-",0,"root","-","-"));
-            testdependency.add(new DependencyConLL(4,"the","the","DET","DT","-",5,"det","-","-"));
-            testdependency.add(new DependencyConLL(5,"mice","mouse","NOUN","NNS","-",3,"dobj","-","-"));
-            testdependency.add(new DependencyConLL(6,"in","in","SCONJ","IN","-",8,"case","-","-"));
-            testdependency.add(new DependencyConLL(7,"the","the","DET","DT","-",8,"det","-","-"));
-            testdependency.add(new DependencyConLL(8,"garden","garden","NOUN","NN","-",3,"nmod","-","-"));
-            parsedDependenciesConLL.add(testdependency);
-
-            */
+            String number = "CNF";
+            int start = 0;
+            int end = parsedDependenciesConLL.size();
 
 
             System.out.println("parsedDependenciesConLL.size()= "+parsedDependenciesConLL.size());
@@ -356,7 +303,6 @@ public class DependencyGraph {
                 if (k%10==0){
                     System.out.println("Progress is=>"+k);
                 }
-                //DependencyNode[][] dependencyChart = dg.transformTree(parsedDependenciesConLL.get(k));
 
                 ArrayList<GrammaticalRule> grammaticalRules = dg.buildGrammaticalRules(parsedDependenciesConLL.get(k));
 
@@ -365,13 +311,6 @@ public class DependencyGraph {
                     projectiveSentences.add(parsedDependenciesConLL.get(k));
                     projectiveIndices.add(k);
                     System.out.println(grammaticalRules.toString());
-
-                    /*
-                    for (int g=0;g<grammaticalRules.size();g++){
-                        if (!dg.grammar.contains(new GrammaticalRule(grammaticalRules.get(g).getLeftHandSide(), grammaticalRules.get(g).getRightHandSide()))) {
-                            dg.grammar.add(new GrammaticalRule(grammaticalRules.get(g).getLeftHandSide(), grammaticalRules.get(g).getRightHandSide()));
-                        }
-                    }*/
 
                     // CONVERTING RULES WITH MORE THAN TWO RIGHT HANDSIDES
                     for (int j = 0; j < grammaticalRules.size(); j++) {
@@ -448,24 +387,6 @@ public class DependencyGraph {
                         }
                     }
 
-                    /*
-                    // CONVERTING ONE RULE OF ROOT TO CNF
-                    for (int j = 0; j < grammaticalRules.size(); j++) {
-                        if (Double.compare(grammaticalRules.get(j).getLeftHandSide().getId(),0.0)==0 ) {
-                            NonTerminal leftRoot = grammaticalRules.get(j).getLeftHandSide();
-                            NonTerminal rightRoot= grammaticalRules.get(j).getRightHandSide().get(0);
-                            for (int i = 0; i < dg.grammar.size(); i++) {
-                                if (dg.grammar.get(i).getLeftHandSide().equals(rightRoot)) {
-                                    ArrayList<NonTerminal> rightHandSide = dg.grammar.get(i).getRightHandSide();
-                                    GrammaticalRule grammaticalRule = new GrammaticalRule(leftRoot, rightHandSide);
-                                    if (!dg.grammar.contains(grammaticalRule)) {
-                                        dg.grammar.add(grammaticalRule);
-                                    }
-                                }
-
-                            }
-                        }
-                    }*/
                     // Constructing One Sided Rules
                     for (int i = 0; i < dg.grammar.size(); i++) {
                         String pos = dg.grammar.get(i).getLeftHandSide().getXpostag();
@@ -617,91 +538,6 @@ public class DependencyGraph {
         } catch (ClassNotFoundException e) {
             e.printStackTrace();
         }
-
-
-        /*
-
-                if (dependencyChart.length>0) {
-                    if (dependencyChart[dependencyChart.length - 1][0] != null) {
-                        System.out.println(k);
-                        count = count + 1;
-                        projectiveSentences.add(parsedDependenciesConLL.get(k));
-
-                        // Building the grammar from one element of tree structure of the CYK chart
-                        //System.out.println("Building the grammar>>>>>>");
-
-                        for (int i = dependencyChart.length - 1; i > 0; i--) {
-                            for (int j = 0; j < dependencyChart.length - 1; j++) {
-                                if (dependencyChart[i][j] != null) {
-                                    NonTerminal leftHandSide = new NonTerminal(-1, "", dependencyChart[i][j].getXpostag(), dependencyChart[i][j].getDeprel(), -1, -1, -1); // Head of the relationship
-                                    int i_right_1 = dependencyChart[i][j].getPointer();
-                                    int i_right_2 = i - dependencyChart[i][j].getPointer() - 1;
-                                    int j_right_2 = j + dependencyChart[i][j].getPointer() + 1;
-
-                                    //System.out.println("dependencyChart[i][j].getLemma()= " + dependencyChart[i][j].getLemma() + " i_right_1= " + i_right_1 + " j= " + j + " i_right_2= " + i_right_2 + " j_right_2= " + j_right_2);
-                                    NonTerminal rightHandSide1 = new NonTerminal(-1, "", dependencyChart[i_right_1][j].getXpostag(), dependencyChart[i_right_1][j].getDeprel(), -1, -1, -1);
-                                    NonTerminal rightHandSide2 = new NonTerminal(-1, "", dependencyChart[i_right_2][j_right_2].getXpostag(), dependencyChart[i_right_2][j_right_2].getDeprel(), -1, -1, -1);
-                                    ArrayList<NonTerminal> rightHandSide = new ArrayList<NonTerminal>();
-                                    rightHandSide.add(rightHandSide1);
-                                    rightHandSide.add(rightHandSide2);
-                                    if (!dg.grammar.contains(new GrammaticalRule(leftHandSide, rightHandSide))) {
-                                        dg.grammar.add(new GrammaticalRule(leftHandSide, rightHandSide));
-                                    }
-                                }
-                            }
-                        }
-
-
-
-         */
-
-        // Printing the dependency chart
-                /*
-                for (int i = dependencyChart.length - 1; i >= 0; i--) {
-                    String result = "[";
-                    for (int j = 0; j < dependencyChart.length - 1; j++) {
-                        if (dependencyChart[i][j] == null) {
-                            result = result + ",";
-                        } else {
-                            result = result + dependencyChart[i][j].getLemma() + " : " + dependencyChart[i][j].getDeprel() + " : " + dependencyChart[i][j].getPointer() + ",";
-                        }
-                    }
-                    if (dependencyChart[i][dependencyChart.length - 1] == null) {
-                        result = result + "]";
-                    } else {
-                        result = result + dependencyChart[i][dependencyChart.length - 1].getLemma() + " : " + dependencyChart[i][dependencyChart.length - 1].getDeprel() + " : " + dependencyChart[i][dependencyChart.length - 1].getPointer() + "]";
-                    }
-                    System.out.println(result);
-                }
-                */
-
-
-            /*
-            for (int l=0;l<parsedDependenciesConLL.size();l++){
-                DependencyNode[][] chart = dg.transformTree(parsedDependenciesConLL.get(l));
-
-                // Printing the dependency chart
-                for (int i=chart.length-1;i>=0;i--){
-                    String result = "[";
-                    for (int j=0;j<chart.length-1;j++){
-                        if (chart[i][j]==null){
-                            result = result +",";
-                        } else {
-                            result = result + chart[i][j].getLemma() + ",";
-                        }
-                    }
-                    if (chart[i][chart.length-1]==null){
-                        result = result +"]";
-                    } else {
-                        result = result + chart[i][chart.length-1].getLemma()+ "]";
-                    }
-                    System.out.println(result);
-                }
-                // Transform to grammar
-                // Add to Overall Grammar
-            }
-            */
-
 
     }
 
