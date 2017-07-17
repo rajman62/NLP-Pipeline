@@ -37,5 +37,5 @@ This step tokenizes UDC raw corpus using tokFSA and sepFSA given as inputs and p
 Refer to src.LexicalAnalysis.Tokenizer.ExtractTrueTreebankSentences.java which rebuilds sentences from treebank to be used as a comparison against the tokenized output. You can write to text file using in a readable format the tokenization output charts for visual inspection. Or you can inspecting quantitatively by running src.LexicalAnalysis.Tokenizer.InspectLexicalProcessingResults.java to compute how many sentences have been corrected tokenized.
 
 ## II. Morphological Analysis: 
-## LIBRARIES:
-SFST
+### Setup:
+You can find SFST tools used to develop E-MOR morphology package in folder Morphology (http://www.cis.uni-muenchen.de/~schmid/tools/SFST/) and follow the documentation in Readme file to install SFST tools. To be able to conveniently use fst for analysis purpose right from the java program (which provides the output given an input), you can make use of fst-mor1, an additional program which you will find in the copy provided with this repo. Please follow the instructions in readme file for compiling, running and extending the morphology. 
