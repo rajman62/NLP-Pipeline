@@ -2,7 +2,7 @@ package SyntacticAnalyzer;
 
 import java.util.Comparator;
 
-/**
+/** USED FOR COMPARING
  * Created by MeryemMhamdi on 6/10/17.
  */
 public class DependencyNodeComparer implements Comparator<DependencyNode> {

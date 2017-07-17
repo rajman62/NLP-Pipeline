@@ -2,7 +2,7 @@ package LexicalAnalyzer.Tokenizer;
 
 import LexicalAnalyzer.FSA.WordTag;
 import SyntacticAnalyzer.DependencyConLL;
-import SyntacticAnalyzer.DependencyGraph;
+import SyntacticAnalyzer.TrainDependencyGrammar;
 
 import java.io.*;
 import java.util.ArrayList;
@@ -65,7 +65,7 @@ public class ExtractWordsFromTreebank {
     }
     public static void main (String [] args){
         ArrayList<WordTag> wordList = new ArrayList<WordTag>();
-        DependencyGraph dg = new DependencyGraph();
+        TrainDependencyGrammar dg = new TrainDependencyGrammar();
         ExtractWordsFromTreebank createFSAforUDP = new ExtractWordsFromTreebank(DATASET_LOCATION);
         ArrayList<ArrayList<DependencyConLL>> parsedDependenciesConLL = dg.parseDependencyConLL(createFSAforUDP.dependencyFile);
         System.out.println("NUMBER OF SENTENCES ===>"+parsedDependenciesConLL.size());

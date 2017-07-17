@@ -2,7 +2,7 @@ package SyntacticAnalyzer;
 
 import java.io.Serializable;
 
-/**
+/** HELPER CLASS TO ENCAPSULATE THE INFORMATION OF EACH WORD IN CONLLU FORMAT
  * @author MeryemMhamdi
  * @date 5/13/17.
  */
