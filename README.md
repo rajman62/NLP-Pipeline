@@ -1,8 +1,8 @@
 # PipelineNLP
 EPFL Semester Project with Professor Dr. Martin Rajman Artificial Intelligence Laboratory Spring 2017 
 
-meryem.mhamdi@epfl.ch
-martin.rajman@epfl.ch
+<p>meryem.mhamdi@epfl.ch</p>
+<p>martin.rajman@epfl.ch</p>
 
 ## DATASETS:
 ### I. Universal Dependencies 2.0 Dataset:
