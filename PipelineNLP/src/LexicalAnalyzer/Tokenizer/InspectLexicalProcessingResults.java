@@ -9,10 +9,14 @@ import java.util.Map;
 import LexicalAnalyzer.FSA.BasicOperations;
 
 /**
- * Created by MeryemMhamdi on 6/5/17.
+ * @author MeryemMhamdi
+ * @date 6/5/17.
  */
 public class InspectLexicalProcessingResults {
-
+	/******************************************************************************************************************/
+	/**
+	 * LOCATION FILES TO BE CHANGED
+	 */
     private static String PARSED_DEPENDENCIES_TREEBANK_PATH_FOLDER = "/Users/MeryemMhamdi/Google Drive/Semester Project/3 Implementation & Algorithms/Datasets/UDC/";
 	private static String MORPHOLOGY_PATH_FOLDER = "/Users/MeryemMhamdi/Google Drive/Semester Project/4 Results/Morphological Analysis/UDC/Train/";
 	
@@ -46,6 +50,8 @@ public class InspectLexicalProcessingResults {
 	private static String NO_CHARTS_STREAM = PATH_FOLDER + "noChartsSentences.ser";
 
 	private static String NO_CHARTS_TXT = PATH_FOLDER + "noChartsSentences.txt";
+
+	/******************************************************************************************************************/
 
     public static void main (String [] args){
         try {

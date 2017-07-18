@@ -6,12 +6,22 @@ import java.io.*;
 import java.util.*;
 
 /** STEP 1: Extract the words lemmas and adds cannonical forms based on that to a lexicon file.
- * Created by MeryemMhamdi on 7/9/17.
+ * @author MeryemMhamdi
+ * @date 7/9/17.
  */
 public class BuildLexicon {
-    private static String PARSED_TREEBANK = "/Users/MeryemMhamdi/Google Drive/Semester Project/3 Implementation & Algorithms" +
-            "/Datasets/UDC/parsedDependenciesConLL_train_true.ser"; // TO BE REPLACED BY THE PATH TO THE PARSED DEPENDENCIES DATASET
-    private static String TO_BE_ADDED_LEXICON = "/Users/MeryemMhamdi/Desktop/lexicon.txt"; // TO BE REPLACED BY THE PATH OF THE OUTPUT FILE
+    /******************************************************************************************************************/
+    /**
+     * LOCATION FILES TO BE REPLACED
+     */
+    // TO BE REPLACED BY THE PATH TO THE PARSED DEPENDENCIES DATASET
+    private static String PARSED_TREEBANK = "/Users/MeryemMhamdi/Google Drive/Semester Project" +
+            "/3 Implementation & Algorithms" +
+            "/Datasets/UDC/parsedDependenciesConLL_train_true.ser";
+
+    // TO BE REPLACED BY THE PATH OF THE OUTPUT FILE
+    private static String TO_BE_ADDED_LEXICON = "/Users/MeryemMhamdi/Desktop/lexicon.txt";
+    /******************************************************************************************************************/
     public static void main (String [] args) {
 
         try {

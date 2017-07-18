@@ -9,13 +9,20 @@ import java.util.ArrayList;
 /**
  * STEP 3:
  * This class creates wordFSA with pure word entries
- * Created by MeryemMhamdi on 5/4/17.
+ * @author MeryemMhamdi
+ * @date 5/4/17.
  */
 public class CreateWordFSA {
+    /******************************************************************************************************************/
+    /**
+     * LOCATION FILES TO BE REPLACED
+     */
     private static String PATH_FOLDER = "/Users/MeryemMhamdi/Google Drive/Semester Project/4 Results" +
             "/Tokenization Analysis/UDC/Test/";
     private static String CLEANED_TEXT_WORDS =PATH_FOLDER+ "REPLACEDUDCDistinctWords.txt";
     private static String PATH_WORD_FSA = PATH_FOLDER+ "UDCwordFSA.ser";
+    /******************************************************************************************************************/
+
     public static void main(String args[]){
         try {
             ArrayList<String> cleanedWordEntries = new ArrayList<String>();

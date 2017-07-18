@@ -1,9 +1,8 @@
 package SyntacticAnalyzer;
 
-import java.util.ArrayList;
-
 /**
- * Created by MeryemMhamdi on 5/18/17.
+ * @author MeryemMhamdi
+ * @date 5/18/17.
  */
 public class ProbabilisticVariable {
     private NonTerminal nonTerminal;
@@ -28,8 +27,11 @@ public class ProbabilisticVariable {
     public String toString(){
         String result="[";
         for (int i=0;i<this.getVariables().getRightHandSides().size()-1;i++){
-            result = result + this.getVariables().getRightHandSides().get(i).getXpostag()+":"+this.getVariables().getRightHandSides().get(i).getDeprel()+this.getVariables().getScore()+",";
+            result = result + this.getVariables().getRightHandSides().get(i).getXpostag()
+                    +":"+this.getVariables().getRightHandSides().get(i).getDeprel()
+                    +this.getVariables().getScore()+",";
         }
-        return this.nonTerminal.getXpostag()+":"+this.nonTerminal.getDeprel() + " = "+result+this.getVariables().getRightHandSides().get(this.getVariables().getRightHandSides().size()-1)+"]";
+        return this.nonTerminal.getXpostag()+":"+this.nonTerminal.getDeprel() + " = "+result+
+                this.getVariables().getRightHandSides().get(this.getVariables().getRightHandSides().size()-1)+"]";
     }
 }

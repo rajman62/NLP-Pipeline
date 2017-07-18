@@ -1,7 +1,8 @@
 package SyntacticAnalyzer;
 
-/**
- * Created by MeryemMhamdi on 5/13/17.
+/** Class to encapsulate CYK
+ * @author MeryemMhamdi
+ * @date 5/13/17.
  */
 public class DependencyNode {
     private double id;

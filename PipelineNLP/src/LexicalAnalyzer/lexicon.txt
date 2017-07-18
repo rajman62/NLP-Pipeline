@@ -1,9 +1,0 @@
-verbs = eat|go|read|open
-nouns = king | queen | man | woman
-adjectives = easy | quick | amusing
-sep = ,|.| |;|:
-nonsep = verbs | nouns | adjectives
-entry = sep nonsep sep
-alpha = [a-z]+
-numbersep = .|,|:
-number = [0-9]+

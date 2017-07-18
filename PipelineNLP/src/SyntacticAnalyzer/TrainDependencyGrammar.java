@@ -4,13 +4,15 @@ import java.io.*;
 import java.util.*;
 
 /**
- * Class to extract Dependencies  from written in ConLL format
+ * Class to extract Dependencies grammatical rules from treebank
  * @author MeryemMhamdi
  * @date 5/10/17.
  */
 public class TrainDependencyGrammar {
-    public ArrayList<GrammaticalRule> grammar;
-    public Map<String,ArrayList<String>> oneSidedRules;
+    /******************************************************************************************************************/
+    /**
+     * LOCATION FILES TO BE CHANGED
+     */
     private static String OUTPUT_PATH_FOLDER = "/Users/MeryemMhamdi/EPFL/Spring2017/SemesterProject/Results/Big Data/";
     private static String DATASET_LOCATION = "/Users/MeryemMhamdi/Google Drive/Semester Project" +
             "/3 Implementation & Algorithms/Datasets/UDC/";
@@ -28,12 +30,25 @@ public class TrainDependencyGrammar {
     private static String PATH_LIST_PROJECTIVE_TRAIN_TXT = OUTPUT_PATH_FOLDER+ "projective_indices_train.txt";
     private static String PATH_LIST_PROJECTIVE_TEST_TXT = OUTPUT_PATH_FOLDER+ "projective_indices_test.txt";
     private static String PATH_NON_PROJECTIVE = OUTPUT_PATH_FOLDER+ "parsed_sentences_non_projective.ser";
+    /******************************************************************************************************************/
 
 
+    public ArrayList<GrammaticalRule> grammar;
+    public Map<String,ArrayList<String>> oneSidedRules;
+
+    /**
+     * Constructor
+     */
     public TrainDependencyGrammar(){
         grammar = new ArrayList<GrammaticalRule>();
         oneSidedRules = new HashMap<String,ArrayList<String>>();
     }
+
+    /** Extract dependencies treebank in CONLLU format and save them in a convenient format for further processing
+     *
+     * @param file path to file containing conLLu dependencies
+     * @return listDependenciesConLL list of dependencies
+     */
     public ArrayList<ArrayList<DependencyConLL>> parseDependencyConLL(String file){
         ArrayList<ArrayList<DependencyConLL>> listDependenciesConLL = new ArrayList<ArrayList<DependencyConLL>>();
         ArrayList<DependencyConLL> dependenciesConLL = new ArrayList<DependencyConLL>();
@@ -55,8 +70,9 @@ public class TrainDependencyGrammar {
                         } else {
                             head = Integer.parseInt(conLLElements[6]);
                         }
-                        DependencyConLL dependencyConLL = new DependencyConLL(Double.parseDouble(conLLElements[0]), conLLElements[1], conLLElements[2]
-                                , conLLElements[3], conLLElements[4], conLLElements[5], head, conLLElements[7], conLLElements[8], conLLElements[9]);
+                        DependencyConLL dependencyConLL = new DependencyConLL(Double.parseDouble(conLLElements[0]),
+                                conLLElements[1], conLLElements[2], conLLElements[3], conLLElements[4],
+                                conLLElements[5], head, conLLElements[7], conLLElements[8], conLLElements[9]);
                         dependenciesConLL.add(dependencyConLL);
                     }
                 }
@@ -72,70 +88,13 @@ public class TrainDependencyGrammar {
         }
         return listDependenciesConLL;
     }
-    public DependencyNode[][] transformTree(ArrayList<DependencyConLL> dependenciesConLL){
-        int length = dependenciesConLL.size();
-        DependencyNode[][] cykChart = new DependencyNode[length][length];
-        HashMap<Double,Double> dependenciesEdges = new HashMap<Double,Double>();
 
-        for (int i =0; i<dependenciesConLL.size();i++){
-            double id = dependenciesConLL.get(i).getId();
-            double head = dependenciesConLL.get(i).getHead();
-            String lemma = dependenciesConLL.get(i).getLemma();
-            String xpostag = dependenciesConLL.get(i).getXPosTag();
-            String deprel = dependenciesConLL.get(i).getDeprel();
-            dependenciesEdges.put(id,head);
-            cykChart[0][i] = new DependencyNode(id,lemma,xpostag,"*",-1);
-        }
-
-        // Looking for dependencies to construct a tree the CYK way
-        int count = 1;
-        for (int i = 1; i < length; i = i + 1) {
-            count = 1;
-            for (int j = 0; j < length - i ; j = j + count) {
-                count = 1;
-                for (int k = 0; k <= i-1 ; k = k + 1) {
-                    // Looking for Rightward Dependency Rule
-                    if (cykChart[i - k - 1][j]!=null && cykChart[k][i + j - k]!=null) {
-                        if (dependenciesEdges.get(cykChart[i - k - 1][j].getId()) == cykChart[k][i + j - k].getId()) {
-                            double id = cykChart[k][i + j - k].getId();
-                            String lemma = cykChart[k][i + j - k].getLemma();
-                            String xpostag = cykChart[k][i + j - k].getXpostag();
-                            String deprel = cykChart[k][i + j - k].getDeprel();
-                            int pointer;
-                            if (j<i+j-k){
-                                pointer = i - k - 1;
-                            } else {
-                                pointer = k;
-                            }
-                            cykChart[i][j] = new DependencyNode(id,lemma,xpostag,deprel,pointer);
-                            // Update the dependency of the dependent
-                            deprel = dependenciesConLL.get((int)Math.round(Math.floor(cykChart[i - k - 1][j].getId()-1))).getDeprel();
-                            cykChart[i - k - 1][j].setDeprel(deprel);
-
-                            count = count + i;
-                        } else if (dependenciesEdges.get(cykChart[k][i + j - k].getId()) == cykChart[i - k - 1][j].getId()) {
-                            double id = cykChart[i - k - 1][j].getId();
-                            String lemma = cykChart[i - k - 1][j].getLemma();
-                            String xpostag = cykChart[i - k - 1][j].getXpostag();
-                            String deprel = cykChart[i - k - 1][j].getDeprel();
-                            int pointer;
-                            if (j<i+j-k){
-                                pointer = i - k - 1;
-                            } else {
-                                pointer = k;
-                            }
-                            cykChart[i][j] = new DependencyNode(id,lemma,xpostag,deprel,pointer);
-                            deprel = dependenciesConLL.get((int)Math.round(Math.floor(cykChart[k][i + j - k].getId()-1))).getDeprel();
-                            cykChart[k][i + j - k].setDeprel(deprel);
-                            count = count + i;
-                        }
-                    }
-                }
-            }
-        }
-        return cykChart;
-    }
-
+    /**
+     *
+     * @param grammaticalRules
+     * @param dependenciesConLL
+     * @return
+     */
     public boolean checkForProjectivity(HashMap<DependencyNode,ArrayList<DependencyNode>> grammaticalRules
             , ArrayList<DependencyConLL> dependenciesConLL){
         boolean flag = true;
@@ -280,7 +239,8 @@ public class TrainDependencyGrammar {
         try {
             FileInputStream in = new FileInputStream(PATH_TRAIN_CONLL);
             ObjectInputStream stream = new ObjectInputStream(in);
-            ArrayList<ArrayList<DependencyConLL>> parsedDependenciesConLL = (ArrayList<ArrayList<DependencyConLL>>) stream.readObject();
+            ArrayList<ArrayList<DependencyConLL>> parsedDependenciesConLL = (ArrayList<ArrayList<DependencyConLL>>)
+                    stream.readObject();
 
 
             String number = "CNF";
@@ -498,9 +458,11 @@ public class TrainDependencyGrammar {
             writer = new BufferedWriter(new FileWriter(PATH_DEP_GRAMMAR_TXT));
 
             for (int i = 0; i < dg.grammar.size(); i++) {
-                String rule = dg.grammar.get(i).getLeftHandSide().getXpostag() + ":" + dg.grammar.get(i).getLeftHandSide().getDeprel() + "->";
+                String rule = dg.grammar.get(i).getLeftHandSide().getXpostag() + ":"
+                             + dg.grammar.get(i).getLeftHandSide().getDeprel() + "->";
                 for (int j = 0; j < dg.grammar.get(i).getRightHandSide().size(); j++) {
-                    rule = rule + dg.grammar.get(i).getRightHandSide().get(j).getXpostag() + ":" + dg.grammar.get(i).getRightHandSide().get(j).getDeprel() + " ";
+                    rule = rule + dg.grammar.get(i).getRightHandSide().get(j).getXpostag()
+                            + ":" + dg.grammar.get(i).getRightHandSide().get(j).getDeprel() + " ";
                 }
                 writer.write(rule + "\n");
 

@@ -30,7 +30,8 @@ public class Variable {
         for (int i=0;i<this.getVariables().size()-1;i++){
             result = result + this.getVariables().get(i).getXpostag()+":"+this.getVariables().get(i).getDeprel()+",";
         }
-        return this.nonTerminal.getXpostag()+":"+this.nonTerminal.getDeprel() + " = "+result+this.getVariables().get(this.getVariables().size()-1)+"]";
+        return this.nonTerminal.getXpostag()+":"+this.nonTerminal.getDeprel() + " = "+result
+                +this.getVariables().get(this.getVariables().size()-1)+"]";
     }
 
 }

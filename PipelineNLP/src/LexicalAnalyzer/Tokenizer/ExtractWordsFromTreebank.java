@@ -16,10 +16,15 @@ import java.util.HashSet;
  * OUTPUT===> parsed encapsulated dependencies
  *            list of word lemma tags (text + serialized object)
  *            list of distinct entries (text + serialized object)
- * Created by MeryemMhamdi on 5/24/17.
+ * @author MeryemMhamdi
+ * @date 5/24/17.
  */
 public class ExtractWordsFromTreebank {
 
+    /******************************************************************************************************************/
+    /**
+     * LOCATION FILES TO BE CHANGED
+     */
     private static String DATASET_LOCATION = "/Users/MeryemMhamdi/Google Drive/Semester Project" +
             "/3 Implementation & Algorithms/Datasets/UDC/en-ud-train.conllu";
     private static String PATH_OUTPUT_FOLDER = "/Users/MeryemMhamdi/Google Drive/Semester Project/4 Results" +
@@ -28,7 +33,9 @@ public class ExtractWordsFromTreebank {
     private static String PATH_OUTPUT_TEXT_WORDS = PATH_OUTPUT_FOLDER + "UDCWordLemmaTag.txt";
     private static String PATH_OUTPUT_STREAM_DISTINCT_WORDS = PATH_OUTPUT_FOLDER + "UDCDistinctWords.ser";
     private static String PATH_OUTPUT_TXT_DISTINCT_WORDS = PATH_OUTPUT_FOLDER + "UDCDistinctWords.txt";
-    private static String PATH_OUTPUT_STREAM_PARSED_DEPENDENCIES = PATH_OUTPUT_FOLDER + "parsedDependenciesConLL_train_true.conllu";
+    private static String PATH_OUTPUT_STREAM_PARSED_DEPENDENCIES = PATH_OUTPUT_FOLDER
+            + "parsedDependenciesConLL_train_true.conllu";
+    /******************************************************************************************************************/
 
     private String dependencyFile;
     private ArrayList<WordTag> distinctWords;

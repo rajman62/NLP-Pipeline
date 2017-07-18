@@ -1,8 +1,12 @@
 package SyntacticAnalyzer;
 
-/**
- * Created by MeryemMhamdi on 5/18/17.
+
+/** Class to encapsulate an item of a cell in probabilistic CYK chart with information how to recover what produced it
+ * namely the position and order of the items that produces it (the right hand sides) that led to the left hand side
+ * @author MeryemMhamdi
+ * @date 5/18/17.
  */
+
 public class ProbabilisticNonTerminal {
     private String lemma;
     private String xpostag;

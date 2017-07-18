@@ -17,9 +17,14 @@ import java.util.HashMap;
  *            sepFSA
  * OUTPUT ===> tokenized sentences
  *             tokenization charts
- * Created by MeryemMhamdi on 5/30/17.
+ * @author MeryemMhamdi
+ * @date 5/30/17.
  */
 public class TokenizeUDC {
+    /******************************************************************************************************************/
+    /**
+     * LOCATION FILES TO BE CHANGED
+     */
     private static String PATH_INPUT_TREEBANK = "/Users/MeryemMhamdi/Google Drive/Semester Project/" +
             "3 Implementation & Algorithms/Datasets/UDC/en-ud-train.txt";
     private static String PATH_FOLDER = "/Users/MeryemMhamdi/Google Drive/Semester Project/4 Results" +
@@ -28,6 +33,8 @@ public class TokenizeUDC {
     private static String PATH_INPUT_SEP_FSA = PATH_FOLDER+"UDCsepFSA.ser";
     private static String PATH_OUTPUT_SENTENCES = PATH_FOLDER+"udc_sentencesList.ser";
     private static String PATH_OUTPUT_CHARTS = PATH_FOLDER+"udc_tokenizationCharts.ser";
+
+    /******************************************************************************************************************/
     public static void main(String[] args) {
         try {
             // 1.1. LOAD THE ALREADY FILLED LEXICON FROM THE FILE

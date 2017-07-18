@@ -10,13 +10,18 @@ import java.util.HashMap;
  * Created by MeryemMhamdi on 7/13/17.
  */
 public class TestE_MORUDC {
-
+    /******************************************************************************************************************/
+    /**
+     * LOCATION FILES TO BE REPLACED
+     */
     private static String FST_MOR = "/Users/MeryemMhamdi/EPFL/Spring2017/SemesterProject/Morphological Analysis/SFST/src/fst-mor1";
     private static String EMOR_LOCATION = "/Users/MeryemMhamdi/Desktop/NLP-Pipeline/Morphology/E-MOR/morph.a";
     private static String PARSED_TREEBANK = "/Users/MeryemMhamdi/Google Drive/Semester Project/3 Implementation & Algorithms" +
             "/Datasets/UDC/parsedDependenciesConLL_train_true.ser";
 
     private static String STREAM_MAPPINGS = "/Users/MeryemMhamdi/Desktop/NLP-Pipeline/PipelineNLP/src/MorphologicalAnalyzer/tagsMappings.ser";
+
+    /******************************************************************************************************************/
 
     public static void main (String [] args) {
 

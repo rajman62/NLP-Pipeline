@@ -3,8 +3,10 @@ package SyntacticAnalyzer;
 import java.io.Serializable;
 import java.util.ArrayList;
 
-/**
- * Created by MeryemMhamdi on 5/14/17.
+/** Class to encapsulate a rule of the context free grammar in CNF or nonCNF (A -> B C ... Z)
+ * where A is leftHandSide and the list B C ... Z is rightHandSide
+ * @author MeryemMhamdi
+ * @date 5/14/17.
  */
 public class GrammaticalRule implements Serializable {
     private NonTerminal leftHandSide;

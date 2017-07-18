@@ -2,8 +2,9 @@ package SyntacticAnalyzer;
 
 import java.util.Comparator;
 
-/** USED FOR COMPARING
- * Created by MeryemMhamdi on 6/10/17.
+/** Used for write a comparator method to compare two instances of type DependencyNode
+ * @author MeryemMhamdi
+ * @date 6/10/17.
  */
 public class DependencyNodeComparer implements Comparator<DependencyNode> {
         @Override

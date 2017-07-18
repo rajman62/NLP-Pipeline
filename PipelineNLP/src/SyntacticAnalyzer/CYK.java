@@ -1,18 +1,52 @@
 package SyntacticAnalyzer;
 
-import LexicalAnalyzer.FSA.Automaton;
-import LexicalAnalyzer.FSA.BasicOperations;
-
-import javax.lang.model.type.ArrayType;
 import java.io.*;
-import java.lang.reflect.Array;
 import java.util.*;
 
-/**
+/** Training CYK
+ * Input: Morphological Charts + Dependency Grammar rules + one sided rules
+ *        + indices of projective sentences + treebank parsed dependencies (ground truth for comparison)
+ * Output: Morphological Charts extended with dependencies trees
  * @author MeryemMhamdi
  * @date 4/19/17.
  */
 public class CYK {
+    /******************************************************************************************************************/
+    /**
+     * LOCATION FILES TO BE CHANGED
+     */
+
+    //PATHS TO FOLDERS
+    private static String INPUT_PATH_FOLDER = "/Users/MeryemMhamdi/Google Drive/Semester Project/4 Results" +
+            "/Morphological Analysis/UDC/Train/";
+
+    private static String SYNTAX_INPUT_PATH_FOLDER = "/Users/MeryemMhamdi/EPFL/Spring2017/SemesterProject" +
+            "/Results/Big Data/";
+
+    private static String DATASET_LOCATION = "/Users/MeryemMhamdi/Google Drive/Semester Project" +
+            "/3 Implementation & Algorithms/Datasets/UDC/";
+
+    private static String OUTPUT_PATH_FOLDER = "/Users/MeryemMhamdi/Google Drive/Semester Project/4 Results" +
+            "/Syntactic Analysis/UDC/Train/";
+
+    private static String PATH_INFO_CHARTS = INPUT_PATH_FOLDER+ "true_Treebank_MorphologyResults.ser";
+    private static String PATH_DISTINCT_TAGS = OUTPUT_PATH_FOLDER +"DistinctTags.txt";
+
+    //GRAMMAR AND ONE SIDED RULES
+    private static String PATH_INPUT_GRAMMAR = SYNTAX_INPUT_PATH_FOLDER+"Dependency_Grammar_TRAIN_ROOT.ser";
+    private static  String PATH_INPUT_ONE_SIDED_RULES = SYNTAX_INPUT_PATH_FOLDER+"One_sided_rules_TRAIN_ROOT.ser";
+    private static String PATH_LIST_PROJECTIVE_TRAIN = SYNTAX_INPUT_PATH_FOLDER+ "projective_indices_train.ser";
+
+    //OUTPUT FILES
+    private static String OUTPUT_CYK_CHARTS_STREAM = SYNTAX_INPUT_PATH_FOLDER +"udc_parsingCharts1stPass_DEBUG.ser";
+
+    private static String PATH_TRAIN_DEPENDENCIES =  DATASET_LOCATION + "parsedDependenciesConLL_train_true.conllu";
+
+    private static String PATH_TIMES =  OUTPUT_PATH_FOLDER +"Times_DEBUG.txt";
+
+    private static String PATH_LENGTHS =  OUTPUT_PATH_FOLDER + "Lengths_DEBUG.txt";
+
+    /******************************************************************************************************************/
 
     /**
      * variables are in the form of (0 U 1)+
@@ -30,39 +64,6 @@ public class CYK {
 
     private HashMap<String,Integer> wordCount;
 
-    private static String INPUT_PATH_FOLDER = "/Users/MeryemMhamdi/Google Drive/Semester Project/4 Results" +
-            "/Morphological Analysis/UDC/Train/";
-
-    private static String SYNTAX_INPUT_PATH_FOLDER = "/Users/MeryemMhamdi/EPFL/Spring2017/SemesterProject/Results/Big Data/";
-
-    private static String DATASET_LOCATION = "/Users/MeryemMhamdi/Google Drive/Semester Project" +
-            "/3 Implementation & Algorithms/Datasets/UDC/";
-
-    private static String OUTPUT_PATH_FOLDER = "/Users/MeryemMhamdi/Google Drive/Semester Project/4 Results" +
-            "/Syntactic Analysis/UDC/Train/";
-
-    private static String PATH_INFO_CHARTS = INPUT_PATH_FOLDER+ "true_Treebank_MorphologyResults.ser";
-    private static String PATH_DISTINCT_TAGS = OUTPUT_PATH_FOLDER +"DistinctTags.txt";
-
-    /**
-     * GRAMMAR AND ONE SIDED RULES
-     */
-    private static String PATH_INPUT_GRAMMAR = SYNTAX_INPUT_PATH_FOLDER+"Dependency_Grammar_TRAIN_ROOT.ser";
-    private static  String PATH_INPUT_ONE_SIDED_RULES = SYNTAX_INPUT_PATH_FOLDER+"One_sided_rules_TRAIN_ROOT.ser";
-    private static String PATH_LIST_PROJECTIVE_TRAIN = SYNTAX_INPUT_PATH_FOLDER+ "projective_indices_train.ser";
-
-    /**
-     * OUTPUT FILES
-     */
-    private static String OUTPUT_DEPENDENCIES_STREAM = SYNTAX_INPUT_PATH_FOLDER +"udc_dependenciesCYK1stPass_TRAIN_ROOT_1.ser";
-    private static String OUTPUT_CYK_CHARTS_STREAM = SYNTAX_INPUT_PATH_FOLDER +"udc_parsingCharts1stPass_TRAIN_ROOT_1.ser";
-
-    private static String PATH_TRAIN_DEPENDENCIES =  DATASET_LOCATION + "parsedDependenciesConLL_train_true.conllu";
-
-    private static String PATH_TIMES =  OUTPUT_PATH_FOLDER +"Times.txt";
-
-    private static String PATH_LENGTHS =  OUTPUT_PATH_FOLDER + "Lengths.txt";
-
 
     /**
      * Constructs a Cyk object and initializes the HashMaps of the variables
@@ -73,126 +74,6 @@ public class CYK {
         tagsDeprels = new HashMap<String, ArrayList<String>>();
         EMORtoPenntags = new  HashMap<String,String>();
         wordCount = new HashMap<String,Integer> ();
-    }
-
-    /**
-     * Processes the grammar file and builds the HashMap of the list of terminals
-     * and variables. Uses the Scanner object to read the grammar file.
-     * @param file the string representing the path of the grammar file
-     */
-    public void processGrammarFile(String file) {
-        ArrayList<Variable> variablesList = new ArrayList<Variable>();
-        try {
-            File grammarFile = new File(file);
-            Scanner scanner = new Scanner(grammarFile);
-
-            String[] line = scanner.nextLine().split("->");
-            do
-            {
-                String[] variable = line[0].split(":");
-                String[] rest = line[1].split(" ");
-                if (rest != null) {
-                    ArrayList<NonTerminal> nonTerminals = new ArrayList<NonTerminal>();
-                    if (rest.length == 1) {
-                        String [] composition = rest[0].split(":");
-                        NonTerminal rightHandSide = new NonTerminal(-1,"",composition[0],composition[1],-1,-1,-1);
-                        nonTerminals.add(rightHandSide);
-                    } else {
-                        String [] composition0 = rest[0].split(":");
-                        NonTerminal rightHandSide0 = new NonTerminal(-1,"",composition0[0],composition0[1],-1,-1,-1);
-
-                        String [] composition1 = rest[1].split(":");
-                        NonTerminal rightHandSide1 = new NonTerminal(-1,"",composition1[0],composition1[1],-1,-1,-1);
-                        nonTerminals.add(rightHandSide0);
-                        nonTerminals.add(rightHandSide1);
-                    }
-                    variablesList.add(new Variable(new NonTerminal(-1,"",variable[0],variable[1],-1,-1,-1), nonTerminals));
-                }
-                if (scanner.hasNextLine())
-                    line = scanner.nextLine().split("->");
-                else
-                    line = null;
-            } while (line != null);
-            scanner.close();
-        }
-        catch (IOException ex)
-        {
-            ex.printStackTrace();
-        }
-
-        /**
-         * Converting the lists into HashMaps
-         */
-        for(int i=0;i<variablesList.size();i++){
-            if(variables.containsKey(variablesList.get(i).getNonTerminal())){
-                ArrayList<ArrayList<NonTerminal>> values = variables.get(variablesList.get(i).getNonTerminal());
-                values.add(variablesList.get(i).getVariables());
-                variables.put(variablesList.get(i).getNonTerminal(),values);
-            }else{
-                ArrayList<ArrayList<NonTerminal>> values = new ArrayList<ArrayList<NonTerminal>>();
-                values.add(variablesList.get(i).getVariables());
-                variables.put(variablesList.get(i).getNonTerminal(),values);
-            }
-        }
-    }
-
-    /**
-     * Processes the one sided rules file and extends all xpostags in the info chart with all possible dependencies at the bottom chart
-     */
-    public void processOneSidedRules(String file) {
-
-        File oneSidedRulesFile = null;
-        Scanner scanner = null;
-        try
-        {
-            oneSidedRulesFile = new File(file);
-            scanner = new Scanner(oneSidedRulesFile);
-
-            // Read the one sided rules
-            String scanned = scanner.nextLine();
-            String[] line={};
-            if (scanned.charAt(0)==':'){
-                line[0] = ":";
-                line[1] = scanned.substring(2,scanned.length());
-            } else {
-                line = scanned.split(":");
-            }
-            do {
-                String [] deps = line[1].split(",");
-                if (deps == null){
-                    ArrayList<String> deprels = new ArrayList<String>();
-                    deprels.add(line[1]);
-                    tagsDeprels.put(line[0],deprels);
-                } else {
-                    ArrayList<String> deprels = new ArrayList<String>();
-                    for (int i=0;i<deps.length;i++){
-                        deprels.add(deps[i]);
-                    }
-                    tagsDeprels.put(line[0],deprels);
-                }
-                if (scanner.hasNextLine()) {
-                    scanned = scanner.nextLine();
-                    if (scanned.charAt(0) == ':') {
-                        line[0] = ":";
-                        line[1] = scanned.substring(2, scanned.length());
-                    } else {
-                        line = scanned.split(":");
-                    }
-                }
-                else
-                    line = null;
-            } while (line != null);
-            scanner.close();
-
-            for (String key: tagsDeprels.keySet()) {
-                String result = key+":";
-                for (int j=0;j<tagsDeprels.get(key).size();j++) {
-                    result = result + tagsDeprels.get(key).get(j)+ " ";
-                }
-            }
-        } catch (IOException ex) {
-            ex.printStackTrace();
-        }
     }
 
     public void processEmorToPennTags(String file){
@@ -233,14 +114,10 @@ public class CYK {
         }
     }
     /**
-     * Returns the chart that contains all parsing trees
-     * @param parsingChart
-     * @return
+     *
+     * @param parsingChart chart initialized with morphological information in the form of nonTerminals
+     * @return chart that contains all parsing trees
      */
-
-
-    @SuppressWarnings("unchecked")
-
     public ArrayList<NonTerminal>[][] buildParsingChart(ArrayList<NonTerminal>[][] parsingChart) {
 
         int length = parsingChart.length;
@@ -279,8 +156,8 @@ public class CYK {
                                             lemma = parsingChart[k][i + j - k].get(right2Index).getLemma();
                                             id = parsingChart[k][i + j - k].get(right2Index).getId();
                                         }
-                                        parsingChart[i][j].add(new NonTerminal(id, lemma, nonTerminal.getXpostag(), nonTerminal.getDeprel()
-                                                , pointer, right1Index, right2Index));
+                                        parsingChart[i][j].add(new NonTerminal(id, lemma, nonTerminal.getXpostag(),
+                                                nonTerminal.getDeprel(), pointer, right1Index, right2Index));
                                     }
                             }
                         }
@@ -299,63 +176,19 @@ public class CYK {
                     if (parsingChart[length - 1][0].contains(values.get(0))) {
                         int pointer = length - 1;
                         parsingChart[length - 1][0].add(new NonTerminal(parsingChart[length - 1][0].get(0).getId(),
-                                "root", nonTerminal.getXpostag(),
-                                nonTerminal.getDeprel(), pointer, parsingChart[pointer][0].indexOf(values.get(0)), -1));//
+                                "root", nonTerminal.getXpostag(), nonTerminal.getDeprel(), pointer,
+                                parsingChart[pointer][0].indexOf(values.get(0)), -1));//
                     }
                 }
             }
         }
         return parsingChart;
     }
-    public ArrayList<NonTerminal>[][] buildParsingChart1(ArrayList<NonTerminal>[][] parsingChart) {
-        int length = parsingChart.length;
 
-        for (int i = 1; i < length; i++)
-        {
-            for (int j = 0; j < length - i ; j++)
-            {
-                for (int k = 0; k <= i-1 ; k++)
-                {
-                    Set<NonTerminal> nonTerminals = variables.keySet();
-                    for (NonTerminal nonTerminal : nonTerminals) {
-                        ArrayList<ArrayList<NonTerminal>> vars = variables.get(nonTerminal);
-                        for(int var=0;var<vars.size();var++) {
-                            ArrayList<NonTerminal> values = variables.get(nonTerminal).get(var);
-                            if (values.size()==2) {
-                                if (parsingChart[i-k-1][j].contains((values.get(0)))
-                                        && parsingChart[k][i+j-k].contains(values.get(1))){
-                                    int pointer;
-                                    if (j<i+j-k){
-                                        pointer = i - k - 1;
-                                    } else {
-                                        pointer = k;
-                                    }
-
-                                    int right1Index = parsingChart[i-k-1][j].indexOf(values.get(0));
-                                    int right2Index = parsingChart[k][i+j-k].indexOf(values.get(1));
-
-                                    String lemma;
-                                    double id;
-                                    if ((parsingChart[i-k-1][j].get(right1Index)).equals(nonTerminal)){
-                                        lemma = parsingChart[i-k-1][j].get(right1Index).getLemma();
-                                        id = parsingChart[i-k-1][j].get(right1Index).getId();
-                                    } else {
-                                        lemma = parsingChart[k][i+j-k].get(right2Index).getLemma();
-                                        id =  parsingChart[k][i+j-k].get(right2Index).getId();
-                                    }
-                                    parsingChart[i][j].add(new NonTerminal(id,lemma,nonTerminal.getXpostag(),nonTerminal.getDeprel()
-                                            ,pointer,right1Index,right2Index));
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        }
-
-        return parsingChart;
-    }
-
+    /**
+     * Printing chart in a readable format for visual inspection
+     * @param parsingChart chart already processed syntactically to be printed
+     */
     public void printChart(ArrayList<NonTerminal>[][] parsingChart){
         for (int i = parsingChart.length - 1; i >= 0; i--) {
             String level = "[";
@@ -385,48 +218,14 @@ public class CYK {
     }
 
 
-    public ArrayList<SmallConLL> constructDependenciesPairs(ArrayList<NonTerminal>[][] parsingChart){
-        ArrayList<SmallConLL> dependencies = new ArrayList<SmallConLL>();
-        for (int i = parsingChart.length - 1; i >= 0; i--) {
-            for (int j = 0; j < parsingChart[i].length-1; j++) {
-                for (int k=0;k<parsingChart[i][j].size();k++){
-                    int i_right_1 = parsingChart[i][j].get(k).getPointer();
-                    int right1Index = parsingChart[i][j].get(k).getRight1Index();
-                    if (i_right_1 != -1) {
-                        int i_right_2 = i - parsingChart[i][j].get(k).getPointer() - 1;
-                        int j_right_2 = j + parsingChart[i][j].get(k).getPointer() + 1;
-                        int right2Index = parsingChart[i][j].get(k).getRight2Index();
-
-                        String head = parsingChart[i][j].get(k).getLemma();
-                        String posHead = parsingChart[i][j].get(k).getXpostag();
-                        String dep, posDep, rel;
-                        if (parsingChart[i_right_1][j].get(right1Index).getLemma().equals(parsingChart[i][j].get(k).getLemma()) &&
-                                parsingChart[i_right_1][j].get(right1Index).getXpostag().equals(parsingChart[i][j].get(k).getXpostag())) {
-                            dep = parsingChart[i_right_2][j_right_2].get(right2Index).getLemma();
-                            posDep = parsingChart[i_right_2][j_right_2].get(right2Index).getXpostag();
-                            rel = parsingChart[i_right_2][j_right_2].get(right2Index).getDeprel();
-                            dependencies.add(new SmallConLL(head, posHead, dep, posDep, rel));
-
-                        } else if (parsingChart[i_right_2][j_right_2].get(right2Index).getLemma().equals(parsingChart[i][j].get(k).getLemma()) &&
-                                parsingChart[i_right_2][j_right_2].get(right2Index).getXpostag().equals(parsingChart[i][j].get(k).getXpostag())){
-                            dep = parsingChart[i_right_1][j].get(right1Index).getLemma();
-                            posDep = parsingChart[i_right_1][j].get(right1Index).getXpostag();
-                            rel = parsingChart[i_right_1][j].get(right1Index).getDeprel();
-                            dependencies.add(new SmallConLL(head, posHead, dep, posDep, rel));
-                        }
-
-                    }
-
-                }
-
-            }
-        }
-        return dependencies;
-
-    }
-
-
-    public boolean checkExistenceofTrueChart (ArrayList<NonTerminal> [][] parsingChart, ArrayList<DependencyConLL> parsedDependenciesConLL) {
+    /**
+     * Checking the existence of a true parse tree in the chart
+     * @param parsingChart
+     * @param parsedDependenciesConLL
+     * @return
+     */
+    public boolean checkExistenceofTrueChart (ArrayList<NonTerminal> [][] parsingChart
+            , ArrayList<DependencyConLL> parsedDependenciesConLL) {
 
         boolean exists = false;
         ArrayList<Double> visitedDependencies = new ArrayList<Double>(); // list of list of dependencyConLLs for all sentences
@@ -437,7 +236,8 @@ public class CYK {
         for (int i = parsingChart.length - 1; i >= 0; i--) {
             for (int j = 0; j <= parsingChart[i].length - 1; j++) {
                 for (int k = 0; k < parsingChart[i][j].size(); k++) {
-                    // For each element in the cell in the chart, traverse to check if one of the paths leads to a dependency that exists
+                    // For each element in the cell in the chart, traverse to check if one of the paths leads
+                    // to a dependency that exists
                     int i_right_1 = parsingChart[i][j].get(k).getPointer();
                     int i_right_2 = i - parsingChart[i][j].get(k).getPointer() - 1;
                     int right1Index = parsingChart[i][j].get(k).getRight1Index();
@@ -453,9 +253,11 @@ public class CYK {
                             double id = parsingChart[i][j].get(right1Index).getId();
 
                             if (rel.equals("root")) {
-                                DependencyConLL dependencyConLL = new DependencyConLL(id, "", dep, "", posDep, "", 0, rel, "", "");
+                                DependencyConLL dependencyConLL = new DependencyConLL(id, "", dep, "",
+                                        posDep, "", 0, rel, "", "");
                                 if (parsedDependenciesConLL.contains(dependencyConLL)) {
-                                    // If one of them exists pop from the list of dependencies, set the one the pointers to the next
+                                    // If one of them exists pop from the list of dependencies, set the one
+                                    // the pointers to the next
                                     if (!visitedDependencies.contains(dependencyConLL.getId())){
                                         visitedDependencies.add(dependencyConLL.getId());
                                     }
@@ -475,32 +277,39 @@ public class CYK {
                             String dep, posDep, rel;
                             double id;
 
-                            if (parsingChart[i_right_1][j].get(right1Index).getLemma().equals(parsingChart[i][j].get(k).getLemma()) &&
-                                    parsingChart[i_right_1][j].get(right1Index).getXpostag().equals(parsingChart[i][j].get(k).getXpostag())) {
+                            if (parsingChart[i_right_1][j].get(right1Index).getLemma().equals(parsingChart[i][j]
+                                    .get(k).getLemma()) && parsingChart[i_right_1][j].get(right1Index).getXpostag()
+                                    .equals(parsingChart[i][j].get(k).getXpostag())) {
                                 dep = parsingChart[i_right_2][j_right_2].get(right2Index).getLemma();
                                 posDep = parsingChart[i_right_2][j_right_2].get(right2Index).getXpostag();
                                 rel = parsingChart[i_right_2][j_right_2].get(right2Index).getDeprel();
                                 id = parsingChart[i_right_2][j_right_2].get(right2Index).getId();
                                 if (!rel.equals("*")) {
-                                    DependencyConLL dependencyConLL = new DependencyConLL(id, "", dep, "", posDep, "", headId, rel, "", "");
+                                    DependencyConLL dependencyConLL = new DependencyConLL(id, "", dep, "",
+                                            posDep, "", headId, rel, "", "");
                                     if (parsedDependenciesConLL.contains(dependencyConLL)) {
-                                        // If one of them exists pop from the list of dependencies, set the one the pointers to the next
+                                        // If one of them exists pop from the list of dependencies, set the one
+                                        // the pointers to the next
                                         if (!visitedDependencies.contains(dependencyConLL.getId())){
                                             visitedDependencies.add(dependencyConLL.getId());
                                         }
                                     }
                                 }
 
-                            } else if (parsingChart[i_right_2][j_right_2].get(right2Index).getLemma().equals(parsingChart[i][j].get(k).getLemma()) &&
-                                    parsingChart[i_right_2][j_right_2].get(right2Index).getXpostag().equals(parsingChart[i][j].get(k).getXpostag())) {
+                            } else if (parsingChart[i_right_2][j_right_2].get(right2Index).getLemma()
+                                    .equals(parsingChart[i][j].get(k).getLemma()) &&
+                                    parsingChart[i_right_2][j_right_2].get(right2Index).getXpostag()
+                                            .equals(parsingChart[i][j].get(k).getXpostag())) {
                                 dep = parsingChart[i_right_1][j].get(right1Index).getLemma();
                                 posDep = parsingChart[i_right_1][j].get(right1Index).getXpostag();
                                 rel = parsingChart[i_right_1][j].get(right1Index).getDeprel();
                                 id = parsingChart[i_right_1][j].get(right1Index).getId();
                                 if (!rel.equals("*")) {
-                                    DependencyConLL dependencyConLL = new DependencyConLL(id, "", dep, "", posDep, "", headId, rel, "", "");
+                                    DependencyConLL dependencyConLL = new DependencyConLL(id, "", dep,
+                                            "", posDep, "", headId, rel, "", "");
                                     if (parsedDependenciesConLL.contains(dependencyConLL)) {
-                                        // If one of them exists pop from the list of dependencies, set the one the pointers to the next
+                                        // If one of them exists pop from the list of dependencies,
+                                        // set the one the pointers to the next
                                         if (!visitedDependencies.contains(dependencyConLL.getId())){
                                             visitedDependencies.add(dependencyConLL.getId());
                                         }
@@ -515,9 +324,11 @@ public class CYK {
                             rel = parsingChart[i_right_1][j].get(right1Index).getDeprel();
                             id = parsingChart[i_right_1][j].get(right1Index).getId();
                             if (rel.equals("root")) {
-                                DependencyConLL dependencyConLL = new DependencyConLL(id, "", dep, "", posDep, "", headId, rel, "", "");
+                                DependencyConLL dependencyConLL = new DependencyConLL(id, "", dep, "",
+                                        posDep, "", headId, rel, "", "");
                                 if (parsedDependenciesConLL.contains(dependencyConLL)) {
-                                    // If one of them exists pop from the list of dependencies, set the one the pointers to the next
+                                    // If one of them exists pop from the list of dependencies,
+                                    // set the one the pointers to the next
                                     if (!visitedDependencies.contains(dependencyConLL.getId())){
                                         visitedDependencies.add(dependencyConLL.getId());
                                     }
@@ -539,97 +350,6 @@ public class CYK {
         }
         return exists;
     }
-    public boolean checkExistenceofTrueChart1 (ArrayList<NonTerminal> [][] parsingChart, ArrayList<DependencyConLL> parsedDependenciesConLL) {
-
-        boolean exists = false;
-        ArrayList<ArrayList<ArrayList<DependencyConLL>>> dependenciesAllList = new ArrayList<ArrayList<ArrayList<DependencyConLL>>>(); // list of list of dependencyConLLs for all sentences
-        /**
-         * Traversing the chart
-         */
-        System.out.println("parsingChart.length= "+parsingChart.length);
-        for (int i = parsingChart.length - 1; i >= 0; i--) {
-            for (int j = 0; j < parsingChart[i].length - 1; j++) {
-                for (int k = 0; k < parsingChart[i][j].size(); k++) {
-                    // For each element in the cell in the chart, traverse to check if one of the paths leads to a dependency that exists
-                    int i_right_1 = parsingChart[i][j].get(k).getPointer();
-                    int right1Index = parsingChart[i][j].get(k).getRight1Index();
-                    if (i_right_1 != -1) {
-
-                        int i_right_2 = i - parsingChart[i][j].get(k).getPointer() - 1;
-                        int j_right_2 = j + parsingChart[i][j].get(k).getPointer() + 1;
-                        int right2Index = parsingChart[i][j].get(k).getRight2Index();
-
-                        String head = parsingChart[i][j].get(k).getLemma();
-                        String posHead = parsingChart[i][j].get(k).getXpostag();
-                        double headId = parsingChart[i][j].get(k).getId();
-                        String dep, posDep, rel;
-                        double id;
-                        if (parsingChart[i_right_1][j].get(right1Index).getLemma().equals(parsingChart[i][j].get(k).getLemma()) &&
-                                parsingChart[i_right_1][j].get(right1Index).getXpostag().equals(parsingChart[i][j].get(k).getXpostag())) {
-                            dep = parsingChart[i_right_2][j_right_2].get(right2Index).getLemma();
-                            posDep = parsingChart[i_right_2][j_right_2].get(right2Index).getXpostag();
-                            rel = parsingChart[i_right_2][j_right_2].get(right2Index).getDeprel();
-                            id = parsingChart[i_right_2][j_right_2].get(right2Index).getId();
-                            if (!rel.equals("*")) {
-                                DependencyConLL dependencyConLL = new DependencyConLL(id, "", dep, "", posDep, "", headId, rel, "", "");
-                                if (parsedDependenciesConLL.contains(dependencyConLL)) {
-                                    // If one of them exists pop from the list of dependencies, set the one the pointers to the next
-                                    parsedDependenciesConLL.remove(parsedDependenciesConLL.indexOf(dependencyConLL));
-                                    k = parsingChart[i][j].size();
-                                }
-                            }
-
-                        } else if (parsingChart[i_right_2][j_right_2].get(right2Index).getLemma().equals(parsingChart[i][j].get(k).getLemma()) &&
-                                parsingChart[i_right_2][j_right_2].get(right2Index).getXpostag().equals(parsingChart[i][j].get(k).getXpostag())) {
-                            dep = parsingChart[i_right_1][j].get(right1Index).getLemma();
-                            posDep = parsingChart[i_right_1][j].get(right1Index).getXpostag();
-                            rel = parsingChart[i_right_1][j].get(right1Index).getDeprel();
-                            id = parsingChart[i_right_1][j].get(right1Index).getId();
-                            if (!rel.equals("*")) {
-                                DependencyConLL dependencyConLL = new DependencyConLL(id, "", dep, "", posDep, "", headId, rel, "", "");
-                                if (parsedDependenciesConLL.contains(dependencyConLL)) {
-                                    // If one of them exists pop from the list of dependencies, set the one the pointers to the next
-                                    parsedDependenciesConLL.remove(parsedDependenciesConLL.indexOf(dependencyConLL));
-                                    k = parsingChart[i][j].size();
-                                }
-
-                            }
-                        }
-
-                        dep = parsingChart[i_right_1][j].get(right1Index).getLemma();
-                        posDep = parsingChart[i_right_1][j].get(right1Index).getXpostag();
-                        headId = 0;
-                        rel = parsingChart[i_right_1][j].get(right1Index).getDeprel();
-                        id = parsingChart[i_right_1][j].get(right1Index).getId();
-                        if (rel.equals("root")) {
-                            DependencyConLL dependencyConLL = new DependencyConLL(id, "", dep, "", posDep, "", headId, rel, "", "");
-                            if (parsedDependenciesConLL.contains(dependencyConLL)) {
-                                // If one of them exists pop from the list of dependencies, set the one the pointers to the next
-                                parsedDependenciesConLL.remove(parsedDependenciesConLL.indexOf(dependencyConLL));
-                                k = parsingChart[i][j].size();
-                            }
-                        }
-                    }
-                }
-            }
-
-        }
-        if (parsedDependenciesConLL.size()==0) {
-            exists = true;
-        }
-       return exists;
-    }
-
-    /**
-     * Takes a given grammar file as the input and a given string to test
-     * against that grammar.
-     * @param args the list of the given command-line arguments consisting
-     *             of the grammar file and the string to test, strictly in that
-     *             order.
-     */
-
-    private static String INPUT_MAPPINGS_STREAM = "/Users/MeryemMhamdi/EPFL/Spring2017/SemesterProject/Results/Big Data/mappings_indices.ser";
-
 
     public static void main(String[] args) {
 
@@ -643,7 +363,8 @@ public class CYK {
 
             FileInputStream in = new FileInputStream(PATH_TRAIN_DEPENDENCIES);
             ObjectInputStream stream = new ObjectInputStream(in);
-            ArrayList<ArrayList<DependencyConLL>> trueDependencies = (ArrayList<ArrayList<DependencyConLL>>) stream.readObject();
+            ArrayList<ArrayList<DependencyConLL>> trueDependencies = (ArrayList<ArrayList<DependencyConLL>>)
+                    stream.readObject();
 
             /**
              * 1.1. Loading the grammar from stream file
@@ -682,7 +403,8 @@ public class CYK {
             System.out.println("Load the charts");
             in = new FileInputStream(PATH_INFO_CHARTS);
             stream = new ObjectInputStream(in);
-            ArrayList<ArrayList<ArrayList<Map<String,ArrayList<String>>>>> chartsInfo = (ArrayList<ArrayList<ArrayList<Map<String,ArrayList<String>>>>>) stream.readObject();
+            ArrayList<ArrayList<ArrayList<Map<String,ArrayList<String>>>>> chartsInfo =
+                    (ArrayList<ArrayList<ArrayList<Map<String,ArrayList<String>>>>>) stream.readObject();
 
             in = new FileInputStream(PATH_LIST_PROJECTIVE_TRAIN);
             stream = new ObjectInputStream(in);
@@ -698,8 +420,6 @@ public class CYK {
 
 
             ArrayList<ArrayList<NonTerminal> [][]> parsingCharts = new ArrayList<ArrayList<NonTerminal>[][]>();
-
-            ArrayList<ArrayList<SmallConLL>> dependenciesList = new ArrayList();
 
 
             /**
@@ -728,8 +448,10 @@ public class CYK {
                 for (int sub=0;sub<chartsInfo.get(index).size();sub++){
                     for (int subsub =0; subsub<chartsInfo.get(index).get(sub).size();subsub++){
                         for (String key: chartsInfo.get(index).get(sub).get(subsub).keySet()) {
-                            for(int subsubsub = 0; subsubsub<chartsInfo.get(index).get(sub).get(subsub).get(key).size();subsubsub++){
-                                String [] parts = chartsInfo.get(index).get(sub).get(subsub).get(key).get(subsubsub).split("<");
+                            for(int subsubsub = 0; subsubsub<chartsInfo.get(index).get(sub).get(subsub).
+                                    get(key).size();subsubsub++){
+                                String [] parts = chartsInfo.get(index).get(sub).get(subsub).get(key).get(subsubsub)
+                                        .split("<");
                                 if (parts.length>=2){
                                     String emorTag = "";
                                     for (int ll=1;ll<parts.length;ll++){
@@ -759,9 +481,12 @@ public class CYK {
                                         }
                                     }
                                     if (subsub<trueDependency.size()) {
-                                        if (cyk.tagsDeprels.containsKey(pennTag) && trueDependency.get(subsub).getLemma().equals(parts[0])) {
+                                        if (cyk.tagsDeprels.containsKey(pennTag) &&
+                                                trueDependency.get(subsub).getLemma().equals(parts[0])) {
                                             for (String deprel : cyk.tagsDeprels.get(pennTag)) {
-                                                parsingChart[sub][subsub].add(new NonTerminal(trueDependency.get(subsub).getId(), parts[0], pennTag, deprel, -1, -1, -1));
+                                                parsingChart[sub][subsub].add(new NonTerminal(
+                                                        trueDependency.get(subsub).getId(), parts[0], pennTag,
+                                                        deprel, -1, -1, -1));
                                             }
                                         }
                                     }

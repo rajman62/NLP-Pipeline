@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Set;
 
-/**
+/** UNIT TEST to check the correctness of CYK on a simple example
  * Created by MeryemMhamdi on 6/14/17.
  */
 public class InspectingResultsExample {

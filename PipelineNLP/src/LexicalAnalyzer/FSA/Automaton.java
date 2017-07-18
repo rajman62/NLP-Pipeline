@@ -942,16 +942,17 @@ public class Automaton implements Serializable, Cloneable {
 	public boolean isTotal() {
 		return BasicOperations.isTotal(this);
 	}
-	
+
 	/**
 	 * See {@link BasicOperations#getShortestExample(Automaton, boolean)}.
 	 */
 	public String getShortestExample(boolean accepted) {
 		return BasicOperations.getShortestExample(this, accepted);
 	}
-	
+
 	/**
 	 * See {@link BasicOperations#run(Automaton, String)}.
+	 * @author Meryem M'hamdi
 	 */
 	public boolean run(String s) {
 		return BasicOperations.run(this, s);
@@ -959,6 +960,8 @@ public class Automaton implements Serializable, Cloneable {
 
 	/** ADDITION:
 	 * See {@link BasicOperations#traverse(Automaton, String)}.
+	 * @author Meryem M'hamdi
+	 *
 	 */
 	public ArrayList<ArrayList<String>> traverse(String s) {
 		return BasicOperations.traverse(this, s);
@@ -966,21 +969,25 @@ public class Automaton implements Serializable, Cloneable {
 
 	/** ADDITION:
 	 * See {@link BasicOperations#traverseExtendedSolution(Automaton, Automaton , HashMap , String )}.
+	 * @author Meryem M'hamdi
 	 */
 	public ArrayList<ArrayList<ArrayList<BasicOperations.Edge>>> traverseExtendedSolution(Automaton tokFSA, Automaton sepFSA, HashMap<String,SepSpecification> specifications, String str){return BasicOperations.traverseExtendedSolution(tokFSA,sepFSA, specifications,str);}
 
 	/** ADDITION:
 	 * See {@link BasicOperations#traverseShortSolution(Automaton, Automaton , HashMap, String )}.
+	 * @author Meryem M'hamdi
 	 */
 	public ArrayList<ArrayList<ArrayList<BasicOperations.Edge>>> traverseShortSolution(Automaton tokFSA, Automaton sepFSA, HashMap<String,SepSpecification> specifications, String str){return BasicOperations.traverseShortSolution(tokFSA,sepFSA, specifications,str);}
 
 	/** ADDITION:
 	 * See {@link BasicOperations#traverseExplicitSolution(Automaton, String )}.
+	 * @author Meryem M'hamdi
 	 */
 	public ArrayList<ArrayList<BasicOperations.Edge>> traverseExplicitSolution(String s){return BasicOperations.traverseExplicitSolution(this, s);}
 
 	/** ADDITION:
 	 * See {@link BasicOperations#traverseImplicitSolution(Automaton, Automaton, String )}.
+	 * @author Meryem M'hamdi
 	 */
 	public ArrayList<ArrayList<BasicOperations.Edge>> traverseImplicitSolution(Automaton nonSep, Automaton sep, String s){return BasicOperations.traverseImplicitSolution(nonSep, sep, s);}
 

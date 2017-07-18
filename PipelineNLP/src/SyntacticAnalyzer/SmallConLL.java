@@ -3,7 +3,8 @@ package SyntacticAnalyzer;
 import java.io.Serializable;
 
 /**
- * Created by MeryemMhamdi on 5/18/17.
+ * @author MeryemMhamdi
+ * @date 5/18/17.
  */
 public class SmallConLL implements Serializable {
     private String head;

@@ -12,13 +12,23 @@ import java.util.Map;
  * @date 4/10/17.
  */
 public class AnalyzeMorphology {
-
-    private static String EMOR_LOCATION = "/Users/MeryemMhamdi/Google Drive/Semester Project/3 Implementation & Algorithms/Morphological Analysis/E-MOR/morph.a";
-    private static String FST_MOR = "/Users/MeryemMhamdi/EPFL/Spring2017/SemesterProject/Morphological Analysis/SFST/src/fst-mor1";
-    private static String UDC_SENTENCES = "/Users/MeryemMhamdi/Google Drive/Semester Project/4 Results/Tokenization Analysis/UDC/Train/udc_sentencesList.ser";
-    private static String TOK_CHARTS = "/Users/MeryemMhamdi/Google Drive/Semester Project/4 Results/Tokenization Analysis/UDC/Train/udc_tokenizationCharts.ser";
-    private static String TXT_MORPHOLOGY_RESULTS = "/Users/MeryemMhamdi/Google Drive/Semester Project/4 Results/udc_MorphologyResults_DEBUG.txt";
-    private static String STREAM_MORPHOLOGY_RESULTS = "/Users/MeryemMhamdi/EPFL/Spring2017/SemesterProject/Results/udc_morphologyAnalysis_DEBUG.ser";
+    /******************************************************************************************************************/
+    /**
+     * LOCATION FILES TO BE CHANGED
+     */
+    private static String EMOR_LOCATION = "/Users/MeryemMhamdi/Google Drive/Semester Project" +
+            "/3 Implementation & Algorithms/Morphological Analysis/E-MOR/morph.a";
+    private static String FST_MOR = "/Users/MeryemMhamdi/EPFL/Spring2017/SemesterProject/Morphological Analysis" +
+            "/SFST/src/fst-mor1";
+    private static String UDC_SENTENCES = "/Users/MeryemMhamdi/Google Drive/Semester Project/4 Results" +
+            "/Tokenization Analysis/UDC/Train/udc_sentencesList.ser";
+    private static String TOK_CHARTS = "/Users/MeryemMhamdi/Google Drive/Semester Project/4 Results" +
+            "/Tokenization Analysis/UDC/Train/udc_tokenizationCharts.ser";
+    private static String TXT_MORPHOLOGY_RESULTS = "/Users/MeryemMhamdi/Google Drive/Semester Project/4 Results" +
+            "/udc_MorphologyResults_DEBUG.txt";
+    private static String STREAM_MORPHOLOGY_RESULTS = "/Users/MeryemMhamdi/EPFL/Spring2017/SemesterProject/Results" +
+            "/udc_morphologyAnalysis_DEBUG.ser";
+    /******************************************************************************************************************/
 
     public static void main(String[] args) {
         try {
@@ -31,7 +41,8 @@ public class AnalyzeMorphology {
             // 2. Load the Tokenization Charts
             in = new FileInputStream(TOK_CHARTS);
             stream = new ObjectInputStream(in);
-            ArrayList<ArrayList<ArrayList<ArrayList<BasicOperations.Edge>>>> charts =  (ArrayList<ArrayList<ArrayList<ArrayList<BasicOperations.Edge>>>>)stream.readObject();
+            ArrayList<ArrayList<ArrayList<ArrayList<BasicOperations.Edge>>>> charts =
+                    (ArrayList<ArrayList<ArrayList<ArrayList<BasicOperations.Edge>>>>)stream.readObject();
 
 
             // 3. Applying the Transducer to get the canonical form of every surface form in the chart

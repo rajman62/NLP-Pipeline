@@ -1,7 +1,8 @@
 package SyntacticAnalyzer;
 
 /**
- * Created by MeryemMhamdi on 4/21/17.
+ * @author MeryemMhamdi
+ * @date 4/21/17.
  */
 public class Terminal {
     private String word;

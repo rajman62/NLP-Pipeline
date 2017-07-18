@@ -2,8 +2,10 @@ package SyntacticAnalyzer;
 
 import java.util.ArrayList;
 
-/**
- * Created by MeryemMhamdi on 5/18/17.
+/** Class used for encapsulate the right hand side (list of nonTerminal on the right)
+ * of grammatical rule of a probabilistic grammar
+ * @author MeryemMhamdi
+ * @date 5/18/17.
  */
 public class RightHandSide {
     private ArrayList<ProbabilisticNonTerminal> rightHandSides;

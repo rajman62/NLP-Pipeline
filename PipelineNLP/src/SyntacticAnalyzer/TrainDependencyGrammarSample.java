@@ -3,16 +3,18 @@ package SyntacticAnalyzer;
 import java.io.*;
 import java.util.ArrayList;
 
-/**
- * Created by MeryemMhamdi on 6/11/17.
+/** Training and Saving Dependency Grammar on a smaller random sample of the dataset
+ * @author MeryemMhamdi
+ * @date 6/11/17.
  */
 public class TrainDependencyGrammarSample {
-
+    /******************************************************************************************************************/
+    /**
+     * LOCATION FILES TO BE CHANGED
+     */
     private static String OUTPUT_PATH_FOLDER = "/Users/MeryemMhamdi/EPFL/Spring2017/SemesterProject/Results/Big Data/";
     private static String DATASET_LOCATION = "/Users/MeryemMhamdi/Google Drive/Semester Project" +
             "/3 Implementation & Algorithms/Datasets/UDC/";
-    private static String TOKENIZATION_PATH_FOLDER = "/Users/MeryemMhamdi/Google Drive/Semester Project/4 Results/" +
-            "Tokenization Analysis/UDC/Train/";
     private static String PATH_TRAIN_CONLL =  DATASET_LOCATION + "parsedDependenciesConLL_train_true.conllu";
     private static String PATH_LIST_PROJECTIVE_TRAIN = OUTPUT_PATH_FOLDER+ "projective_indices_train.ser";
     private static String PATH_LIST_PROJECTIVE_TEST = OUTPUT_PATH_FOLDER+ "projective_indices_test.ser";
@@ -25,7 +27,7 @@ public class TrainDependencyGrammarSample {
 
     private static  String PATH_ONE_SIDED_STREAM = OUTPUT_PATH_FOLDER+"One_sided_rules_TRAIN_ROOT.ser";
     private static  String PATH_ONE_SIDED_TXT = OUTPUT_PATH_FOLDER+"One_sided_rules_TRAIN_ROOT.txt";
-
+    /******************************************************************************************************************/
 
     public static void main(String args[]) {
 
@@ -34,7 +36,8 @@ public class TrainDependencyGrammarSample {
         try {
             FileInputStream in = new FileInputStream(PATH_TRAIN_CONLL);
             ObjectInputStream stream = new ObjectInputStream(in);
-            ArrayList<ArrayList<DependencyConLL>> parsedDependenciesConLL = (ArrayList<ArrayList<DependencyConLL>>) stream.readObject();
+            ArrayList<ArrayList<DependencyConLL>> parsedDependenciesConLL =
+                    (ArrayList<ArrayList<DependencyConLL>>) stream.readObject();
 
             System.out.println("parsedDependenciesConLL.size()= " + parsedDependenciesConLL.size());
 
@@ -200,9 +203,11 @@ public class TrainDependencyGrammarSample {
             BufferedWriter writer = new BufferedWriter(new FileWriter(PATH_DEP_GRAMMAR_TXT));
 
             for (int i = 0; i < dg.grammar.size(); i++) {
-                String rule = dg.grammar.get(i).getLeftHandSide().getXpostag() + ":" + dg.grammar.get(i).getLeftHandSide().getDeprel() + "->";
+                String rule = dg.grammar.get(i).getLeftHandSide().getXpostag() + ":"
+                        + dg.grammar.get(i).getLeftHandSide().getDeprel() + "->";
                 for (int j = 0; j < dg.grammar.get(i).getRightHandSide().size(); j++) {
-                    rule = rule + dg.grammar.get(i).getRightHandSide().get(j).getXpostag() + ":" + dg.grammar.get(i).getRightHandSide().get(j).getDeprel() + " ";
+                    rule = rule + dg.grammar.get(i).getRightHandSide().get(j).getXpostag()
+                            + ":" + dg.grammar.get(i).getRightHandSide().get(j).getDeprel() + " ";
                 }
                 writer.write(rule + "\n");
 

@@ -7,8 +7,16 @@ import java.util.HashMap;
  * Created by MeryemMhamdi on 7/18/17.
  */
 public class CreateTagMappings {
-    private static String TEXT_SOURCE_MAPPING = "/Users/MeryemMhamdi/Desktop/NLP-Pipeline/PipelineNLP/src/MorphologicalAnalyzer/tagMappings.txt";
-    private static String STREAM_MAPPINGS = "/Users/MeryemMhamdi/Desktop/NLP-Pipeline/PipelineNLP/src/MorphologicalAnalyzer/tagsMappings.ser";
+    /******************************************************************************************************************/
+    /**
+     * LOCATION FILES TO BE REPLACED
+     */
+    private static String TEXT_SOURCE_MAPPING = "/Users/MeryemMhamdi/Desktop/NLP-Pipeline/" +
+            "PipelineNLP/src/MorphologicalAnalyzer/tagMappings.txt";
+    private static String STREAM_MAPPINGS = "/Users/MeryemMhamdi/Desktop/NLP-Pipeline" +
+            "/PipelineNLP/src/MorphologicalAnalyzer/tagsMappings.ser";
+
+    /******************************************************************************************************************/
     public static void main (String [] args){
         /**
          * Adding Map from E-MOR tags to Penn Treebank tags

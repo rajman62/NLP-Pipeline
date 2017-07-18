@@ -4,8 +4,9 @@ import java.io.File;
 import java.io.IOException;
 import java.util.*;
 
-/**
- * Created by MeryemMhamdi on 5/18/17.
+/** Probabilistic Version of CYK
+ * @author MeryemMhamdi
+ * @date 5/18/17.
  */
 public class pCYK {
 
@@ -68,20 +69,24 @@ public class pCYK {
                     if (rest.length == 1) {
                         String [] composition = rest[0].split("\\(")[0].split(":");
                         score = Double.valueOf(rest[0].split("\\(")[1].split("\\)")[0]);
-                        ProbabilisticNonTerminal nonTerminal = new ProbabilisticNonTerminal("",composition[0],composition[1],1,-1,-1,-1);
+                        ProbabilisticNonTerminal nonTerminal = new ProbabilisticNonTerminal("",
+                                composition[0],composition[1],1,-1,-1,-1);
                         nonTerminals.add(nonTerminal);
                     } else {
                         String [] composition0 = rest[0].split(":");
                         score = Double.valueOf(rest[1].split("\\(")[1].split("\\)")[0]);
-                        ProbabilisticNonTerminal rightHandSide0 = new ProbabilisticNonTerminal("",composition0[0],composition0[1],1,-1,-1,-1);
+                        ProbabilisticNonTerminal rightHandSide0 = new ProbabilisticNonTerminal("",
+                                composition0[0],composition0[1],1,-1,-1,-1);
 
                         String [] composition1 = rest[1].split("\\(")[0].split(":");
-                        ProbabilisticNonTerminal rightHandSide1 = new ProbabilisticNonTerminal("",composition1[0],composition1[1],1,-1,-1,-1);
+                        ProbabilisticNonTerminal rightHandSide1 = new ProbabilisticNonTerminal("",
+                                composition1[0],composition1[1],1,-1,-1,-1);
                         nonTerminals.add(rightHandSide0);
                         nonTerminals.add(rightHandSide1);
                     }
                     RightHandSide rightHandSide = new RightHandSide(nonTerminals,score);
-                    variablesList.add(new ProbabilisticVariable(new NonTerminal(-1,"",variable[0],variable[1],-1,-1,-1), rightHandSide));
+                    variablesList.add(new ProbabilisticVariable(new NonTerminal(-1,"",
+                            variable[0],variable[1],-1,-1,-1), rightHandSide));
                 }
                 if (scanner.hasNextLine())
                     line = scanner.nextLine().split("->");
@@ -115,7 +120,8 @@ public class pCYK {
     }
 
     /**
-     * Processes the one sided rules file and extends all xpostags in the info chart with all possible dependencies at the bottom chart
+     * Processes the one sided rules file and extends all xpostags in the info chart with
+     * all possible dependencies at the bottom chart
      */
     public void processOneSidedRules(String file)
     {
@@ -171,10 +177,6 @@ public class pCYK {
      * @param parsingChart
      * @return
      */
-
-
-    @SuppressWarnings("unchecked")
-
     public ArrayList<ProbabilisticNonTerminal>[][] buildParsingChart( ArrayList<ProbabilisticNonTerminal>[][] parsingChart)
     {
 
@@ -189,8 +191,9 @@ public class pCYK {
                     RightHandSide values = variables.get(nonTerminal).get(var);
                     if (values.getRightHandSides().size() == 1) {
                         if (parsingChart[0][k].contains((values.getRightHandSides().get(0)))) {
-                            parsingChart[0][k].add(new ProbabilisticNonTerminal(parsingChart[0][k].get(0).getLemma(),nonTerminal.getXpostag(), nonTerminal.getDeprel(),
-                                    values.getScore(),0,parsingChart[0][k].indexOf(values.getRightHandSides().get(0)),-1));
+                            parsingChart[0][k].add(new ProbabilisticNonTerminal(parsingChart[0][k].get(0).getLemma(),
+                                    nonTerminal.getXpostag(), nonTerminal.getDeprel(), values.getScore(),0,
+                                    parsingChart[0][k].indexOf(values.getRightHandSides().get(0)),-1));
                             System.out.println("YAY RULE GOT REALLY APPLIED");
                         }
                     }
@@ -210,7 +213,8 @@ public class pCYK {
                         for(int var=0;var<vars.size();var++) {
                             RightHandSide values = variables.get(nonTerminal).get(var);
                             if (values.getRightHandSides().size()==2) {
-                                System.out.println("\nApplying rule=> " + nonTerminal + "->" + values.getRightHandSides().get(0).toString()
+                                System.out.println("\nApplying rule=> " + nonTerminal + "->"
+                                        + values.getRightHandSides().get(0).toString()
                                         + "," + values.getRightHandSides().get(1).toString());
                                 System.out.println("parsingChart[i-k][j]:"+parsingChart[i-k-1][j]);
                                 System.out.println("parsingChart[k][i+j-k]:"+parsingChart[k][i+j-k]);
@@ -231,15 +235,17 @@ public class pCYK {
                                     } else {
                                         lemma = parsingChart[k][i+j-k].get(right2Index).getLemma();
                                     }
-                                    double score = values.getScore()*parsingChart[i-k-1][j].get(right1Index).getScore()*parsingChart[k][i+j-k].get(right2Index).getScore();
+                                    double score = values.getScore()*parsingChart[i-k-1][j].get(right1Index).getScore()
+                                            *parsingChart[k][i+j-k].get(right2Index).getScore();
                                     if (!parsingChart[i][j].contains(nonTerminal)) {
                                         System.out.println("FIRST TIME");
-                                        parsingChart[i][j].add(new ProbabilisticNonTerminal(lemma,nonTerminal.getXpostag(),nonTerminal.getDeprel()
-                                                ,score,pointer,right1Index, right2Index));
+                                        parsingChart[i][j].add(new ProbabilisticNonTerminal(lemma,nonTerminal.getXpostag()
+                                                ,nonTerminal.getDeprel(),score,pointer,right1Index, right2Index));
                                         System.out.println("YAY RULE GOT REALLY APPLIED");
                                     } else {
                                         System.out.println("UPDATING EXISTING");
-                                        ProbabilisticNonTerminal updated = parsingChart[i][j].get(parsingChart[i][j].indexOf(nonTerminal));
+                                        ProbabilisticNonTerminal updated = parsingChart[i][j].get(parsingChart[i][j]
+                                                .indexOf(nonTerminal));
                                         if (score >updated.getScore()) {
                                             updated.setPointer(pointer);
                                             updated.setRight1Index(right1Index);
@@ -265,8 +271,9 @@ public class pCYK {
                         RightHandSide values = variables.get(nonTerminal).get(var);
                         if (values.getRightHandSides().size() == 1) {
                             if (parsingChart[i][k].contains((values.getRightHandSides().get(0)))) {
-                                parsingChart[i][k].add(new ProbabilisticNonTerminal(parsingChart[i][k].get(0).getLemma(),nonTerminal.getXpostag(),
-                                        nonTerminal.getDeprel(),values.getScore(),i, parsingChart[i][k].indexOf(values.getRightHandSides().get(0)), -1));
+                                parsingChart[i][k].add(new ProbabilisticNonTerminal(parsingChart[i][k].get(0).getLemma()
+                                        ,nonTerminal.getXpostag(), nonTerminal.getDeprel(),values.getScore(),i,
+                                        parsingChart[i][k].indexOf(values.getRightHandSides().get(0)), -1));
                                 System.out.println("YAY RULE GOT REALLY APPLIED");
                             }
                         }
@@ -285,14 +292,20 @@ public class pCYK {
                 String result = "";
                 for (int k=0;k<parsingChart[i][j].size();k++){
                     if (k == parsingChart[i][j].size()-1) {
-                        result = result + parsingChart[i][j].get(k).getLemma() + ":" + parsingChart[i][j].get(k).getXpostag()
-                                + ":" + parsingChart[i][j].get(k).getDeprel()+ ":" + parsingChart[i][j].get(k).getScore()
-                                + ":" + parsingChart[i][j].get(k).getPointer() + ":" + parsingChart[i][j].get(k).getRight1Index()
+                        result = result + parsingChart[i][j].get(k).getLemma()
+                                + ":" + parsingChart[i][j].get(k).getXpostag()
+                                + ":" + parsingChart[i][j].get(k).getDeprel()
+                                + ":" + parsingChart[i][j].get(k).getScore()
+                                + ":" + parsingChart[i][j].get(k).getPointer()
+                                + ":" + parsingChart[i][j].get(k).getRight1Index()
                                 + ":" + parsingChart[i][j].get(k).getRight2Index();
                     } else {
-                        result = result + parsingChart[i][j].get(k).getLemma() + ":" + parsingChart[i][j].get(k).getXpostag()
-                                + ":" + parsingChart[i][j].get(k).getDeprel()+ ":" + parsingChart[i][j].get(k).getScore()
-                                + ":" + parsingChart[i][j].get(k).getPointer() + ":" + parsingChart[i][j].get(k).getRight1Index()
+                        result = result + parsingChart[i][j].get(k).getLemma()
+                                + ":" + parsingChart[i][j].get(k).getXpostag()
+                                + ":" + parsingChart[i][j].get(k).getDeprel()
+                                + ":" + parsingChart[i][j].get(k).getScore()
+                                + ":" + parsingChart[i][j].get(k).getPointer()
+                                + ":" + parsingChart[i][j].get(k).getRight1Index()
                                 + ":" + parsingChart[i][j].get(k).getRight2Index()+ "|";
                     }
                 }
@@ -322,19 +335,24 @@ public class pCYK {
                         int j_right_2 = j + parsingChart[i][j].get(k).getPointer() + 1;
                         int right2Index = parsingChart[i][j].get(k).getRight2Index();
 
-                        System.out.println("i= " + i + " j= " + j + " k= " + k + " i_right_1= " + i_right_1 + " i_right_2= " + i_right_2 + " j_right_2= " + j_right_2);
+                        System.out.println("i= " + i + " j= " + j + " k= " + k + " i_right_1= " + i_right_1
+                                + " i_right_2= " + i_right_2 + " j_right_2= " + j_right_2);
                         String head = parsingChart[i][j].get(k).getLemma();
                         String posHead = parsingChart[i][j].get(k).getXpostag();
                         String dep, posDep, rel;
-                        if (parsingChart[i_right_1][j].get(right1Index).getLemma().equals(parsingChart[i][j].get(k).getLemma()) &&
-                                parsingChart[i_right_1][j].get(right1Index).getXpostag().equals(parsingChart[i][j].get(k).getXpostag())) {
+                        if (parsingChart[i_right_1][j].get(right1Index).getLemma()
+                                .equals(parsingChart[i][j].get(k).getLemma()) &&
+                                parsingChart[i_right_1][j].get(right1Index).getXpostag()
+                                .equals(parsingChart[i][j].get(k).getXpostag())) {
                             dep = parsingChart[i_right_2][j_right_2].get(right2Index).getLemma();
                             posDep = parsingChart[i_right_2][j_right_2].get(right2Index).getXpostag();
                             rel = parsingChart[i_right_2][j_right_2].get(right2Index).getDeprel();
                             dependencies.add(new SmallConLL(head, posHead, dep, posDep, rel));
 
-                        } else if (parsingChart[i_right_2][j_right_2].get(right2Index).getLemma().equals(parsingChart[i][j].get(k).getLemma()) &&
-                                parsingChart[i_right_2][j_right_2].get(right2Index).getXpostag().equals(parsingChart[i][j].get(k).getXpostag())){
+                        } else if (parsingChart[i_right_2][j_right_2].get(right2Index).getLemma()
+                                .equals(parsingChart[i][j].get(k).getLemma()) &&
+                                parsingChart[i_right_2][j_right_2].get(right2Index).getXpostag()
+                                .equals(parsingChart[i][j].get(k).getXpostag())){
                             dep = parsingChart[i_right_1][j].get(right1Index).getLemma();
                             posDep = parsingChart[i_right_1][j].get(right1Index).getXpostag();
                             rel = parsingChart[i_right_1][j].get(right1Index).getDeprel();
@@ -847,7 +865,8 @@ public class pCYK {
                                 if (subParts.length>=1) {
                                     if (subParts[0]!=null) {
                                         for (String deprel : pCYK.tagsDeprels.get(subParts[0])) {
-                                            parsingChart[sub][subsub].add(new ProbabilisticNonTerminal(parts[0],subParts[0], deprel,1,-1,-1,-1));
+                                            parsingChart[sub][subsub].add(new ProbabilisticNonTerminal(parts[0]
+                                                    ,subParts[0], deprel,1,-1,-1,-1));
                                         }
                                     }
                                 }

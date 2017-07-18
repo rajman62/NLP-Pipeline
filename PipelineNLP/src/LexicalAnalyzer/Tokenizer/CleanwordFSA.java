@@ -10,19 +10,27 @@ import java.util.Map;
 
 /**
  * STEP 2:
- * This class separates pure words or  from common regexes such as numbers, dates, urls to refine their representation in the FSA
+ * This class separates pure words or  from common regexes such as numbers, dates,
+ * urls to refine their representation in the FSA
  * INPUT ===> list of distinct words
  * OUTPUT ===> list of cleaned text distinct words
  *             list of non-text distinct entries
- * Created by MeryemMhamdi on 6/2/17.
+ * @author MeryemMhamdi
+ * @date 6/2/17.
  */
 public class CleanwordFSA {
 
+    /******************************************************************************************************************/
+    /**
+     * LOCATION FILES TO BE REPLACED
+     */
     private static String PATH_FOLDER = "/Users/MeryemMhamdi/Google Drive/Semester Project/4 Results" +
             "/Tokenization Analysis/UDC/Test/"; /// TO BE REPLACED
     private static String INPUT_TEXT_WORDS = PATH_FOLDER+ "UDCDistinctWords.txt";
     private static String CLEANED_TEXT_WORDS =PATH_FOLDER+ "CLEANEDUDCDistinctWords.txt";
     private static String CLEANED_NON_TEXT_WORDS = PATH_FOLDER+ "NONTEXTUDCDistinctWords.txt";
+
+    /******************************************************************************************************************/
 
     public static void main(String [] args){
 

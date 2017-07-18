@@ -748,7 +748,9 @@ final public class BasicOperations {
 
 			if (object != null && object instanceof BasicOperations.Edge)
 			{
-				sameSame = ((this.getStartIndex() == ((BasicOperations.Edge) object).getStartIndex()) && (this.getEndIndex() == ((BasicOperations.Edge) object).getEndIndex())&&(this.getIsKnown() == ((BasicOperations.Edge) object).getIsKnown()));
+				sameSame = ((this.getStartIndex() == ((BasicOperations.Edge) object).getStartIndex())
+						&& (this.getEndIndex() == ((BasicOperations.Edge) object).getEndIndex())
+						&&(this.getIsKnown() == ((BasicOperations.Edge) object).getIsKnown()));
 			}
 
 			return sameSame;
@@ -916,7 +918,8 @@ final public class BasicOperations {
 			 */
 
 			else {
-				if (i==s.length()-1 && sizeDest != 0){ // We reached the end we cannot check the next character if it has a transition
+				if (i==s.length()-1 && sizeDest != 0){ // We reached the end we cannot check the next character
+                    // if it has a transition
 					accumulator.add(c);
 					String unfinishedPrefix = getStringRepresentation(accumulator);
 					if (unfinishedPrefix.length() > 0) {
@@ -959,7 +962,8 @@ final public class BasicOperations {
 					}
 
 
-					if ((sizeDest == 0 && nextSize == 0) ||(accumulator.size()==0 && sizeDest != 0 && nextSize == 0)) { // no transition at all
+					if ((sizeDest == 0 && nextSize == 0) ||(accumulator.size()==0 && sizeDest != 0 && nextSize == 0)) {
+					    // no transition at all
 						unknowns.add(c);
 						accumulator.clear();
 						pp.clear();
@@ -971,11 +975,10 @@ final public class BasicOperations {
 						String unfinishedPrefix = getStringRepresentation(accumulator);
 						if (unfinishedPrefix.length() > 0) {
 							ArrayList<String> subsubTokens = new ArrayList<String>();
-							subsubTokens.add("<" + unfinishedPrefix + ">"); // .substring(1,unfinishedPrefix.length()-1)
+							subsubTokens.add("<" + unfinishedPrefix + ">");
 							counterCharTokens +=unfinishedPrefix.length();
 							System.out.println("ADDING 6:"+subsubTokens);
 							tokens.add(subsubTokens);
-							//counterCharTokens = 0;
 						}
 						accumulator.clear();
 						pp.clear();
@@ -1003,6 +1006,8 @@ final public class BasicOperations {
 	 * @param a automaton
 	 * @param a string
 	 * @return chart: two dimensional array of edges
+     * @author Meryem M'hamdi
+     * @date March 2017
 	 */
 	public static ArrayList<ArrayList<BasicOperations.Edge>> traverseExplicitSolution(Automaton a, String s) {
 		ArrayList<ArrayList<BasicOperations.Edge>> chart = new ArrayList<ArrayList<BasicOperations.Edge>>();
@@ -1074,12 +1079,14 @@ final public class BasicOperations {
 				indices.add(new Edge(start, start + i - 1, flag));
 
 				if (shortestPrefix.size() > 0) {
-					workingCopy = new StringBuilder().append("S").append(workingCopy.substring(shortestPrefix.get(0) + 1, workingCopy.length())).toString();
+					workingCopy = new StringBuilder().append("S")
+                            .append(workingCopy.substring(shortestPrefix.get(0) + 1, workingCopy.length())).toString();
 					start = start + shortestPrefix.get(0); // Update start index
 					shortestPrefix.clear();
 				} else {
 
-					workingCopy = new StringBuilder().append("S").append(workingCopy.substring(i, workingCopy.length())).toString();
+					workingCopy = new StringBuilder().append("S")
+                            .append(workingCopy.substring(i, workingCopy.length())).toString();
 					start = start + i - 1; // Update start index
 				}
 
@@ -1104,11 +1111,14 @@ final public class BasicOperations {
 					indices.add(new Edge(start, start + i - 1, flag));
 					if (nextSize == 0) { // If it gets stuck
 						if (shortestPrefix.size() > 0) {
-							workingCopy = new StringBuilder().append("S").append(workingCopy.substring(shortestPrefix.get(0) + 1, workingCopy.length())).toString();
+							workingCopy = new StringBuilder().append("S")
+                                    .append(workingCopy.substring(shortestPrefix.get(0) + 1,
+                                            workingCopy.length())).toString();
 							start = start + shortestPrefix.get(0); // Update start index
 							shortestPrefix.clear();
 						} else {
-							workingCopy = new StringBuilder().append("S").append(workingCopy.substring(i, workingCopy.length())).toString();
+							workingCopy = new StringBuilder().append("S")
+                                    .append(workingCopy.substring(i, workingCopy.length())).toString();
 							start = start + i - 1; // Update start index
 						}
 
@@ -1160,7 +1170,12 @@ final public class BasicOperations {
 		return chart;
 	}
 
-	public static ArrayList<ArrayList<ArrayList<BasicOperations.Edge>>> traverseShortSolution(Automaton tokFSA, Automaton sepFSA, HashMap<String,SepSpecification> specifications, String str) {
+	/** ADDITION: SHORTER SOLUTION TO IMPLICIT SOLUTION
+     * @author Meryem M'hamdi
+     * @date March 2017
+     * */
+	public static ArrayList<ArrayList<ArrayList<BasicOperations.Edge>>> traverseShortSolution(Automaton tokFSA,
+                            Automaton sepFSA, HashMap<String,SepSpecification> specifications, String str) {
 
 		///************************* 1. Initialization Phase ************************///
 		/**
@@ -1495,7 +1510,8 @@ final public class BasicOperations {
 									for (int l = 0; l < bottomChart.size() - k; l++) {
 										int startIndex = bottomChart.get(l).getStartIndex();
 										int endIndex = bottomChart.get(l + k).getEndIndex();
-										BasicOperations.Edge edge = new BasicOperations.Edge(startIndex, endIndex, true);
+										BasicOperations.Edge edge = new BasicOperations.Edge(startIndex,
+                                                endIndex, true);
 										if (arcs.contains(edge)) {
 											partChart.add(edge);
 										} else {
@@ -1550,7 +1566,9 @@ final public class BasicOperations {
 									int endIndex = arcs.get(arcs.size() - 1).getEndIndex();
 									boolean buildChart = true;
 									for (int indicesArcs = 0; indicesArcs < arcs.size(); indicesArcs++) {
-										if (arcs.get(indicesArcs).getStartIndex() <= startIndex && endIndex < arcs.get(indicesArcs).getEndIndex() && arcs.get(indicesArcs).getIsKnown() == true) {
+										if (arcs.get(indicesArcs).getStartIndex() <= startIndex && endIndex <
+                                                arcs.get(indicesArcs).getEndIndex() &&
+                                                arcs.get(indicesArcs).getIsKnown() == true) {
 											buildChart = false;
 										}
 									}
@@ -1565,7 +1583,8 @@ final public class BasicOperations {
 											for (int l = 0; l < bottomChart.size() - k; l++) {
 												startIndex = bottomChart.get(l).getStartIndex();
 												endIndex = bottomChart.get(l + k).getEndIndex();
-												BasicOperations.Edge edge = new BasicOperations.Edge(startIndex, endIndex, true);
+												BasicOperations.Edge edge = new BasicOperations.Edge(startIndex,
+                                                        endIndex, true);
 												if (arcs.contains(edge)) {
 													partChart.add(edge);
 												} else {
@@ -1612,11 +1631,12 @@ final public class BasicOperations {
 	 * @param sepFSA
 	 * @param specifications
 	 * @param str string to be tokenized
+     * @return chart: two dimensional array of edges
 	 * @author Meryem M'hamdi
 	 * @date March 2017
-	 * @return
 	 */
-	public static ArrayList<ArrayList<ArrayList<BasicOperations.Edge>>> traverseExtendedSolution(Automaton tokFSA, Automaton sepFSA, HashMap<String,SepSpecification> specifications, String str){
+	public static ArrayList<ArrayList<ArrayList<BasicOperations.Edge>>> traverseExtendedSolution(Automaton tokFSA,
+                                Automaton sepFSA, HashMap<String,SepSpecification> specifications, String str){
 
 		///************************* 1. Initialization Phase ************************///
 		/**
@@ -1770,7 +1790,8 @@ final public class BasicOperations {
 								"Jr","JR","jr","Sr","SR","sr","Ill","Colo","colo","miss","Miss","Mr","Calif",
 								"calif","N.Y","St","st","Minn","Pa","pa","Md","md","N.J","Ore","La","Nev","Mrs"};
 						List<String> problematics = Arrays.asList(problematicsArr);
-						if ((i!=str.length()-2) && (sizeDestSeparator == 0 || (c=='.' && difference==1) || (problematics.contains(token)) )){
+						if ((i!=str.length()-2) && (sizeDestSeparator == 0 || (c=='.' && difference==1) ||
+                                (problematics.contains(token)) )){
 								i = i + 1;
 						} else {
 							// Found a separator so the token is possible
@@ -1793,7 +1814,10 @@ final public class BasicOperations {
 								sizeDest += dest_tok.size();
 							}
 							if (i<str.length()-3){
-								if (Character.isDigit(str.charAt(i)) && (str.charAt(i + 1)==',' ||str.charAt(i + 1) =='-'||str.charAt(i + 1)== '.' || str.charAt(i + 1)==';' ||str.charAt(i + 1) == '/') && Character.isLetter(str.charAt(i + 2))){
+								if (Character.isDigit(str.charAt(i)) && (str.charAt(i + 1)==','
+                                        ||str.charAt(i + 1) =='-'||str.charAt(i + 1)== '.'
+                                        || str.charAt(i + 1)==';' ||str.charAt(i + 1) == '/')
+                                        && Character.isLetter(str.charAt(i + 2))){
 									sizeDest = 0;
 								}
 							}
@@ -2033,14 +2057,21 @@ final public class BasicOperations {
 												int endIndex = arcs.get(arcs.size() - 1).getEndIndex();
 												boolean buildChart = true;
 												for (int indicesArcs = 0; indicesArcs < arcs.size(); indicesArcs++) {
-													if (arcs.get(indicesArcs).getStartIndex() <= startIndex && endIndex < arcs.get(indicesArcs).getEndIndex() && arcs.get(indicesArcs).getIsKnown()==true) {
+													if (arcs.get(indicesArcs).getStartIndex() <= startIndex && endIndex <
+                                                            arcs.get(indicesArcs).getEndIndex()
+                                                            && arcs.get(indicesArcs).getIsKnown()==true) {
 														buildChart = false;
 													}
 												}
 												if (i <str.length() - 2) {
 													c_next = str.charAt(i + 1);
 													char c_next_next = str.charAt(i+2);
-													if ((c_next != ' ' && c_next!='\"' && c_next!='\'' && c_next!=')' && c_next!='(' && c_next!=']' && c_next!='[' && c_next!='}' && c_next!='{'  )|| c_next_next == '-'  ||  Character.isLowerCase(c_next_next) || c_next_next == '\'' || c_next_next == ',' || c_next_next == '”' || Character.isDigit(c_next_next)) {
+													if ((c_next != ' ' && c_next!='\"' && c_next!='\'' && c_next!=')'
+                                                            && c_next!='(' && c_next!=']' && c_next!='[' && c_next!='}'
+                                                            && c_next!='{'  )|| c_next_next == '-'  ||
+                                                            Character.isLowerCase(c_next_next) || c_next_next == '\''
+                                                            || c_next_next == ',' || c_next_next == '”'
+                                                            || Character.isDigit(c_next_next)) {
 														buildChart = false;
 													}
 												}
@@ -2156,9 +2187,12 @@ final public class BasicOperations {
 	 * @param nonSep
 	 * @param sep
 	 * @param str
-	 * @return
+     * @return chart: two dimensional array of edges
+     * @author Meryem M'hamdi
+     * @date March 2017
 	 */
-	public static ArrayList<ArrayList<BasicOperations.Edge>> traverseImplicitSolution(Automaton nonSep, Automaton sep, String str) {
+	public static ArrayList<ArrayList<BasicOperations.Edge>> traverseImplicitSolution(Automaton nonSep,
+                                                                                      Automaton sep, String str) {
 		ArrayList<ArrayList<BasicOperations.Edge>> chart = new ArrayList<ArrayList<BasicOperations.Edge>>();
 
 		// 1. Trying with each FSA to determine which one is the right one to start with and store it in workingAutomaton

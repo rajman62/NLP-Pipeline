@@ -2,8 +2,10 @@ package SyntacticAnalyzer;
 
 import java.io.Serializable;
 
-/**
- * Created by MeryemMhamdi on 5/14/17.
+/** Class to encapsulate an item of a cell in CYK chart with information how to recover what produced it
+ * namely the position and order of the items that produces it (the right hand sides) that led to the left hand side
+ * @author MeryemMhamdi
+ * @date 5/14/17.
  */
 public class NonTerminal implements Serializable {
     private double id;
@@ -11,10 +13,13 @@ public class NonTerminal implements Serializable {
     private String xpostag;
     private String deprel;
     private int pointer; // index of the ith of the leftmost righthandside
-    private int right1Index; // index of Probabilistic nonterminal in the array list of the cell containing the 1st righthandside
-    private int right2Index; // index of Probabilistic nonterminal in the array list of the cell containing the 2st righthandside
+    private int right1Index; // index of Probabilistic nonterminal in the array list of
+                             // the cell containing the 1st righthandside
+    private int right2Index; // index of Probabilistic nonterminal in the array list of
+                             // the cell containing the 2st righthandside
 
-    public NonTerminal(double id, String lemma, String xpostag,String deprel,int pointer, int right1Index, int right2Index){
+    public NonTerminal(double id, String lemma, String xpostag,String deprel,int pointer,
+                       int right1Index, int right2Index){
         this.id = id;
         this.lemma = lemma;
         this.xpostag = xpostag;

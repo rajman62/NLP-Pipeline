@@ -7,9 +7,16 @@ import java.io.*;
 import java.util.ArrayList;
 
 /**
- * Created by MeryemMhamdi on 6/11/17.
+ * @author MeryemMhamdi
+ * @date 6/11/17.
  */
 public class InspectLexicalResultsAfterCorrection {
+
+    /******************************************************************************************************************/
+    /**
+     * LOCATION FILES TO BE CHANGED
+     */
+
     /**
      * Input Golden Truth
      */
@@ -54,6 +61,8 @@ public class InspectLexicalResultsAfterCorrection {
     private static String NO_CHARTS_STREAM = TOKENIZATION_PATH_FOLDER + "noChartsSentences_CORRECTION_FALSE.ser";
 
     private static String NO_CHARTS_TXT = TOKENIZATION_PATH_FOLDER + "noChartsSentences_CORRECTION_FALSE.txt";
+
+    /******************************************************************************************************************/
 
     public static void main (String [] args){
         try {

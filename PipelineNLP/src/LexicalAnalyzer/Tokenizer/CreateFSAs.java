@@ -10,14 +10,21 @@ import java.io.*;
  * INPUT ===> wordFSA
  * OUTPUT ====> tokFSA
  *              sepFSA
- * Created by MeryemMhamdi on 4/29/17.
+ * @author MeryemMhamdi
+ * @date 4/29/17.
  */
 public class CreateFSAs {
+    /******************************************************************************************************************/
+    /**
+     * LOCATION FILES TO BE REPLACED
+     */
     private static String PATH_FOLDER = "/Users/MeryemMhamdi/Google Drive/Semester Project/4 Results" +
             "/Tokenization Analysis/UDC/Train/"; // TO BE REPLACED
     private static String PATH_WORD_FSA = PATH_FOLDER+"UDCwordFSA.ser";
     private static String PATH_TOK_FSA = PATH_FOLDER+"UDCtokFSA.ser";
     private static String PATH_SEP_FSA = PATH_FOLDER+"UDCsepFSA.ser";
+    /******************************************************************************************************************/
+
     public static void main(String args[]) {
             /***
              * 1. Create tokFSA

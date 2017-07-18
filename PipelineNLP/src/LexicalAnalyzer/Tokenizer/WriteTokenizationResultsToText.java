@@ -9,14 +9,20 @@ import java.util.HashMap;
 /**
  * STEP 6:
  * This class writes back the results of tokenization charts to a text file with the sentence preceeding each chart
- * Created by MeryemMhamdi on 5/3/17.
+ * @author MeryemMhamdi
+ * @date 5/3/17.
  */
 public class WriteTokenizationResultsToText {
+    /******************************************************************************************************************/
+    /**
+     * LOCATION FILES TO BE CHANGED
+     */
     private static String PATH_FOLDER =  "/Users/MeryemMhamdi/Google Drive/Semester Project/4 Results" +
             "/Tokenization Analysis/UDC/Test/";
     private static String PATH_INPUT_TOKEN_CHARTS = PATH_FOLDER+"udc_tokenizationCharts.ser";
     private static String PATH_INPUT_SENTENCES = PATH_FOLDER + "udc_sentencesList.ser";
     private static String PATH_OUTPUT_TOKEN_CHARTS_TXT = PATH_FOLDER +"udc_tokenizationResults.txt";
+    /******************************************************************************************************************/
     public static void main(String [] args){
         try {
             // 1. LOADING THE CHARTS
