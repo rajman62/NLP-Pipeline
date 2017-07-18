@@ -1,47 +1,46 @@
-$noun-reg-infl$ = <>:<N-reg> (\
-                  {<NN>}:{} |\
-                  {<NNS>}:{s})
+$noun-reg-infl$ = <>:<N-reg> <N> (\
+                  {<3sg>}:{} |\
+                  {<3pl>}:{s})
 
-$proper-noun-infl$ = <>:<PropN-reg> (\
-                    {<NNP>}:{} |\
-                    {<NNPS>}:{s})
+$proper-noun-infl$ = <>:<PropN-reg> <PropN> (\
+                    {<3sg>}:{} |\
+                    {<3pl>}:{s})
 
-$adj-reg-infl$ = <>:<A-reg> (\
-                {<JJ>}:{} |\
-                {<JJS>}:{er} |\
-                {<JJR>}:{est})
+$adj-reg-infl$ = <>:<A-reg> <A> (\
+                {<pos>}:{} |\
+                {<comp>}:{er} |\
+                {<sup>}:{est})
 
-$adv-reg-infl$ = <>:<Adv-reg> (\
-                {<RB>}:{} |\
-                {<RBR>}:{er} |\
-                {<RBS>}:{est})
+$adv-reg-infl$ = <>:<Adv-reg> <Adv> (\
+                {<pos>}:{} |\
+                {<comp>}:{er} |\
+                {<sup>}:{est})
 
-$verb-reg-infl$ = <>:<V-reg> (\
-                {<VBZ>}:{s} |\
-                {<VBD>}:{ed} |\
-                {<VBN>}:{ed} |\
-                {<VBG>}:{ing} |\
-                {<VB>}:{}|\
-                {<VBP>}:{})
+$verb-reg-infl$ = <>:<V-reg> <V> (\
+                {<3sg>}:{s} |\
+                {<past>}:{ed} |\
+                {<part>}:{ed} |\
+                {<gerund>}:{ing} |\
+                {<n3s>}:{}|\
+                {<INF>}:{})
 
-$verb-dup-infl$ = <>:<V-dup> (\
-                {<VBG>}:{s} |\
-                {<VBD>}:{<dup>ed} |\
-                {<VBN>}:{<dup>ed} |\
-                {<VBG>}:{<dup>ing} |\
-                {<VB>}:{}|\
-                {<VBP>}:{})
+$verb-dup-infl$ = <>:<V-dup> <V> (\
+                {<3sg>}:{s} |\
+                {<past>}:{<dup>ed} |\
+                {<part>}:{<dup>ed} |\
+                {<gerund>}:{<dup>ing} |\
+                {<n3s>}:{}|\
+                {<INF>}:{})
 
-$verb-pres-ger2-infl$ = <>:<V-pres-ger2> (\
-                      {<VBZ>}:{s} |\
-                      {<VBG>}:{<dup>ing} |\
-                      {<VB>}:{}|\
-                      {<VBP>}:{})
+$verb-pres-ger2-infl$ = <>:<V-pres-ger2> <V>(\
+                      {<3sg>}:{s} |\
+                      {<gerund>}:{<dup>ing} |\
+                      {<n3s>}:{}|\
+                      {<INF>}:{})
 
-$verb-past-part-infl$ = <>:<V-past-part> (\
-                      {<VBD>}:{} |\
-                      {<VB>}:{}|\
-                      {<VBP>}:{})
+$verb-past-part-infl$ = <>:<V-past-part> <V> (\
+                      {<past>}:{} |\
+                      {<part>}:{})
 
 $other-no-infl$ = <>:<``-reg> <``>| <>:<ADD-reg> <ADD>| <>:<-LRB--reg> <-LRB->|\
                   <>:<WRB-reg> <WRB>| <>:<LS-reg> <LS>| <>:<PRP-reg> <PRP>|\

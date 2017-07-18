@@ -5,17 +5,15 @@ import SyntacticAnalyzer.DependencyConLL;
 import java.io.*;
 import java.util.*;
 
-/**
+/** STEP 1: Extract the words lemmas and adds cannonical forms based on that to a lexicon file.
  * Created by MeryemMhamdi on 7/9/17.
  */
 public class BuildLexicon {
-    private static String OUTPUT_PATH_FOLDER = "/Users/MeryemMhamdi/Google Drive/Semester Project/4 Results" +
-            "/Morphological Analysis/UDC/Train/";
-    private static String PATH_TAGS_MAP = OUTPUT_PATH_FOLDER+"tagsMap.ser";
+    private static String PARSED_TREEBANK = "/Users/MeryemMhamdi/Google Drive/Semester Project/3 Implementation & Algorithms" +
+            "/Datasets/UDC/parsedDependenciesConLL_train_true.ser"; // TO BE REPLACED BY THE PATH TO THE PARSED DEPENDENCIES DATASET
+    private static String TO_BE_ADDED_LEXICON = "/Users/MeryemMhamdi/Desktop/lexicon.txt"; // TO BE REPLACED BY THE PATH OF THE OUTPUT FILE
     public static void main (String [] args) {
-        String PARSED_TREEBANK = "/Users/MeryemMhamdi/Google Drive/Semester Project/3 Implementation & Algorithms" +
-                "/Datasets/UDC/parsedDependenciesConLL_train_true.ser";
-        String TO_BE_ADDED_LEXICON = "/Users/MeryemMhamdi/Desktop/lexicon.txt";
+
         try {
             // 1. Loading the Sentences
             FileInputStream in = new FileInputStream(PARSED_TREEBANK);
@@ -40,11 +38,7 @@ public class BuildLexicon {
 
 
             for (int i=0;i<parsed_conllu.size();i++){
-                //System.out.println(nounsTags.size()+"  "+verbsTags.size()+"  "+advTags.size());
-                /*
-                for (String tag: properTags){
-                    System.out.println(tag);
-                }*/
+
                 for (int j=0;j<parsed_conllu.get(i).size();j++) {
                     String tag = parsed_conllu.get(i).get(j).getXPosTag().toString();
                     if (nounsTags.contains(tag)) {
@@ -54,7 +48,6 @@ public class BuildLexicon {
                         }
                     }
                     if (properTags.contains(tag)) {
-                        //System.out.println(parsed_conllu.get(i).get(j).getLemma()+"  "+tag);
                         if (!proper.contains(parsed_conllu.get(i).get(j).getLemma().toString())) {
                             lexicon.add(parsed_conllu.get(i).get(j).getLemma()+"<PropN-reg>");
                             proper.add(parsed_conllu.get(i).get(j).getLemma());
@@ -102,7 +95,6 @@ public class BuildLexicon {
 
             BufferedWriter writer = new BufferedWriter(new FileWriter(TO_BE_ADDED_LEXICON));
             for (String wordTag : lexicon) {
-                //System.out.println(wordTag);
                 writer.write(wordTag + "\n");
             }
             writer.close();
@@ -113,18 +105,6 @@ public class BuildLexicon {
                 //result = result + tag+"><";
                 System.out.println( "<>:<"+tag+"-reg> <"+tag+">|\\");
             }
-            //System.out.println(result);
-
-
-            FileInputStream in1 = new FileInputStream(PATH_TAGS_MAP);
-            ObjectInputStream stream1 = new ObjectInputStream(in1);
-            HashMap<String,String> mappingPennTreebankEMOR =  (HashMap<String,String>)stream1.readObject();
-
-            /*
-            for (String key: mappingPennTreebankEMOR.keySet()){
-                System.out.println(mappingPennTreebankEMOR.get(key)+" => "+key);
-            }
-            */
 
         } catch (IOException e) {
             e.printStackTrace();

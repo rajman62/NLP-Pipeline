@@ -4657,6 +4657,7 @@ flow<N-reg>
 yield<V-reg>
 Rafik<PropN-reg>
 sympathize<V-reg>
+run<V-reg>
 darker<A-reg>
 non<GW-reg>
 google<V-reg>
@@ -7016,7 +7017,6 @@ dispossesed<A-reg>
 Realty<PropN-reg>
 Lieutenant<PropN-reg>
 a<DT-reg>
-an<DT-reg>
 Fujairah<PropN-reg>
 HONKA<PropN-reg>
 turnover<N-reg>

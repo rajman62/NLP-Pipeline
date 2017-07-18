@@ -13,7 +13,8 @@ import java.util.HashSet;
  * This class reads a conLL format file and extracts words from it
  * and builds token FSA based on that
  * INPUT===> DATASET file in CONLLU format
- * OUTPUT===> list of word lemma tags (text + serialized object)
+ * OUTPUT===> parsed encapsulated dependencies
+ *            list of word lemma tags (text + serialized object)
  *            list of distinct entries (text + serialized object)
  * Created by MeryemMhamdi on 5/24/17.
  */
@@ -27,6 +28,7 @@ public class ExtractWordsFromTreebank {
     private static String PATH_OUTPUT_TEXT_WORDS = PATH_OUTPUT_FOLDER + "UDCWordLemmaTag.txt";
     private static String PATH_OUTPUT_STREAM_DISTINCT_WORDS = PATH_OUTPUT_FOLDER + "UDCDistinctWords.ser";
     private static String PATH_OUTPUT_TXT_DISTINCT_WORDS = PATH_OUTPUT_FOLDER + "UDCDistinctWords.txt";
+    private static String PATH_OUTPUT_STREAM_PARSED_DEPENDENCIES = PATH_OUTPUT_FOLDER + "parsedDependenciesConLL_train_true.conllu";
 
     private String dependencyFile;
     private ArrayList<WordTag> distinctWords;
@@ -63,6 +65,13 @@ public class ExtractWordsFromTreebank {
         }
         writer.close();
     }
+
+    public void saveParsedDependencies(ArrayList<ArrayList<DependencyConLL>> parsedDependenciesConLL) throws IOException {
+        FileOutputStream fos = new FileOutputStream(PATH_OUTPUT_STREAM_PARSED_DEPENDENCIES);
+        ObjectOutputStream s = new ObjectOutputStream(fos);
+        s.writeObject(parsedDependenciesConLL);
+    }
+
     public static void main (String [] args){
         ArrayList<WordTag> wordList = new ArrayList<WordTag>();
         TrainDependencyGrammar dg = new TrainDependencyGrammar();
@@ -91,6 +100,7 @@ public class ExtractWordsFromTreebank {
 
             createFSAforUDP.saveDistinctWordsToSerFile(distincts);
             createFSAforUDP.writeDistinctWordsToTxt(distincts);
+            createFSAforUDP.saveParsedDependencies(parsedDependenciesConLL);
         } catch (IOException e) {
             e.printStackTrace();
         }

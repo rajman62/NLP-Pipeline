@@ -129,11 +129,4 @@ public class DependencyConLL implements Serializable {
             return false;
         }
     }
-
-    public String toString(){
-        return "id= "+this.id+ " form= "+this.form
-                +" +lemma= "+this.lemma + " upostag= "+ this.upostag
-                + " xpostag= "+this.xpostag + " feats= "+this.feats +" head= "+ String.valueOf(this.head)
-                + " deprel= "+this.deprel +" deps= "+this.deps + " misc= "+this.misc;
-    }
 }
