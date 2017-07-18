@@ -13,7 +13,7 @@ This implementation has been extracted from http://www.brics.dk/automaton/. Refe
 ### 2. Extracting Words from Treebank:
 This step reads a conLL format file and extracts words from it and builds token FSA based on that: (refer to: src.LexicalAnalysis.Tokenizer.ExtractWordsFromTreebank.java )
  * INPUT: DATASET file in CONLLU format
- * OUTPUT: list of word lemma tags (text + serialized object)  + list of distinct entries (text + serialized object)
+ * OUTPUT: list of parsed encapsulated dependencies + list of word lemma tags (text + serialized object)  + list of distinct entries (text + serialized object)
 
 ### 3. Cleaning wordFSA: 
 This step separates pure words or  from common regexes such as numbers, dates, urls to refine their representation in the FSA (refer to: src.LexicalAnalysis.Tokenizer.CleanTokenFSA.java):
@@ -39,3 +39,18 @@ Refer to src.LexicalAnalysis.Tokenizer.ExtractTrueTreebankSentences.java which r
 ## II. Morphological Analysis: 
 ### Setup:
 You can find SFST tools used to develop E-MOR morphology package in folder Morphology (http://www.cis.uni-muenchen.de/~schmid/tools/SFST/) and follow the documentation in Readme file to install SFST tools. To be able to conveniently use fst for analysis purpose right from the java program (which provides the output given an input), you can make use of fst-mor1, an additional program which you will find in the copy provided with this repo. Please follow the instructions in readme file for compiling, running and extending the morphology. 
+
+### 1. Building Lexicon: 
+This step is used to fill and adapt the lexicon in the morphology tool to conform to the words in treebank (refer to src.MorphologicalAnalysis.BuildLexicon.java). It extracts the words from the treebank and treats them according to their tag.  
+
+### 2. Developping/ Extending the Morphology tool: 
+Please follow the steps in readme of E-MOR in Morphology folder for intsructions on how to setup and extend the tool
+
+### 3. Debugging the Morphology tool: 
+Refer to src.MorphologicalAnalysis.TestE_MORUDC.java to debug the tool by printing the list of words that are either unrecognized by the tool or the ones for which no tag (that conforms with the treebank) has been found. 
+
+### 4. Analyzing the Morphology: 
+Refer to src.MorphologicalAnalysis.AnalyzeMorphology.java to convert the tokenization charts that we got as a result of lexical analysis into charts extended with morphological information. 
+
+## III. Syntactic Analysis:
+
