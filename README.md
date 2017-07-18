@@ -1,6 +1,9 @@
 # PipelineNLP
 EPFL Semester Project with Professor Dr. Martin Rajman Artificial Intelligence Laboratory Spring 2017 
 
+meryem.mhamdi@epfl.ch
+martin.rajman@epfl.ch
+
 ## DATASETS:
 ### I. Universal Dependencies 2.0 Dataset:
 It consists of 16k sentences in total. You can find this resource along with documentation in http://universaldependencies.org/. You can get both the corpus in its conLL and text format already split into training and testing subsets in all languages for direct download in the following link: https://lindat.mff.cuni.cz/repository/xmlui/bitstream/handle/11234/1-1983/ud-treebanks-v2.0.tgz?sequence=1&isAllowed=y or this link for english only https://github.com/UniversalDependencies/UD_English. 
@@ -62,4 +65,4 @@ Refer to class src.SyntacticAnalyzer.CYK.java to embed syntactic information int
 ### 3. Inspecting Results: 
 Refer to class src.SyntacticAnalyzer.InspectingResults.java to calculate some statistics regarding the number of charts with at least one correct tree, many correct trees, total number of trees, average number of trees per chart.
 
-# NB: Do not forget to inspect each class and adjust the paths to input and output files. 
+#### NB: Do not forget to inspect each class and adjust the paths to input and output files. 
