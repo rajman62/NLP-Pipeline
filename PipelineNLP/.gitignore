@@ -1,0 +1,6 @@
+.idea/
+*.class
+.swp
+.swa
+.iml
+out/
