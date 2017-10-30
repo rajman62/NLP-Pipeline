@@ -1,8 +1,0 @@
-S->NP,VP
-VP->V
-VP->V,NP
-NP->Det,N
-N->cat
-N->the cat
-Det->the
-V->eats
