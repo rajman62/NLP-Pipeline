@@ -2,7 +2,10 @@ package nlpstack;
 
 import nlpstack.analyzers.*;
 import nlpstack.annotations.*;
-import nlpstack.streams.Stream;
+
+import java.util.stream.Stream;
+
+import static java.util.stream.Collectors.toList;
 
 import org.apache.commons.cli.*;
 
@@ -40,7 +43,7 @@ public class Main {
 
     static void lexicalAnalyzer(Stream<AnnotatedString> input, LexicalAnalyzer analyzer) {
         Stream<AnnotatedChart> sentenceStream = analyzer.tokenize(input);
-        for (AnnotatedChart sentence : sentenceStream) {
+        for (AnnotatedChart sentence : sentenceStream.collect(toList())) {
             System.out.println(sentence.toString());
         }
     }
@@ -48,7 +51,7 @@ public class Main {
     static void syntacticAnalyzer(Stream<AnnotatedString> input, LexicalAnalyzer lexicalAnalyzer, SyntacticAnalyzer syntacticAnalyzer) {
         Stream<AnnotatedChart> sentenceStream = lexicalAnalyzer.tokenize(input);
         Stream<AnnotatedChart> chartStream = syntacticAnalyzer.parse(sentenceStream);
-        for (AnnotatedChart chart : chartStream) {
+        for (AnnotatedChart chart : chartStream.collect(toList())) {
             System.out.println(chart.toString());
         }
     }
