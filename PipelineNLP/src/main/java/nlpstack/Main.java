@@ -1,35 +1,60 @@
 package nlpstack;
 
-import nlpstack.analyzers.LexicalAnalyzer;
-import nlpstack.analyzers.SemanticAnalyzer;
-import nlpstack.analyzers.SyntacticAnalyzer;
-import nlpstack.annotations.AnnotatedChart;
-import nlpstack.annotations.AnnotatedOccurrences;
-import nlpstack.annotations.AnnotatedString;
+import nlpstack.analyzers.*;
+import nlpstack.annotations.*;
 import nlpstack.streams.Stream;
+
+import org.apache.commons.cli.*;
 
 public class Main {
     public static void main(String[] args) {
+        Options cliInterface = setupCliInterface();
+        CommandLineParser parser = new DefaultParser();
 
+        try {
+            CommandLine commandLine = parser.parse(cliInterface, args);
+
+            if (commandLine.hasOption("help")) {
+                HelpFormatter formatter = new HelpFormatter();
+                formatter.printHelp("nlpstack", cliInterface);
+            }
+
+        } catch (ParseException exp) {
+            System.out.println("Unexpected exception:" + exp.getMessage());
+        }
     }
 
-    public static void lexicalAnalyzer(Stream<AnnotatedString> input, LexicalAnalyzer analyzer) {
+    static Options setupCliInterface() {
+        Options cliInterface = new Options();
+
+        OptionGroup mainCommande = new OptionGroup();
+        mainCommande.addOption(new Option("lexical", "reads a file or stdin and outputs the tokenized sentences in charts"));
+        mainCommande.addOption(new Option("syntactic", "reads a file or stdin and outputs the syntactic trees of the sentences"));
+        mainCommande.addOption(new Option("semantic", "reads a file or stdin and outputs the occurrences"));
+
+        cliInterface.addOptionGroup(mainCommande);
+        cliInterface.addOption("help", "prints the arguments");
+
+        return cliInterface;
+    }
+
+    static void lexicalAnalyzer(Stream<AnnotatedString> input, LexicalAnalyzer analyzer) {
         Stream<AnnotatedChart> sentenceStream = analyzer.tokenize(input);
-        for(AnnotatedChart sentence : sentenceStream) {
+        for (AnnotatedChart sentence : sentenceStream) {
             System.out.println(sentence.toString());
         }
     }
 
-    public static void syntacticAnalyzer(Stream<AnnotatedString> input, LexicalAnalyzer lexicalAnalyzer, SyntacticAnalyzer syntacticAnalyzer) {
+    static void syntacticAnalyzer(Stream<AnnotatedString> input, LexicalAnalyzer lexicalAnalyzer, SyntacticAnalyzer syntacticAnalyzer) {
         Stream<AnnotatedChart> sentenceStream = lexicalAnalyzer.tokenize(input);
         Stream<AnnotatedChart> chartStream = syntacticAnalyzer.parse(sentenceStream);
-        for(AnnotatedChart chart : chartStream) {
+        for (AnnotatedChart chart : chartStream) {
             System.out.println(chart.toString());
         }
     }
 
-    public static void semanticAnalyzer(Stream<AnnotatedString> input, LexicalAnalyzer lexicalAnalyzer,
-                                        SyntacticAnalyzer syntacticAnalyzer, SemanticAnalyzer semanticAnalyzer) {
+    static void semanticAnalyzer(Stream<AnnotatedString> input, LexicalAnalyzer lexicalAnalyzer,
+                                 SyntacticAnalyzer syntacticAnalyzer, SemanticAnalyzer semanticAnalyzer) {
         Stream<AnnotatedChart> sentenceStream = lexicalAnalyzer.tokenize(input);
         Stream<AnnotatedChart> chartStream = syntacticAnalyzer.parse(sentenceStream);
         AnnotatedOccurrences occurrences = semanticAnalyzer.findOccurrences(chartStream);
