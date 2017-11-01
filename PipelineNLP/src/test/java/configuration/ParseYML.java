@@ -6,10 +6,11 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import implementations.conffile.ConfFile;
 import org.junit.Test;
 
+import static org.junit.Assert.assertEquals;
+
 import java.io.File;
 import java.io.IOException;
 
-import static org.junit.Assert.assertEquals;
 
 public class ParseYML {
     @Test
