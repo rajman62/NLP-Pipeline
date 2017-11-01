@@ -1,0 +1,8 @@
+lexicalConf:
+  wordFSAPath: word/fsa
+  separatorFSAPath: separator/fsa
+  EMORBinPath: morphological/analyzer
+  EMORConfPath: morphological/path
+
+syntacticConf:
+  syntacticTreesPath: trees/path
