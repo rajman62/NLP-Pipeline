@@ -1,99 +1,90 @@
 package implementations.filereaders;
 
+import implementations.filereaders.conlluobjects.ConlluIterator;
 import implementations.filereaders.conlluobjects.Sentence;
 import implementations.filereaders.conlluobjects.Word;
 
-import java.io.BufferedReader;
 import java.io.FileNotFoundException;
-import java.io.FileReader;
-import java.io.IOException;
+import java.util.HashSet;
 import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+import java.util.Set;
 
+public class ConlluReader implements Iterable<Sentence> {
+    private String path;
 
-public class ConlluReader implements Iterator<Sentence> {
-    private BufferedReader file;
-    private String filePath;
-    private Integer lineNumber;
+    private boolean statsCalculated = false;
+    private int nbSentences = 0;
+    private int nbForm = 0;
+    private int nbLemmas = 0;
+    private Set<String> xtags;
+    private Set<String> utags;
 
-    private Pattern ignoreLine = Pattern.compile("(#.*)|(\\s*)");
-    private Pattern beginningOfSentence = Pattern.compile("1.*");
-    private Pattern optionalSentenceString = Pattern.compile("# text = (.*)");
-    private Pattern endOfSentence = Pattern.compile("\\s*");
-
-    private Sentence nextSentence;
-
-    public ConlluReader(String path) throws FileNotFoundException {
-        file = new BufferedReader(new FileReader(path));
-        filePath = path;
-        lineNumber = 1;
-        nextSentence = null;
+    public ConlluReader(String path) {
+        this.path = path;
     }
 
-    private Sentence getNextSentence() throws IOException {
-        String line = file.readLine();
-        String sentenceString = null;
-        List<Word> wordList = new LinkedList<>();
+    public void calculateStats() {
+        if (statsCalculated)
+            return;
 
-        while (!beginningOfSentence.matcher(line).matches()) {
+        statsCalculated = true;
+        HashSet<String> wordSet = new HashSet<>();
+        HashSet<String> lemmaSet = new HashSet<>();
+        xtags = new HashSet<>();
+        utags = new HashSet<>();
 
-            if (!ignoreLine.matcher(line).matches())
-                throw new IllegalArgumentException(
-                        "Unparsable line in " + filePath + " on line " + lineNumber.toString() + ": " + line);
-
-            Matcher optionalSentenceString = this.optionalSentenceString.matcher(line);
-            if (optionalSentenceString.matches())
-                sentenceString = optionalSentenceString.group(1);
-
-            line = file.readLine();
-            lineNumber += 1;
-
-            if(line == null)
-                return null;
-        }
-
-        while (line != null && !endOfSentence.matcher(line).matches()) {
-            try {
-                wordList.add(Word.parse(line));
-            } catch (IllegalArgumentException e) {
-                throw new IllegalArgumentException(
-                        "Unparsable line in " + filePath + " on line " + lineNumber.toString() + ": " + line);
+        for (Sentence sent : this) {
+            nbSentences += 1;
+            for (Word word : sent) {
+                wordSet.add(word.form);
+                lemmaSet.add(word.lemma);
+                xtags.add(word.xpostag);
+                utags.add(word.upostag);
             }
-            line = file.readLine();
-            lineNumber += 1;
         }
 
-        return new Sentence(wordList, sentenceString);
+        nbForm = wordSet.size();
+        nbLemmas = lemmaSet.size();
+    }
+
+    private void checkStatsHaveBeenCalculated() {
+        if (!statsCalculated) {
+            throw new IllegalStateException(
+                    "calculateStats should be called before stats are retrieved from ConlluReader");
+        }
+    }
+
+    public int getNbSentences() {
+        checkStatsHaveBeenCalculated();
+        return nbSentences;
+    }
+
+    public int getNbForms() {
+        checkStatsHaveBeenCalculated();
+        return nbForm;
+    }
+
+    public int getNbLemmas() {
+        checkStatsHaveBeenCalculated();
+        return nbLemmas;
+    }
+
+    public Set<String> getUPostTags() {
+        checkStatsHaveBeenCalculated();
+        return new HashSet<>(utags);
+    }
+
+    public Set<String> getXPostTags() {
+        checkStatsHaveBeenCalculated();
+        return new HashSet<>(xtags);
     }
 
     @Override
-    public boolean hasNext() {
-        if (nextSentence == null)
-            try {
-                nextSentence = getNextSentence();
-            } catch (IOException e) {
-                e.printStackTrace();
-                System.exit(-1);
-            }
-
-        return nextSentence != null;
-    }
-
-    @Override
-    public Sentence next() {
-        if(nextSentence != null) {
-            Sentence out = nextSentence;
-            nextSentence = null;
-            return out;
-        }
-
+    public Iterator<Sentence> iterator() {
         try {
-            return getNextSentence();
-        } catch (IOException e) {
-            e.printStackTrace();
+            return new ConlluIterator(path);
+        } catch (FileNotFoundException e) {
+            System.out.println(e.getMessage());
             System.exit(-1);
         }
         return null;
