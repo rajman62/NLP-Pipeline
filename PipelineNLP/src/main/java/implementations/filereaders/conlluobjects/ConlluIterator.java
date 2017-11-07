@@ -68,7 +68,12 @@ public class ConlluIterator implements Iterator<Sentence> {
             lineNumber += 1;
         }
 
-        return new Sentence(wordList, sentenceString);
+        try {
+            return new Sentence(wordList, sentenceString);
+        } catch (IllegalArgumentException e) {
+            throw new IllegalArgumentException(
+                    "Unparsable line in " + filePath + " on line " + lineNumber.toString() + ": " + e.getMessage());
+        }
     }
 
     @Override
