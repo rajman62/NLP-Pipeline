@@ -73,5 +73,12 @@
             <artifactId>probabilistic-earley-parser</artifactId>
             <version>0.9.12</version>
         </dependency>
+
+        <!-- java tree library -->
+        <dependency>
+            <groupId>com.scalified</groupId>
+            <artifactId>tree</artifactId>
+            <version>0.2.5</version>
+        </dependency>
     </dependencies>
 </project>

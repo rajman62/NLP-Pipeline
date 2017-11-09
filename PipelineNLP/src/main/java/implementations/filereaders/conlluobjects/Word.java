@@ -81,4 +81,9 @@ public class Word {
 
         return out;
     }
+
+    @Override
+    public String toString() {
+        return String.format("%d %s (%s<%s>), head: %d", id, form, lemma, upostag, head);
+    }
 }

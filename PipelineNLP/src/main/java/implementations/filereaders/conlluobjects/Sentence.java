@@ -1,6 +1,8 @@
 package implementations.filereaders.conlluobjects;
 
 import com.scalified.tree.TreeNode;
+import com.scalified.tree.multinode.ArrayMultiTreeNode;
+import com.scalified.tree.multinode.LinkedMultiTreeNode;
 
 import java.util.*;
 
@@ -9,6 +11,7 @@ public class Sentence implements Iterable<Word> {
     private String sentence;
     private Integer sentenceLength = 0;
     private HashMap<Integer, Word> idToWordMapping;
+    private LinkedMultiTreeNode<Word> parseTree;
 
     public Sentence(List<Word> words, String sentence) {
         this.sentence = sentence;
@@ -21,6 +24,12 @@ public class Sentence implements Iterable<Word> {
                 sentenceLength += 1;
                 idToWordMapping.put(w.id, w);
             }
+        }
+
+        parseTree = generateTree();
+
+        if (sentenceLength != parseTree.size()) {
+            throw new IllegalArgumentException("Incomplete parsing tree, some nodes are missing.");
         }
     }
 
@@ -62,6 +71,41 @@ public class Sentence implements Iterable<Word> {
         }
 
         return words;
+    }
+
+    private LinkedMultiTreeNode<Word> generateTree() {
+        HashMap<Integer, LinkedMultiTreeNode<Word>> integerToNode = new HashMap<>((int)(((float)length()/0.75f))+1);
+        for (Word w : this) {
+            integerToNode.put(w.id, new LinkedMultiTreeNode<Word>(w));
+        }
+
+        LinkedMultiTreeNode<Word> root = null;
+
+        // we need to traverse the list in order, otherwise words might appear in the wrong order in the final tree
+        for (Word w : wordList) {
+            if (w.id == null || w.head == null)
+                continue;
+
+            if (w.head.equals(0)) {
+                root = integerToNode.get(w.id);
+                continue;
+            }
+
+            integerToNode.get(w.head).add(integerToNode.get(w.id));
+        }
+
+        if (root == null)
+            throw new IllegalArgumentException("Word with head = 0 is missing");
+
+        return root;
+    }
+
+    private String generateSentence() {
+        return null;
+    }
+
+    public TreeNode<Word> getTree(){
+        return parseTree;
     }
 
     public int length() {

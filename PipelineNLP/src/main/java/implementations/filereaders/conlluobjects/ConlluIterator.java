@@ -72,7 +72,7 @@ public class ConlluIterator implements Iterator<Sentence> {
             return new Sentence(wordList, sentenceString);
         } catch (IllegalArgumentException e) {
             throw new IllegalArgumentException(
-                    "Unparsable line in " + filePath + " on line " + lineNumber.toString() + ": " + e.getMessage());
+                    "Unparsable sentence in " + filePath + " on line " + lineNumber.toString() + ": " + e.getMessage());
         }
     }
 

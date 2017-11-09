@@ -1,5 +1,6 @@
 package filereaders;
 
+import com.scalified.tree.TreeNode;
 import implementations.filereaders.ConlluReader;
 import implementations.filereaders.conlluobjects.ConlluIterator;
 import implementations.filereaders.conlluobjects.Sentence;
@@ -105,5 +106,15 @@ public class ReadCoNLLU {
         assertEquals(null, sent2.getMultiTokenWordList().get(3).id);
         assertEquals((Integer) 2, sent2.getMultiTokenWordList().get(2).multiTokenHead);
         assertEquals((Integer) 2, sent2.getMultiTokenWordList().get(3).multiTokenHead);
+    }
+
+    @Test
+    public void extractTree() {
+        ConlluReader reader = new ConlluReader(TEST_PATH + "conllu_example.conllu");
+        Iterator<Sentence> iterator = reader.iterator();
+        Sentence sent1 = iterator.next();
+        sent1 = iterator.next();
+        TreeNode<Word> tree = sent1.getTree();
+        System.out.println(tree.toString());
     }
 }
