@@ -8,6 +8,7 @@ import java.util.stream.Stream;
 
 import static java.util.stream.Collectors.toList;
 
+import nlpstack.communication.Occurences;
 import org.apache.commons.cli.*;
 
 public class Main {
@@ -59,26 +60,26 @@ public class Main {
         return cliInterface;
     }
 
-    static void lexicalAnalyzer(Stream<AnnotatedString> input, LexicalAnalyzer analyzer) {
-        Stream<AnnotatedChart> sentenceStream = analyzer.tokenize(input);
-        for (AnnotatedChart sentence : sentenceStream.collect(toList())) {
+    static void lexicalAnalyzer(Stream<StringWithAnnotations> input, LexicalAnalyzer analyzer) {
+        Stream<LexicalChart> sentenceStream = analyzer.tokenize(input);
+        for (LexicalChart sentence : sentenceStream.collect(toList())) {
             System.out.println(sentence.toString());
         }
     }
 
-    static void syntacticAnalyzer(Stream<AnnotatedString> input, LexicalAnalyzer lexicalAnalyzer, SyntacticAnalyzer syntacticAnalyzer) {
-        Stream<AnnotatedChart> sentenceStream = lexicalAnalyzer.tokenize(input);
-        Stream<AnnotatedChart> chartStream = syntacticAnalyzer.parse(sentenceStream);
-        for (AnnotatedChart chart : chartStream.collect(toList())) {
+    static void syntacticAnalyzer(Stream<StringWithAnnotations> input, LexicalAnalyzer lexicalAnalyzer, SyntacticAnalyzer syntacticAnalyzer) {
+        Stream<LexicalChart> sentenceStream = lexicalAnalyzer.tokenize(input);
+        Stream<SyntacticChart> chartStream = syntacticAnalyzer.parse(sentenceStream);
+        for (SyntacticChart chart : chartStream.collect(toList())) {
             System.out.println(chart.toString());
         }
     }
 
-    static void semanticAnalyzer(Stream<AnnotatedString> input, LexicalAnalyzer lexicalAnalyzer,
+    static void semanticAnalyzer(Stream<StringWithAnnotations> input, LexicalAnalyzer lexicalAnalyzer,
                                  SyntacticAnalyzer syntacticAnalyzer, SemanticAnalyzer semanticAnalyzer) {
-        Stream<AnnotatedChart> sentenceStream = lexicalAnalyzer.tokenize(input);
-        Stream<AnnotatedChart> chartStream = syntacticAnalyzer.parse(sentenceStream);
-        AnnotatedOccurrences occurrences = semanticAnalyzer.findOccurrences(chartStream);
+        Stream<LexicalChart> sentenceStream = lexicalAnalyzer.tokenize(input);
+        Stream<SyntacticChart> chartStream = syntacticAnalyzer.parse(sentenceStream);
+        Occurences occurrences = semanticAnalyzer.findOccurrences(chartStream);
         System.out.println(occurrences.toString());
     }
 }

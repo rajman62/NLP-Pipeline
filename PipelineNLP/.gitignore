@@ -6,3 +6,6 @@
 out/
 target/
 conf/
+gen/
+
+src/test/java/filereaders/word_fsa_example.ser

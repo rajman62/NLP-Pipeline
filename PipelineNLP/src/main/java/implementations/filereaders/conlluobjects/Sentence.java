@@ -42,6 +42,7 @@ public class Sentence implements Iterable<Word> {
      * @return the list of words with id and multiTokenHead filled in properly
      */
     private ArrayList<Word> sanitize(List<Word> input) {
+        // TODO: check that tokens are in the correct order (increasing ids), otherwise parsed tree will be wrong
         ArrayList<Word> words = new ArrayList<>(input);
         int i = 0;
         while (i < words.size()) {
@@ -76,7 +77,7 @@ public class Sentence implements Iterable<Word> {
     private LinkedMultiTreeNode<Word> generateTree() {
         HashMap<Integer, LinkedMultiTreeNode<Word>> integerToNode = new HashMap<>((int)(((float)length()/0.75f))+1);
         for (Word w : this) {
-            integerToNode.put(w.id, new LinkedMultiTreeNode<Word>(w));
+            integerToNode.put(w.id, new LinkedMultiTreeNode<>(w));
         }
 
         LinkedMultiTreeNode<Word> root = null;
@@ -101,6 +102,7 @@ public class Sentence implements Iterable<Word> {
     }
 
     private String generateSentence() {
+        // TODO: check that parsed sentence corresponds to the commented sentence.
         return null;
     }
 

@@ -4,12 +4,13 @@ import dk.brics.automaton.Automaton;
 import implementations.conffile.LexicalConf;
 import implementations.filereaders.FSALoader;
 import nlpstack.analyzers.LexicalAnalyzer;
-import nlpstack.annotations.AnnotatedChart;
-import nlpstack.annotations.AnnotatedString;
+import nlpstack.annotations.LexicalChart;
+import nlpstack.annotations.StringSegment;
 
+import java.util.List;
 import java.util.stream.Stream;
 
-public class DefaultLexicalAnalyzer implements LexicalAnalyzer {
+public class DefaultLexicalAnalyzer extends LexicalAnalyzer {
     private Automaton wordFSA;
     private Automaton separatorFSA;
     private FSALoader fsaLoader = new FSALoader();
@@ -20,7 +21,7 @@ public class DefaultLexicalAnalyzer implements LexicalAnalyzer {
     }
 
     @Override
-    public Stream<AnnotatedChart> tokenize(Stream<AnnotatedString> input) {
+    public Stream<LexicalChart> apply(List<StringSegment> stringSegments) {
         return null;
     }
 }

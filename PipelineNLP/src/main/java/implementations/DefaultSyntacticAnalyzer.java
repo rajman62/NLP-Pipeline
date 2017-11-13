@@ -2,17 +2,18 @@ package implementations;
 
 import implementations.conffile.SyntacticConf;
 import nlpstack.analyzers.SyntacticAnalyzer;
-import nlpstack.annotations.AnnotatedChart;
+import nlpstack.annotations.LexicalChart;
+import nlpstack.annotations.SyntacticChart;
+import nlpstack.communication.Chart;
+import nlpstack.communication.Occurences;
 
-import java.util.stream.Stream;
-
-public class DefaultSyntacticAnalyzer implements SyntacticAnalyzer {
+public class DefaultSyntacticAnalyzer extends SyntacticAnalyzer {
     public DefaultSyntacticAnalyzer(SyntacticConf conf) {
 
     }
 
     @Override
-    public Stream<AnnotatedChart> parse(Stream<AnnotatedChart> input) {
+    public SyntacticChart apply(LexicalChart lexicalChart) {
         return null;
     }
 }

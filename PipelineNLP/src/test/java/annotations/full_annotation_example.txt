@@ -1,0 +1,7 @@
+This is an example annotation with #["annotated", "V"] words.
+Annotation can also contain full lexical and syntactic charts for sentences:
+#[syn:
+    (a)            (chart) :
+    (1, 1, "DET") (1, 2, "N")
+    (2, 1, "NP")
+]

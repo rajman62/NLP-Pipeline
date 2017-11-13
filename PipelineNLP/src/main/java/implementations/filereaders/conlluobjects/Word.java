@@ -30,6 +30,7 @@ public class Word {
     public String deps;
     public String misc;
 
+    // @formatter:off
     private static Pattern linePattern = Pattern.compile(
             "("
                     + "(?<idint>\\d+)|"
@@ -46,6 +47,7 @@ public class Word {
             + "(?<deps>[^\\s]+)\\s+"
             + "(?<misc>[^\\s]+)\\s*"
     );
+    // @formatter:on
 
     public static Word parse(String line) {
         Word out = new Word();
