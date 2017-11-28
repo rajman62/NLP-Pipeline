@@ -1,10 +1,12 @@
 # this is a comment
-# simple words:
+# simple word:
 hello
-world
 
 # email address
 [a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}
 
 # explicit invisible characters with '<>':
 < t >
+
+# without '<>', front and back spaces are trimmed. The next line just adds 'world' to the lexicon:
+    world

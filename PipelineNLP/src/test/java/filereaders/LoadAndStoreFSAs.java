@@ -15,6 +15,7 @@ public class LoadAndStoreFSAs {
         FSALoader fsaLoader = new FSALoader();
         Automaton fsa = fsaLoader.loadFromFile(TEST_PATH + "word_fsa_example.txt");
         assertEquals(false, fsa.run("wo"));
+        assertEquals(true, fsa.run("hello"));
         assertEquals(true, fsa.run("world"));
         assertEquals(true, fsa.run("john.doe@mail.com"));
         assertEquals(true, fsa.run(" t "));

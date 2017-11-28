@@ -57,7 +57,7 @@ public class FSALoader {
                 if (reg.matches())
                     regexList.add(new RegExp(reg.group(1)));
                 else
-                    regexList.add(new RegExp(line));
+                    regexList.add(new RegExp(line.trim()));
             } catch (IllegalArgumentException exp) {
                 throw new IllegalArgumentException("In file " + path + " line " + lineNumber + ": " + exp.getMessage());
             }

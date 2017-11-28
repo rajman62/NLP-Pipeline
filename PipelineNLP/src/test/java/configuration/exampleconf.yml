@@ -1,8 +1,9 @@
 lexicalConf:
   wordFSAPath: word/fsa
   separatorFSAPath: separator/fsa
-  EMORBinPath: morphological/analyzer
-  EMORConfPath: morphological/path
+  eosSeparatorFSAPath: separator/eof
+  FomaBinPath: morphological/analyzer
+  FomaConfPath: morphological/path
 
 syntacticConf:
   syntacticTreesPath: trees/path

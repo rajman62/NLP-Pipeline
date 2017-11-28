@@ -2,14 +2,14 @@
 # simple words:
 hello
 world
-
-# email address
-[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}
-
-# explicit invisible characters with '<>':
-< t >
+Smith
+is
+data
 
 # word overlap to test DefaultSyntacticAnalyzer.runAutomaton
 process
 processing
 processes
+
+# word containing a separator to test the tokenizer algorithm
+Mr.
