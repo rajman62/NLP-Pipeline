@@ -1,0 +1,6 @@
+lexicalConf:
+  wordFSAPath: src/test/java/lexicalanalyzer/word_fsa_example.txt
+  separatorFSAPath: src/test/java/lexicalanalyzer/sep_fsa_example.txt
+  eosSeparatorFSAPath: src/test/java/lexicalanalyzer/eos_fsa_example.txt
+  FomaBinPath: ../Morphology/foma-0.9.18_win32/win32/foma.exe
+  FomaConfPath: src/test/java/lexicalanalyzer/example.lexec

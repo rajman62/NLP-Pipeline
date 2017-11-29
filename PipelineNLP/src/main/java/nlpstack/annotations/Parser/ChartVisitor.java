@@ -22,15 +22,9 @@ public class ChartVisitor extends AnnotationParserBaseVisitor<Chart>{
             );
         }
 
-        int n = tokensCtx.size();
-        List<List<Multiset<String>>> chart = new ArrayList<>(n);
-        for (int i = 0 ; i < n ; i++) {
-            chart.add(i, new ArrayList<>(n-i));
-            for(int j = 0 ; j < n-i ; j++)
-                chart.get(i).add(j, HashMultiset.create());
-        }
 
-        Chart out = new Chart(tokenStrings, chart);
+
+        Chart out = Chart.getEmptyChart(tokenStrings);
 
         for(AnnotationParserParser.ChartTagContext tag : chartTagsCtx) {
             out.addRule(Integer.parseInt(tag.number(0).getText()),

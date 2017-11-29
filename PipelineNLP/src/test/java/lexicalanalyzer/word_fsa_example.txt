@@ -12,4 +12,6 @@ processing
 processes
 
 # word containing a separator to test the tokenizer algorithm
-Mr.
+Mr\.
+M
+M\.

@@ -16,9 +16,13 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 public class LoadAndStoreGrammars {
+    private Grammar<String> grammar = Grammar.parse(Paths.get("src/test/java/filereaders/grammar_example.cfg"), Charset.forName("UTF-8"));
+
+    public LoadAndStoreGrammars() throws IOException {
+    }
+
     @Test
     public void loadGrammar() throws IOException {
-        Grammar<String> grammar = Grammar.parse(Paths.get("src/test/java/filereaders/grammar_example.cfg"), Charset.forName("UTF-8"));
         Parser<String> parser = new Parser<>(grammar);
         NonTerminal S = Category.nonTerminal("S");
         assertTrue(parser.recognize(S, Tokens.tokenize("the heavy heave")) > 0);
@@ -26,7 +30,6 @@ public class LoadAndStoreGrammars {
 
     @Test(expected = TokenNotInLexiconException.class)
     public void missingTerminal() throws IOException {
-        Grammar<String> grammar = Grammar.parse(Paths.get("src/test/java/filereaders/grammar_example.cfg"), Charset.forName("UTF-8"));
         Parser<String> parser = new Parser<>(grammar);
         NonTerminal S = Category.nonTerminal("S");
         parser.recognize(S, Tokens.tokenize("the man heavy heave"));
@@ -34,7 +37,6 @@ public class LoadAndStoreGrammars {
 
     @Test(expected = RuntimeException.class)
     public void noParseTree() throws IOException {
-        Grammar<String> grammar = Grammar.parse(Paths.get("src/test/java/filereaders/grammar_example.cfg"), Charset.forName("UTF-8"));
         Parser<String> parser = new Parser<>(grammar);
         NonTerminal S = Category.nonTerminal("S");
         assertEquals(0.0, parser.recognize(S, Tokens.tokenize("heavy the heavy heave")), 0.001);
