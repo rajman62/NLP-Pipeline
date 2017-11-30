@@ -83,6 +83,7 @@ public class DefaultLexicalAnalyzer extends LexicalAnalyzer {
     /**
      * An arc is a space in the string that can be accepted by one of the automatons (wordFSA, separatorFSA, eosSeparatorFSA)
      * They are characterised by a start and a end position in the input string
+     *
      * @param input String to extract arcs from
      * @return a list of arcs
      */
@@ -149,19 +150,23 @@ public class DefaultLexicalAnalyzer extends LexicalAnalyzer {
      * tokenize uses the arcs calculated in getArcs to return a list of sentences. Each sentence is a list of string,
      * where each string is either a separator, an eos, or a part of a token (wordFsa). These unit serve as the basis
      * for the chart
+     *
+     * @param arcsInInput the output of the getArcs function
+     * @param input       the string to apply tokenization on
+     * @return the tokenized input
      */
-    public List<List<String>> tokenize(List<Set<Arc>> out, String input) {
+    public List<List<String>> tokenize(List<Set<Arc>> arcsInInput, String input) {
         // buffer storing the position where tokens can be extracted
-        boolean[] cut = new boolean[out.size() - 1];
+        boolean[] cut = new boolean[arcsInInput.size() - 1];
 
         // buffer storing where eos are
         // no arcs should jump over an eos, in that case we have an ambiguity
-        boolean[] eos = new boolean[out.size()];
+        boolean[] eos = new boolean[arcsInInput.size()];
 
         // filling in cut and eos
-        for (Set<Arc> set : out) {
+        for (Set<Arc> set : arcsInInput) {
             for (Arc arc : set) {
-                if (arc.getEnd() < out.size() - 1)
+                if (arc.getEnd() < arcsInInput.size() - 1)
                     cut[arc.getEnd()] = true;
 
                 if (arc.getType().equals(Arc.Type.ENDSEP))
@@ -171,7 +176,7 @@ public class DefaultLexicalAnalyzer extends LexicalAnalyzer {
         }
 
         // filtering out unsafe eos
-        for (Set<Arc> set : out) {
+        for (Set<Arc> set : arcsInInput) {
             for (Arc arc : set) {
                 if (!arc.getType().equals(Arc.Type.ENDSEP))
                     for (int i = arc.getStart(); i <= arc.getEnd(); i++)
@@ -185,7 +190,7 @@ public class DefaultLexicalAnalyzer extends LexicalAnalyzer {
         int start = 0;
         int i = 0;
 
-        while (i < out.size()) {
+        while (i < arcsInInput.size()) {
             if (eos[i]) {
                 i++;
                 while (i < eos.length && eos[i])
@@ -206,12 +211,18 @@ public class DefaultLexicalAnalyzer extends LexicalAnalyzer {
         return subTokensList;
     }
 
-
-    public List<Chart> getCharts(List<Set<Arc>> arcsInInput, String input) throws IOException {
-        List<List<String>> tokensList = tokenize(arcsInInput, input);
+    /**
+     * Using the output of get arcs and the tokenizer, this function uses foma to fill in charts
+     *
+     * @param arcsInInput output of getArcs
+     * @param tokensList output of tokenize
+     * @param input the input string
+     * @return list of charts that can be passed later to a CFG parser
+     */
+    public List<Chart> getCharts(List<Set<Arc>> arcsInInput, List<List<String>> tokensList, String input) throws IOException {
         int inputPosition = 0;
 
-        // tokenPositions indicates to us where we can ignore tokens
+        // tokenPositions indicates where we can ignore tokens
         boolean tokenPositions[] = new boolean[arcsInInput.size()];
         for (List<String> s : tokensList) {
             for (String token : s) {
@@ -236,14 +247,12 @@ public class DefaultLexicalAnalyzer extends LexicalAnalyzer {
             for (String token : s) {
                 if (tokenPositions[inputPosition]) {
                     for (Arc arc : arcsInInput.get(inputPosition)) {
-                        if (arc.getType().equals(Arc.Type.TOKEN)) {
-                            mappingToStartPos.put(arc, tokenPos);
+                        mappingToStartPos.put(arc, tokenPos);
 
-                            if (!bufferGetLength.containsKey(arc.getEnd() + 1))
-                                bufferGetLength.put(arc.getEnd() + 1, new HashSet<>());
+                        if (!bufferGetLength.containsKey(arc.getEnd() + 1))
+                            bufferGetLength.put(arc.getEnd() + 1, new HashSet<>());
 
-                            bufferGetLength.get(arc.getEnd() + 1).add(Pair.of(arc, tokenPos));
-                        }
+                        bufferGetLength.get(arc.getEnd() + 1).add(Pair.of(arc, tokenPos));
                     }
                     tokenPos += 1;
                 }
@@ -268,7 +277,7 @@ public class DefaultLexicalAnalyzer extends LexicalAnalyzer {
             List<String> sCopy = new ArrayList<>(s);
             int position2 = inputPosition;
             Iterator<String> it = sCopy.iterator();
-            while(it.hasNext()){
+            while (it.hasNext()) {
                 String next = it.next();
                 if (!tokenPositions[position2])
                     it.remove();
@@ -277,8 +286,8 @@ public class DefaultLexicalAnalyzer extends LexicalAnalyzer {
             Chart chart = Chart.getEmptyChart(sCopy);
 
             for (String token : s) {
-                for (Arc arc : arcsInInput.get(inputPosition)) {
-                    if (arc.getType().equals(Arc.Type.TOKEN)) {
+                if (tokenPositions[inputPosition]) {
+                    for (Arc arc : arcsInInput.get(inputPosition)) {
                         List<String> possibleTags = foma.applyUp(arc.getString());
                         if (possibleTags.size() > 0)
                             for (String tag : possibleTags)
@@ -297,6 +306,7 @@ public class DefaultLexicalAnalyzer extends LexicalAnalyzer {
     }
 
     public List<Chart> getCharts(String input) throws IOException {
-        return getCharts(getArcs(input), input);
+        List<Set<Arc>> arcsInInput = getArcs(input);
+        return getCharts(arcsInInput, tokenize(arcsInInput, input), input);
     }
 }
