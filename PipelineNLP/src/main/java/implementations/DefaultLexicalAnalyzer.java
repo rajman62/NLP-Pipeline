@@ -1,5 +1,6 @@
 package implementations;
 
+import com.google.common.collect.Multiset;
 import dk.brics.automaton.Automaton;
 import dk.brics.automaton.State;
 import implementations.conffile.LexicalConf;
@@ -11,29 +12,46 @@ import nlpstack.analyzers.ReservedTags;
 import nlpstack.annotations.LexicalChart;
 import nlpstack.annotations.StringSegment;
 import nlpstack.communication.Chart;
+import nlpstack.communication.ErrorLogger;
 import org.apache.commons.lang3.tuple.Pair;
+import org.apache.commons.lang3.tuple.Triple;
 
 import java.io.IOException;
 import java.util.*;
 import java.util.stream.Stream;
+
+import static java.util.stream.Collectors.toList;
 
 public class DefaultLexicalAnalyzer extends LexicalAnalyzer {
     private Automaton wordFSA;
     private Automaton separatorFSA;
     private Automaton eosSeparatorFSA;
     private FomaWrapper foma;
+    private ErrorLogger errorLogger;
 
-    public DefaultLexicalAnalyzer(LexicalConf conf) throws Exception {
+    // enum used in getCharts(List<StringSegment> input)
+    private enum LastSegmentType {
+        END, MIDDLE
+    }
+
+
+    public DefaultLexicalAnalyzer(LexicalConf conf, ErrorLogger errorLogger) throws Exception {
         FSALoader fsaLoader = new FSALoader();
         wordFSA = fsaLoader.loadFromFile(conf.wordFSAPath);
         separatorFSA = fsaLoader.loadFromFile(conf.separatorFSAPath);
         eosSeparatorFSA = fsaLoader.loadFromFile(conf.eosSeparatorFSAPath);
         foma = new FomaWrapper(conf.FomaBinPath, conf.FomaConfPath);
+        this.errorLogger = errorLogger;
     }
 
     @Override
     public Stream<LexicalChart> apply(List<StringSegment> stringSegments) {
-        return null;
+        try {
+            return getCharts(stringSegments).stream().map(LexicalChart::fromChart);
+        } catch (IOException e) {
+            e.printStackTrace();
+            return Stream.empty();
+        }
     }
 
     /**
@@ -110,8 +128,6 @@ public class DefaultLexicalAnalyzer extends LexicalAnalyzer {
             processedPositions.add(stack.pop());
         }
 
-        filterImpossibleTokenization(out);
-
         return out;
     }
 
@@ -140,8 +156,8 @@ public class DefaultLexicalAnalyzer extends LexicalAnalyzer {
      * Any arc that points to a position where no other arcs exist cannot make a valid tokenization later, so we filter
      * them out.
      */
-    private void filterImpossibleTokenization(List<Set<Arc>> out) {
-        for (int i = out.size() - 2; i >= 0; i--) {
+    public void filterImpossibleTokenization(List<Set<Arc>> out, Integer from) {
+        for (int i = from - 1; i >= 0; i--) {
             out.get(i).removeIf(a -> a.getEnd() + 1 < out.size() && out.get(a.getEnd() + 1).size() == 0);
         }
     }
@@ -157,7 +173,8 @@ public class DefaultLexicalAnalyzer extends LexicalAnalyzer {
      */
     public List<List<String>> tokenize(List<Set<Arc>> arcsInInput, String input) {
         // buffer storing the position where tokens can be extracted
-        boolean[] cut = new boolean[arcsInInput.size() - 1];
+        boolean[] cut = new boolean[arcsInInput.size()];
+        cut[arcsInInput.size() - 1] = true;
 
         // buffer storing where eos are
         // no arcs should jump over an eos, in that case we have an ambiguity
@@ -166,8 +183,7 @@ public class DefaultLexicalAnalyzer extends LexicalAnalyzer {
         // filling in cut and eos
         for (Set<Arc> set : arcsInInput) {
             for (Arc arc : set) {
-                if (arc.getEnd() < arcsInInput.size() - 1)
-                    cut[arc.getEnd()] = true;
+                cut[arc.getEnd()] = true;
 
                 if (arc.getType().equals(Arc.Type.ENDSEP))
                     for (int i = arc.getStart(); i <= arc.getEnd(); i++)
@@ -189,6 +205,7 @@ public class DefaultLexicalAnalyzer extends LexicalAnalyzer {
         ArrayList<String> subTokens = new ArrayList<>();
         int start = 0;
         int i = 0;
+        boolean sentenceFinished = false;
 
         while (i < arcsInInput.size()) {
             if (eos[i]) {
@@ -199,14 +216,19 @@ public class DefaultLexicalAnalyzer extends LexicalAnalyzer {
                 start = i;
                 subTokensList.add(subTokens);
                 subTokens = new ArrayList<>();
-            } else if (cut[i]) {
+                sentenceFinished = true;
+            } else if (i < cut.length && cut[i]) {
                 i++;
                 subTokens.add(input.substring(start, i));
                 start = i;
+                sentenceFinished = false;
             } else {
                 i++;
             }
         }
+
+        if (!sentenceFinished)
+            subTokensList.add(subTokens);
 
         return subTokensList;
     }
@@ -215,12 +237,15 @@ public class DefaultLexicalAnalyzer extends LexicalAnalyzer {
      * Using the output of get arcs and the tokenizer, this function uses foma to fill in charts
      *
      * @param arcsInInput output of getArcs
-     * @param tokensList output of tokenize
-     * @param input the input string
+     * @param tokensList  output of tokenize
      * @return list of charts that can be passed later to a CFG parser
+     * @throws IOException if there is a problem communicating with foma
      */
-    public List<Chart> getCharts(List<Set<Arc>> arcsInInput, List<List<String>> tokensList, String input) throws IOException {
+    public List<Chart> getCharts(List<Set<Arc>> arcsInInput, List<List<String>> tokensList, StringSegment stringSegment) throws IOException {
         int inputPosition = 0;
+
+        if (arcsInInput.size() == 0 || tokensList.size() == 0)
+            return new ArrayList<>();
 
         // tokenPositions indicates where we can ignore tokens
         boolean tokenPositions[] = new boolean[arcsInInput.size()];
@@ -288,12 +313,16 @@ public class DefaultLexicalAnalyzer extends LexicalAnalyzer {
             for (String token : s) {
                 if (tokenPositions[inputPosition]) {
                     for (Arc arc : arcsInInput.get(inputPosition)) {
-                        List<String> possibleTags = foma.applyUp(arc.getString());
-                        if (possibleTags.size() > 0)
+                        List<String> possibleTags = getTags(arc.getString());
+                        if (!possibleTags.isEmpty()) {
                             for (String tag : possibleTags)
                                 chart.addRule(mappingToLength.get(arc), mappingToStartPos.get(arc), tag);
-                        else
+                        } else {
+                            errorLogger.lexicalError(
+                                    String.format("\"%s\" not recognized by the transducer", arc.getString()),
+                                    stringSegment);
                             chart.addRule(mappingToLength.get(arc), mappingToStartPos.get(arc), ReservedTags.UNKNOWN);
+                        }
                     }
                 }
                 inputPosition += token.length();
@@ -302,11 +331,148 @@ public class DefaultLexicalAnalyzer extends LexicalAnalyzer {
             out.add(chart);
         }
 
+        // checking the last arc to see if the last chart is a complete sentence
+        Pair<Integer, Set<Arc>> p = getLastArcSet(arcsInInput);
+        Set<Arc> lastArcSet = p.getRight();
+        int lastArcPosition = p.getLeft();
+        if (lastArcSet != null
+                && lastArcSet.stream().allMatch(x -> x.getType().equals(Arc.Type.ENDSEP))
+                && !tokenPositions[lastArcPosition]) {
+            out.getLast().setCompleteSentence(true);
+        } else
+            out.getLast().setCompleteSentence(false);
+
+
         return out;
     }
 
-    public List<Chart> getCharts(String input) throws IOException {
+    private Pair<Integer, Set<Arc>> getLastArcSet(List<Set<Arc>> arcsInInput) {
+        ListIterator<Set<Arc>> li = arcsInInput.listIterator(arcsInInput.size());
+        int lastArcPosition = arcsInInput.size();
+        while (li.hasPrevious()) {
+            Set<Arc> arcs = li.previous();
+            lastArcPosition -= 1;
+            if (!arcs.isEmpty())
+                return Pair.of(lastArcPosition, arcs);
+        }
+        return Pair.of(0, null);
+    }
+
+    /**
+     * Simply executes the whole getChart pipeline (getArcs, tokenize, getCharts). Unlike the other methods, errors are
+     * logged to the ErrorLogger
+     *
+     * @param input the string to extract charts from
+     * @return list of charts that can be passed later to a CFG parser
+     * @throws IOException if there is a problem communicating with foma
+     */
+    public List<Chart> getCharts(String input, StringSegment stringSegment) throws IOException {
+        if (input.equals(""))
+            errorLogger.lexicalError("Empty StringSegment", stringSegment);
         List<Set<Arc>> arcsInInput = getArcs(input);
-        return getCharts(arcsInInput, tokenize(arcsInInput, input), input);
+        Pair<Integer, Set<Arc>> p = getLastArcSet(arcsInInput);
+        if (p.getLeft() < input.length() - 1) {
+            if (p.getLeft() == 0) {
+                errorLogger.lexicalError("No possible tokenization", stringSegment);
+                return new ArrayList<>();
+            } else {
+                errorLogger.lexicalError(
+                        String.format("Partial tokenization that stopped at position %d", p.getLeft()), stringSegment
+                );
+            }
+        }
+        filterImpossibleTokenization(arcsInInput, p.getLeft());
+        return getCharts(arcsInInput, tokenize(arcsInInput, input), stringSegment);
+    }
+
+    /**
+     * @param input the input returned by the annotation parser: the content of StringWithAnnotations
+     * @return initialized charts that can be passed later to a CFG parser
+     * @throws IOException if there is a problem communicating with foma
+     */
+    public List<Chart> getCharts(List<StringSegment> input) throws IOException {
+        LinkedList<Chart> out = new LinkedList<>();
+        LastSegmentType lastSegmentType = LastSegmentType.END;
+
+        for (StringSegment stringSegment : input) {
+            if (!stringSegment.isAnnotated()) {
+                List<Chart> charts = getCharts(stringSegment.getNoneAnnotatedString(), stringSegment);
+                charts.removeIf(x -> x.getSize() == 0);
+
+                if (!charts.isEmpty() && !out.isEmpty() && lastSegmentType.equals(LastSegmentType.MIDDLE)) {
+                    out.set(out.size() - 1, combineCharts(out.getLast(), charts.get(0)));
+                    if (charts.size() == 1) {
+                        if (charts.get(charts.size() - 1).isCompleteSentence())
+                            lastSegmentType = LastSegmentType.END;
+                        else
+                            lastSegmentType = LastSegmentType.MIDDLE;
+                    }
+                    charts.remove(0);
+                }
+
+                if (!charts.isEmpty()) {
+                    if (charts.get(charts.size() - 1).isCompleteSentence())
+                        lastSegmentType = LastSegmentType.END;
+                    else
+                        lastSegmentType = LastSegmentType.MIDDLE;
+
+                    out.addAll(charts);
+                }
+
+            } else {
+                if (!stringSegment.getAnnotatedTag().equals(ReservedTags.EOS)) {
+                    if (lastSegmentType.equals(LastSegmentType.MIDDLE)) {
+                        out.set(out.size() - 1,
+                                combineCharts(
+                                        out.get(out.size() - 1),
+                                        chartFromAnnotatedString(stringSegment.getAnnotation()))
+                        );
+                    } else {
+                        out.add(chartFromAnnotatedString(stringSegment.getAnnotation()));
+                        lastSegmentType = LastSegmentType.MIDDLE;
+                    }
+                } else
+                    lastSegmentType = LastSegmentType.END;
+            }
+        }
+
+        return out;
+    }
+
+    private Chart chartFromAnnotatedString(Pair<String, String> annotation) {
+        ArrayList<String> tokens = new ArrayList<>();
+        tokens.add(annotation.getLeft());
+        Chart chart = Chart.getEmptyChart(tokens);
+        chart.addRule(1, 1, annotation.getRight());
+        return chart;
+    }
+
+    private Chart combineCharts(Chart chart1, Chart chart2) {
+        List<String> tokens = chart1.getTokens();
+        tokens.addAll(chart2.getTokens());
+
+        Chart out = Chart.getEmptyChart(tokens);
+
+        for (Triple<Integer, Integer, Multiset<String>> el : chart1) {
+            for (String tag : el.getRight())
+                out.addRule(el.getLeft(), el.getMiddle(), tag);
+        }
+
+        int size1 = chart1.getSize();
+
+        for (Triple<Integer, Integer, Multiset<String>> el : chart2) {
+            for (String tag : el.getRight())
+                out.addRule(el.getLeft(), size1 + el.getMiddle(), tag);
+        }
+
+        return out;
+    }
+
+    private List<String> getTags(String word) throws IOException {
+        return foma.applyUp(word).stream()
+                .map(x -> {
+                    String[] list = x.split("\\+");
+                    return list[list.length - 1];
+                }).collect(toList());
     }
 }

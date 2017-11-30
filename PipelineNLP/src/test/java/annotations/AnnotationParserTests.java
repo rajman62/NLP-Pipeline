@@ -23,7 +23,7 @@ public class AnnotationParserTests {
         assertEquals(1, test.get(0).getStrings().size());
         StringSegment segment = test.get(0).getStrings().get(0);
         assertEquals(false, segment.isAnnotated());
-        assertEquals("hello world", segment.getString());
+        assertEquals("hello world", segment.getNoneAnnotatedString());
     }
 
     @Test
@@ -32,7 +32,7 @@ public class AnnotationParserTests {
         assertEquals(1, test.size());
         StringSegment segment = test.get(0).getStrings().get(0);
         assertEquals(false, segment.isAnnotated());
-        assertEquals("hello # \\ world", segment.getString());
+        assertEquals("hello # \\ world", segment.getNoneAnnotatedString());
     }
 
     @Test
@@ -87,12 +87,12 @@ public class AnnotationParserTests {
         assertEquals(2, test.size());
         List<StringSegment> segments = test.get(0).getStrings();
         assertEquals(3, segments.size());
-        assertEquals("This is an example annotation with ", segments.get(0).getString());
+        assertEquals("This is an example annotation with ", segments.get(0).getNoneAnnotatedString());
         assertEquals(Pair.of("annotated", "V"), segments.get(1).getAnnotation());
         assertEquals(
                 " words.\r\n" +
                         "Annotation can also contain full lexical and syntactic charts for sentences:\r\n",
-                segments.get(2).getString());
+                segments.get(2).getNoneAnnotatedString());
         Chart chart = test.get(1).getAnnotatedLexicalChart().getAnnotatedSyntacticChart().getChart();
         assertEquals("a", chart.getToken(1));
         assertEquals("chart", chart.getToken(2));

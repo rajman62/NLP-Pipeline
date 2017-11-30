@@ -7,6 +7,7 @@ import nlpstack.analyzers.SemanticAnalyzer;
 import nlpstack.analyzers.SyntacticAnalyzer;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import nlpstack.communication.ErrorLogger;
 
 import java.io.File;
 
@@ -19,7 +20,8 @@ public class DefaultConfiguration implements Configuration {
     public void parse(String confFilePath) throws Exception {
         ObjectMapper mapper = new ObjectMapper(new YAMLFactory());
         ConfFile conf = mapper.readValue(new File(confFilePath), ConfFile.class);
-        lexicalAnalyzer = new DefaultLexicalAnalyzer(conf.lexicalConf);
+        ErrorLogger errorLogger = new ErrorLogger();
+        lexicalAnalyzer = new DefaultLexicalAnalyzer(conf.lexicalConf, errorLogger);
         syntacticAnalyzer = new DefaultSyntacticAnalyzer(conf.syntacticConf);
     }
 

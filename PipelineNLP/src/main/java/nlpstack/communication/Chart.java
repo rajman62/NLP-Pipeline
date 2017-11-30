@@ -3,28 +3,34 @@ package nlpstack.communication;
 
 import com.google.common.collect.HashMultiset;
 import com.google.common.collect.Multiset;
+import org.apache.commons.lang3.tuple.Pair;
+import org.apache.commons.lang3.tuple.Triple;
+
+import static java.util.stream.Collectors.toList;
 
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
-public class Chart {
+public class Chart implements Iterable<Triple<Integer, Integer, Multiset<String>>> {
     private List<String> tokens;
     private List<List<Multiset<String>>> chart;
+    private HashMap<Pair<Integer, Integer>, Multiset<String>> iterationIndex;
     private int size;
+    private boolean isCompleteSentence = true;
 
-    public Chart(List<String> tokens, List<List<Multiset<String>>> chart) {
+    private Chart(List<String> tokens, List<List<Multiset<String>>> chart) {
         this.tokens = tokens;
         this.chart = chart;
         size = tokens.size();
+        iterationIndex = new HashMap<>(2 * ((int) Math.ceil(size / 0.75)));
     }
 
     public static Chart getEmptyChart(List<String> tokens) {
         int n = tokens.size();
         List<List<Multiset<String>>> chart = new ArrayList<>(n);
-        for (int i = 0 ; i < n ; i++) {
-            chart.add(i, new ArrayList<>(n-i));
-            for(int j = 0 ; j < n-i ; j++)
+        for (int i = 0; i < n; i++) {
+            chart.add(i, new ArrayList<>(n - i));
+            for (int j = 0; j < n - i; j++)
                 chart.get(i).add(j, HashMultiset.create());
         }
 
@@ -32,18 +38,43 @@ public class Chart {
     }
 
     public void addRule(int length, int pos, String tag) {
-        chart.get(length - 1).get(pos - 1).add(tag);
+        Multiset<String> multiset = chart.get(length - 1).get(pos - 1);
+        multiset.add(tag);
+        iterationIndex.put(Pair.of(length, pos), multiset);
     }
 
     public Multiset<String> getRule(int length, int pos) {
         return chart.get(length - 1).get(pos - 1);
     }
 
+    public int getSize() {
+        return size;
+    }
+
     public String getToken(int pos) {
         return tokens.get(pos - 1);
     }
 
+    /**
+     * Returns the base tokens of the chart. The returned list is a copy, it will not create side effects if modified.
+     * @return The list of tokens
+     */
     public List<String> getTokens() {
         return new ArrayList<>(tokens);
+    }
+
+    @Override
+    public Iterator<Triple<Integer, Integer, Multiset<String>>> iterator() {
+        return iterationIndex.keySet().stream()
+                .map(x -> Triple.of(x.getLeft(), x.getRight(), iterationIndex.get(x)))
+                .collect(toList()).iterator();
+    }
+
+    public boolean isCompleteSentence() {
+        return isCompleteSentence;
+    }
+
+    public void setCompleteSentence(boolean completeSentence) {
+        isCompleteSentence = completeSentence;
     }
 }

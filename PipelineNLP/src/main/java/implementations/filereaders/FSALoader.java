@@ -55,9 +55,9 @@ public class FSALoader {
             try {
                 Matcher reg = extractRegex.matcher(line);
                 if (reg.matches())
-                    regexList.add(new RegExp(reg.group(1)));
+                    regexList.add(new RegExp(parseSpecialCharacters(reg.group(1))));
                 else
-                    regexList.add(new RegExp(line.trim()));
+                    regexList.add(new RegExp(parseSpecialCharacters(line.trim())));
             } catch (IllegalArgumentException exp) {
                 throw new IllegalArgumentException("In file " + path + " line " + lineNumber + ": " + exp.getMessage());
             }
@@ -68,6 +68,13 @@ public class FSALoader {
             out = out.union(reg.toAutomaton());
         }
 
+        return out;
+    }
+
+    private String parseSpecialCharacters(String input) {
+        String out = input.replace("\\n", "\n");
+        out = out.replace("\\t", "\t");
+        out = out.replace("\\\\", "\\");
         return out;
     }
 }

@@ -1,0 +1,32 @@
+Multichar_Symbols +Det +N +Prep
+
+LEXICON Root
+Noun ;
+Det ;
+Prep ;
+Special ;
+
+Lexicon Noun
+green% card NounTag;
+green NounTag;
+card NounTag;
+bob NounTag;
+
+Lexicon Det
+the DetTag;
+
+Lexicon Prep
+of PrepTag;
+
+
+Lexicon Special
+% +Space:%   #;
+
+Lexicon NounTag
++N:0 #;
+
+Lexicon DetTag
++Det:0 #;
+
+Lexicon PrepTag
++Prep:0 #;

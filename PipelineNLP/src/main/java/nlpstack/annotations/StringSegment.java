@@ -22,15 +22,38 @@ public class StringSegment {
         return new StringSegment(null, word);
     }
 
+    /**
+     * Indicates of this segment has an annotation: a pair (string, tag)
+     */
     public boolean isAnnotated() {
         return sentence == null;
     }
 
-    public String getString() {
+    /**
+     * If is annotated is true, this is just null
+     */
+    public String getNoneAnnotatedString() {
         return sentence;
     }
 
-    public Pair<String, String> getAnnotation(){
+    /**
+     * If isAnnotated is false, this will return null
+     */
+    public Pair<String, String> getAnnotation() {
         return word;
+    }
+
+    /**
+     * If isAnnotated is false, a null pointer exception will be raised
+     */
+    public String getAnnotatedString() {
+        return word.getLeft();
+    }
+
+    /**
+     * If isAnnotated is false, a null pointer exception will be raised
+     */
+    public String getAnnotatedTag() {
+        return word.getRight();
     }
 }
