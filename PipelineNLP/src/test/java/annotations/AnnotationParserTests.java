@@ -4,6 +4,7 @@ import nlpstack.annotations.Parser.AnnotationParser;
 import nlpstack.annotations.StringSegment;
 import nlpstack.annotations.StringWithAnnotations;
 import nlpstack.communication.Chart;
+import org.apache.commons.lang3.SystemUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.junit.Test;
 
@@ -89,10 +90,17 @@ public class AnnotationParserTests {
         assertEquals(3, segments.size());
         assertEquals("This is an example annotation with ", segments.get(0).getNoneAnnotatedString());
         assertEquals(Pair.of("annotated", "V"), segments.get(1).getAnnotation());
-        assertEquals(
-                " words.\r\n" +
-                        "Annotation can also contain full lexical and syntactic charts for sentences:\r\n",
-                segments.get(2).getNoneAnnotatedString());
+        if (SystemUtils.IS_OS_WINDOWS)
+            assertEquals(
+                    " words.\r\n" +
+                            "Annotation can also contain full lexical and syntactic charts for sentences:\r\n",
+                    segments.get(2).getNoneAnnotatedString());
+        else
+            assertEquals(
+                    " words.\n" +
+                            "Annotation can also contain full lexical and syntactic charts for sentences:\n",
+                    segments.get(2).getNoneAnnotatedString());
+
         Chart chart = test.get(1).getAnnotatedLexicalChart().getAnnotatedSyntacticChart().getChart();
         assertEquals("a", chart.getToken(1));
         assertEquals("chart", chart.getToken(2));

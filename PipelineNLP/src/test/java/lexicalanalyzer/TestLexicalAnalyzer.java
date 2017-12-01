@@ -15,6 +15,7 @@ import nlpstack.annotations.StringSegment;
 import nlpstack.annotations.StringWithAnnotations;
 import nlpstack.communication.Chart;
 import nlpstack.communication.ErrorLogger;
+import org.apache.commons.lang3.SystemUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.junit.Before;
 import org.junit.Test;
@@ -39,6 +40,8 @@ public class TestLexicalAnalyzer {
     public void init() throws Exception {
         ObjectMapper mapper = new ObjectMapper(new YAMLFactory());
         conf = mapper.readValue(new File(TEST_PATH + "conf.yml"), ConfFile.class);
+        if (SystemUtils.IS_OS_WINDOWS)
+            conf.lexicalConf.FomaBinPath = conf.lexicalConf.FomaBinPath.concat(".exe");
         lexicalAnalyzer = new DefaultLexicalAnalyzer(conf.lexicalConf, errorLogger);
     }
 

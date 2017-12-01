@@ -40,7 +40,7 @@ public class DefaultLexicalAnalyzer extends LexicalAnalyzer {
         wordFSA = fsaLoader.loadFromFile(conf.wordFSAPath);
         separatorFSA = fsaLoader.loadFromFile(conf.separatorFSAPath);
         eosSeparatorFSA = fsaLoader.loadFromFile(conf.eosSeparatorFSAPath);
-        foma = new FomaWrapper(conf.FomaBinPath, conf.FomaConfPath);
+        foma = new FomaWrapper(conf.FomaBinPath, conf.FomaConfPath, errorLogger);
         this.errorLogger = errorLogger;
     }
 
