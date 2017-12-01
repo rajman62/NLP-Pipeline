@@ -1,0 +1,6 @@
+lexicalConf:
+  wordFSAPath: example/word_fsa_example.txt
+  separatorFSAPath: example/sep_fsa_example.txt
+  eosSeparatorFSAPath: example/eos_fsa_example.txt
+  FomaBinPath: bin/foma
+  FomaConfPath: example/lexec.lexec

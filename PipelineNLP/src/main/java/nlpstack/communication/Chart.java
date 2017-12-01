@@ -57,6 +57,7 @@ public class Chart implements Iterable<Triple<Integer, Integer, Multiset<String>
 
     /**
      * Returns the base tokens of the chart. The returned list is a copy, it will not create side effects if modified.
+     *
      * @return The list of tokens
      */
     public List<String> getTokens() {
@@ -76,5 +77,40 @@ public class Chart implements Iterable<Triple<Integer, Integer, Multiset<String>
 
     public void setCompleteSentence(boolean completeSentence) {
         isCompleteSentence = completeSentence;
+    }
+
+    @Override
+    public String toString() {
+        String out = "";
+        Optional<Integer> potentialMaxLength = iterationIndex.values().stream()
+                .map(x -> sum(x).length()).max(Comparator.comparingInt(x -> x));
+        if (!potentialMaxLength.isPresent())
+            return "Empty";
+
+        int maxLength = Math.max(
+                getTokens().stream().map(String::length).max(Comparator.comparingInt(x -> x)).get(),
+                potentialMaxLength.get());
+
+        for (int i = getSize() - 1; i >= 0; i--) {
+            out = out.concat(
+                    String.join(" | ",
+                            chart.get(i).stream()
+                                    .map(x -> String.format("%1$-" + maxLength + "s", sum(x)))
+                                    .collect(toList())
+                    ));
+            out = out.concat("\n");
+        }
+        out = out.concat(
+                String.join(" | ",
+                        getTokens().stream()
+                                .map(x -> String.format("%1$-" + maxLength + "s", x))
+                                .collect(toList())
+                ));
+
+        return out;
+    }
+
+    private String sum(Multiset<String> tagSet) {
+        return String.join(" ", tagSet.entrySet().stream().map(Multiset.Entry::getElement).collect(toList()));
     }
 }

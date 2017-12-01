@@ -9,8 +9,12 @@ public class SyntacticChart {
         this.chart = chart;
     }
 
-
     public Chart getChart() {
         return chart;
+    }
+
+    @Override
+    public String toString() {
+        return chart.toString();
     }
 }

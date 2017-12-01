@@ -30,4 +30,12 @@ public class LexicalChart {
     public boolean isAnnotated() {
         return chart == null;
     }
+
+    @Override
+    public String toString() {
+        if (isAnnotated())
+            return synChart.toString();
+        else
+            return chart.toString();
+    }
 }

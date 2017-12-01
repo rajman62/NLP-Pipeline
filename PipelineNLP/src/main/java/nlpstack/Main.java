@@ -4,15 +4,19 @@ import implementations.DefaultConfiguration;
 import nlpstack.analyzers.*;
 import nlpstack.annotations.*;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
 import java.util.stream.Stream;
 
 import static java.util.stream.Collectors.toList;
 
+import nlpstack.annotations.Parser.AnnotationParser;
 import nlpstack.communication.Occurences;
 import org.apache.commons.cli.*;
 
 public class Main {
-    public static void main(String[] args) {
+    public static void main(String[] args) throws IOException {
         Options cliInterface = setupCliInterface();
         Configuration configuration = new DefaultConfiguration();
         CommandLineParser parser = new DefaultParser();
@@ -22,6 +26,7 @@ public class Main {
             commandLine = parser.parse(cliInterface, args);
         } catch (ParseException exp) {
             System.out.println("Error parsing command line: " + exp.getMessage());
+            System.exit(-1);
         }
 
         if (commandLine.hasOption(CliArguments.HELP_LONG)) {
@@ -35,9 +40,18 @@ public class Main {
                     System.out.println("Error reading configuration: " + e.getMessage());
                 }
             }
+
+            if (commandLine.hasOption(CliArguments.LEXICAL_ANALYZER)) {
+                BufferedReader input = new BufferedReader(new InputStreamReader(System.in));
+                while (true) {
+                    String line = input.readLine();
+                    lexicalAnalyzer(
+                            AnnotationParser.parse(line).toArrayList().stream(),
+                            configuration.getLexicalAnalyzer()
+                    );
+                }
+            }
         }
-
-
     }
 
     static Options setupCliInterface() {

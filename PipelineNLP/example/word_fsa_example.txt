@@ -1,0 +1,26 @@
+# this is a comment
+# simple words:
+hello
+world
+Smith
+is
+data
+
+# word overlap to test DefaultSyntacticAnalyzer.runAutomaton
+process
+processing
+processes
+
+# word containing a separator to test the tokenizer algorithm
+Mr\.
+M
+M\.
+
+the
+green card
+green
+card
+of
+bob
+
+,

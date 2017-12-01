@@ -1,0 +1,46 @@
+Multichar_Symbols +Det +N +Prep +V
+
+LEXICON Root
+Noun ;
+Det ;
+Prep ;
+Verb ;
+Special ;
+
+Lexicon Noun
+green% card NounTag;
+green NounTag;
+card NounTag;
+bob NounTag;
+M NounTag;
+M. NounTag;
+Smith NounTag;
+process NounTag;
+
+Lexicon Det
+the DetTag;
+
+Lexicon Prep
+of PrepTag;
+
+Lexicon Verb
+process VerbTag;
+processing VerbTag;
+
+
+Lexicon Special
+% +Space:%   #;
+%,+Comma:%,  #;
+%.+Point:%.  #;
+
+Lexicon NounTag
++N:0 #;
+
+Lexicon DetTag
++Det:0 #;
+
+Lexicon PrepTag
++Prep:0 #;
+
+Lexicon VerbTag
++V:0 #;
