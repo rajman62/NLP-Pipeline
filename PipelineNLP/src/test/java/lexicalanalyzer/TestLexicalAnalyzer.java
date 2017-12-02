@@ -23,6 +23,7 @@ import org.mockito.ArgumentCaptor;
 
 import java.io.File;
 import java.io.IOException;
+import java.lang.reflect.Array;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
@@ -152,14 +153,14 @@ public class TestLexicalAnalyzer {
         String input = "M. Smith. Mr. Smith.";
         List<Chart> charts = lexicalAnalyzer.getCharts(input, StringSegment.fromString(input));
         assertEquals(2, charts.size());
-        String[] t1 = {"M", ".", "Smith"};
-        String[] t2 = {"Mr.", "Smith"};
+        String[] t1 = {"M", ".", "Smith", "."};
+        String[] t2 = {"Mr.", "Smith", "."};
         assertEquals(Arrays.asList(t1), charts.get(0).getTokens());
         assertEquals(Arrays.asList(t2), charts.get(1).getTokens());
 
         // None of the words are in the transducers, so each one of them should call errorLogger saying foma
         // couldn't get the corresponding tag
-        verify(errorLogger, times(6)).lexicalError(message.capture(), segments.capture());
+        verify(errorLogger, times(5)).lexicalError(message.capture(), segments.capture());
     }
 
     @Test
@@ -186,4 +187,20 @@ public class TestLexicalAnalyzer {
 
         verify(errorLogger, times(0)).lexicalError(message.capture(), segments.capture());
     }
+
+    @Test
+    public void testSingleWord() throws IOException {
+        List<Chart> charts = lexicalAnalyzer.getCharts("bob", StringSegment.fromString("bob"));
+        assertEquals(1, charts.size());
+        String[] t = {"bob"};
+        assertEquals(Arrays.asList(t), charts.get(0).getTokens());
+    }
+
+    /*@Test
+    public void testMultipleEOS() throws IOException {
+        List<Chart> charts = lexicalAnalyzer.getCharts("bob. .. bob.", StringSegment.fromString("bob"));
+        assertEquals(2, charts.size());
+        String[] t1 = {"bob", ".."};
+        assertEquals(Arrays.asList(t1), charts.get(0).getTokens());
+    }*/
 }

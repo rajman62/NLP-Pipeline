@@ -18,6 +18,11 @@ the DetTag;
 Lexicon Prep
 of PrepTag;
 
+Lexicon Special
+% +Space:%   #;
+%,+Comma:%,  #;
+%.+Point:%.  #;
+
 
 Lexicon Special
 % +Space:%   #;

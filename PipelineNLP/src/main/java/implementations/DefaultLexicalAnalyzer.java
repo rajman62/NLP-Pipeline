@@ -252,7 +252,7 @@ public class DefaultLexicalAnalyzer extends LexicalAnalyzer {
         for (List<String> s : tokensList) {
             for (String token : s) {
                 for (Arc arc : arcsInInput.get(inputPosition))
-                    if (arc.getType().equals(Arc.Type.TOKEN))
+                    if (!arc.getType().equals(Arc.Type.SEP))
                         for (int i = arc.getStart(); i <= arc.getEnd(); i++)
                             tokenPositions[i] = true;
                 inputPosition += token.length();
@@ -358,6 +358,14 @@ public class DefaultLexicalAnalyzer extends LexicalAnalyzer {
         return Pair.of(0, null);
     }
 
+    private Integer getFurthestReachingPos(List<Set<Arc>> arcsInInput) {
+        Optional<Integer> out = arcsInInput.stream()
+                .flatMap(Collection::stream)
+                .map(Arc::getEnd)
+                .max(Comparator.comparingInt(x -> x));
+        return out.orElse(-1);
+    }
+
     /**
      * Simply executes the whole getChart pipeline (getArcs, tokenize, getCharts). Unlike the other methods, errors are
      * logged to the ErrorLogger
@@ -370,18 +378,18 @@ public class DefaultLexicalAnalyzer extends LexicalAnalyzer {
         if (input.equals(""))
             errorLogger.lexicalError("Empty StringSegment", stringSegment);
         List<Set<Arc>> arcsInInput = getArcs(input);
-        Pair<Integer, Set<Arc>> p = getLastArcSet(arcsInInput);
-        if (p.getLeft() < input.length() - 1) {
-            if (p.getLeft() == 0) {
+        int lastArcEnd = getFurthestReachingPos(arcsInInput);
+        if (lastArcEnd < input.length() - 1) {
+            if (lastArcEnd == -1) {
                 errorLogger.lexicalError("No possible tokenization", stringSegment);
                 return new ArrayList<>();
             } else {
                 errorLogger.lexicalError(
-                        String.format("Partial tokenization that stopped at position %d", p.getLeft()), stringSegment
+                        String.format("Partial tokenization that stopped at position %d", lastArcEnd), stringSegment
                 );
             }
         }
-        filterImpossibleTokenization(arcsInInput, p.getLeft());
+        filterImpossibleTokenization(arcsInInput, lastArcEnd);
         return getCharts(arcsInInput, tokenize(arcsInInput, input), stringSegment);
     }
 
@@ -431,8 +439,14 @@ public class DefaultLexicalAnalyzer extends LexicalAnalyzer {
                         out.add(chartFromAnnotatedString(stringSegment.getAnnotation()));
                         lastSegmentType = LastSegmentType.MIDDLE;
                     }
-                } else
+                } else {
+                    out.set(out.size() - 1,
+                            combineCharts(
+                                    out.get(out.size() - 1),
+                                    chartFromAnnotatedString(stringSegment.getAnnotation()))
+                    );
                     lastSegmentType = LastSegmentType.END;
+                }
             }
         }
 
