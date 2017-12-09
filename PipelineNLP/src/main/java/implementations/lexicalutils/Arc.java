@@ -18,6 +18,15 @@ public class Arc {
         this.type = type;
     }
 
+    /**
+     * Uses invisibleCharacterPattern and eosSeparatorPattern to initialize an Arc with the right separator type.
+     *
+     * @param arc the arc start and end
+     * @param input the initial input
+     * @param invisibleCharacterPattern the pattern of invisible characters
+     * @param eosSeparatorPattern the pattern for eos
+     * @return An arc
+     */
     public static Arc sepFromPatterns(Pair<Integer, Integer> arc, String input,
                                       RunAutomaton invisibleCharacterPattern, RunAutomaton eosSeparatorPattern) {
         String subString = input.substring(arc.getLeft(), arc.getRight() + 1);

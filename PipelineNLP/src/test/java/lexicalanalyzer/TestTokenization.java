@@ -6,6 +6,8 @@ import dk.brics.automaton.RunAutomaton;
 import implementations.conffile.ConfFile;
 import implementations.filereaders.FSALoader;
 import implementations.lexicalutils.Arc;
+import implementations.lexicalutils.ArcParsing;
+import implementations.lexicalutils.AutomatonUtils;
 import implementations.lexicalutils.Tokenization;
 import org.apache.commons.lang3.tuple.Pair;
 import org.junit.Before;
@@ -39,12 +41,12 @@ public class TestTokenization {
 
     @Test
     public void testRunAutomaton() throws Exception {
-        List<Pair<Integer, Integer>> arcs = Tokenization.runAutomatonAllMatch(wordFSA, "hello", 0);
+        List<Pair<Integer, Integer>> arcs = AutomatonUtils.runAutomatonAllMatch(wordFSA, "hello", 0);
         assertEquals(1, arcs.size());
         assertEquals((Integer) 0, arcs.get(0).getLeft());
         assertEquals((Integer) 4, arcs.get(0).getRight());
 
-        arcs = Tokenization.runAutomatonAllMatch(wordFSA, "processing", 0);
+        arcs = AutomatonUtils.runAutomatonAllMatch(wordFSA, "processing", 0);
         assertEquals(2, arcs.size());
 
         assertEquals((Integer) 0, arcs.get(0).getLeft());
@@ -54,44 +56,16 @@ public class TestTokenization {
     }
 
     @Test
-    public void testLoadingAndRunningArcsDiscovery() throws Exception {
-        List<Set<Arc>> arcs = Tokenization.getArcs("Mr. Smith is processing data.", wordFSA, separatorFSA,
-                invisibleCharacterPattern, eosSeparatorPattern);
-        Tokenization.filterImpossibleTokenization(arcs, arcs.size() - 1);
-
-        assertEquals(1, arcs.get(0).size());
-        Arc arc = arcs.get(0).iterator().next();
-        assertEquals("Mr.", arc.getString());
-        assertEquals(Arc.Type.TOKEN, arc.getType());
-
-        assertEquals(0, arcs.get(1).size());
-        assertEquals(0, arcs.get(2).size());
-
-        assertEquals(1, arcs.get(3).size());
-        arc = arcs.get(3).iterator().next();
-        assertEquals(" ", arc.getString());
-        assertEquals(Arc.Type.INVISIBLE_SEP, arc.getType());
-
-        // checks that filterImpossibleTokenization worked
-        assertEquals(1, arcs.get(13).size());
-        arc = arcs.get(13).iterator().next();
-        assertEquals("processing", arc.getString());
-
-        arcs = Tokenization.getArcs("M. Smith. Mr. Smith.", wordFSA, separatorFSA,
-                invisibleCharacterPattern, eosSeparatorPattern);
-        assertEquals(2, arcs.get(0).size());
-    }
-
-
-    @Test
     public void testFailedLexicalAnalysis() throws IOException {
         String input = "Unknown words";
-        List<Set<Arc>> arcs = Tokenization.getArcs(input, wordFSA, separatorFSA,
+        ArcParsing arcParsing = ArcParsing.parseArcs(input, wordFSA, separatorFSA,
                 invisibleCharacterPattern, eosSeparatorPattern);
-        for (Set<Arc> arc : arcs)
+        for (Set<Arc> arc : arcParsing)
             assertEquals(true, arc.isEmpty());
 
-        List<List<String>> tokenizedSentences = Tokenization.tokenizeFromArcs(arcs, input);
+        assertEquals(-1, arcParsing.getFurthestReachingPosition());
+
+        List<List<String>> tokenizedSentences = Tokenization.tokenizeFromArcs(arcParsing, input);
         assertEquals(0, tokenizedSentences.size());
     }
 
@@ -99,16 +73,16 @@ public class TestTokenization {
     @Test
     public void testPartiallyFailedLexicalAnalysis() throws IOException {
         String input = "Smith unknown words";
-        List<Set<Arc>> arcs = Tokenization.getArcs(input, wordFSA, separatorFSA,
+        ArcParsing arcParsing = ArcParsing.parseArcs(input, wordFSA, separatorFSA,
                 invisibleCharacterPattern, eosSeparatorPattern);
-        assertEquals(1, arcs.get(0).size());
-        assertEquals(1, arcs.get(5).size());
+        assertEquals(1, arcParsing.getArcsStartingAt(0).size());
+        assertEquals(1, arcParsing.getArcsStartingAt(5).size());
         for (int i = 1; i < 5; i++)
-            assertEquals(true, arcs.get(i).isEmpty());
+            assertEquals(true, arcParsing.getArcsStartingAt(i).isEmpty());
         for (int i = 6; i < input.length(); i++)
-            assertEquals(true, arcs.get(i).isEmpty());
+            assertEquals(true, arcParsing.getArcsStartingAt(i).isEmpty());
 
-        List<List<String>> tokenizedSentences = Tokenization.tokenizeFromArcs(arcs, input);
+        List<List<String>> tokenizedSentences = Tokenization.tokenizeFromArcs(arcParsing, input);
         assertEquals(1, tokenizedSentences.size());
         assertEquals(2, tokenizedSentences.get(0).size());
         assertEquals("Smith", tokenizedSentences.get(0).get(0));
@@ -118,11 +92,11 @@ public class TestTokenization {
     @Test
     public void testMakeSpacesInTokens() throws IOException {
         String input = "green card";
-        List<Set<Arc>> arcs = Tokenization.getArcs(input, wordFSA, separatorFSA,
+        ArcParsing arcParsing = ArcParsing.parseArcs(input, wordFSA, separatorFSA,
                 invisibleCharacterPattern, eosSeparatorPattern);
-        Tokenization.filterImpossibleTokenization(arcs, input.length() - 1);
-        List<List<String>> tokenizedSentences = Tokenization.tokenizeFromArcs(arcs, input);
-        List<List<String>> tokenizedSentencesWithoutSpaces = Tokenization.markSpacesInTokens(arcs, tokenizedSentences,
+        arcParsing.filterImpossibleTokenization();
+        List<List<String>> tokenizedSentences = Tokenization.tokenizeFromArcs(arcParsing, input);
+        List<List<String>> tokenizedSentencesWithoutSpaces = Tokenization.markSpacesInTokens(arcParsing, tokenizedSentences,
                 invisibleCharacterPattern, input);
         assertEquals(1, tokenizedSentencesWithoutSpaces.size());
         assertEquals(3, tokenizedSentencesWithoutSpaces.get(0).size());
@@ -131,39 +105,42 @@ public class TestTokenization {
 
 
         input = "machine learning";
-        arcs = Tokenization.getArcs(input, wordFSA, separatorFSA,
+        arcParsing = ArcParsing.parseArcs(input, wordFSA, separatorFSA,
                 invisibleCharacterPattern, eosSeparatorPattern);
-        assertEquals(1, arcs.get(0).size());
+        assertEquals(1, arcParsing.getArcsStartingAt(0).size());
         for (int i = 1 ; i < input.length() ; i++)
-            assertEquals(0, arcs.get(i).size());
-        tokenizedSentences = Tokenization.tokenizeFromArcs(arcs, input);
+            assertEquals(0, arcParsing.getArcsStartingAt(i).size());
+        tokenizedSentences = Tokenization.tokenizeFromArcs(arcParsing, input);
         assertEquals(1, tokenizedSentences.size());
         assertEquals(1, tokenizedSentences.get(0).size());
-        tokenizedSentencesWithoutSpaces = Tokenization.markSpacesInTokens(arcs, tokenizedSentences,
+        tokenizedSentencesWithoutSpaces = Tokenization.markSpacesInTokens(arcParsing, tokenizedSentences,
                 invisibleCharacterPattern, input);
         assertEquals(1, tokenizedSentencesWithoutSpaces.size());
         assertEquals(3, tokenizedSentencesWithoutSpaces.get(0).size());
         String[] t2 = {"machine", " ", "learning"};
         assertEquals(Arrays.asList(t2), tokenizedSentencesWithoutSpaces.get(0));
-        assertEquals(new Arc(Pair.of(7, 7), input, Arc.Type.INVISIBLE_SEP), arcs.get(7).iterator().next());
+        assertEquals(new Arc(Pair.of(7, 7), input, Arc.Type.INVISIBLE_SEP),
+                arcParsing.getArcsStartingAt(7).iterator().next());
 
         input = "green, card";
-        arcs = Tokenization.getArcs(input, wordFSA, separatorFSA,
+        arcParsing = ArcParsing.parseArcs(input, wordFSA, separatorFSA,
                 invisibleCharacterPattern, eosSeparatorPattern);
-        tokenizedSentences = Tokenization.tokenizeFromArcs(arcs, input);
-        tokenizedSentencesWithoutSpaces = Tokenization.markSpacesInTokens(arcs, tokenizedSentences,
+        tokenizedSentences = Tokenization.tokenizeFromArcs(arcParsing, input);
+        tokenizedSentencesWithoutSpaces = Tokenization.markSpacesInTokens(arcParsing, tokenizedSentences,
                 invisibleCharacterPattern, input);
         String[] t3 = {"green", ",", " ", "card"};
         assertEquals(Arrays.asList(t3), tokenizedSentencesWithoutSpaces.get(0));
-        assertEquals(new Arc(Pair.of(5, 6), input, Arc.Type.VISIBLE_SEP), arcs.get(5).iterator().next());
-        assertEquals(new Arc(Pair.of(6, 6), input, Arc.Type.INVISIBLE_SEP), arcs.get(6).iterator().next());
+        assertEquals(new Arc(Pair.of(5, 6), input, Arc.Type.VISIBLE_SEP),
+                arcParsing.getArcsStartingAt(5).iterator().next());
+        assertEquals(new Arc(Pair.of(6, 6), input, Arc.Type.INVISIBLE_SEP),
+                arcParsing.getArcsStartingAt(6).iterator().next());
 
 
         input = "very long \t \t token  with \t multiple \n spaces";
-        arcs = Tokenization.getArcs(input, wordFSA, separatorFSA,
+        arcParsing = ArcParsing.parseArcs(input, wordFSA, separatorFSA,
                 invisibleCharacterPattern, eosSeparatorPattern);
-        tokenizedSentences = Tokenization.tokenizeFromArcs(arcs, input);
-        tokenizedSentencesWithoutSpaces = Tokenization.markSpacesInTokens(arcs, tokenizedSentences,
+        tokenizedSentences = Tokenization.tokenizeFromArcs(arcParsing, input);
+        tokenizedSentencesWithoutSpaces = Tokenization.markSpacesInTokens(arcParsing, tokenizedSentences,
                 invisibleCharacterPattern, input);
         String[] t4 = {"very", " ", "long", " \t \t " , "token", "  ", "with", " \t ", "multiple", " \n " ,"spaces"};
         assertEquals(Arrays.asList(t4), tokenizedSentencesWithoutSpaces.get(0));

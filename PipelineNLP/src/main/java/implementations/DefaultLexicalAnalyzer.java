@@ -6,6 +6,7 @@ import implementations.conffile.LexicalConf;
 import implementations.filereaders.FSALoader;
 import implementations.fomawrapper.FomaWrapper;
 import implementations.lexicalutils.Arc;
+import implementations.lexicalutils.ArcParsing;
 import implementations.lexicalutils.Tokenization;
 import nlpstack.analyzers.LexicalAnalyzer;
 import nlpstack.analyzers.ReservedTags;
@@ -59,24 +60,25 @@ public class DefaultLexicalAnalyzer extends LexicalAnalyzer {
     /**
      * Using the output of get arcs and the tokenizer, this function uses foma to fill in charts
      *
-     * @param arcsInInput output of getArcs
+     * @param arcParsing output of parseArcs
      * @param tokensList  output of tokenizeFromArcs
      * @return list of charts that can be passed later to a CFG parser
      * @throws IOException if there is a problem communicating with foma
      */
-    public List<Chart> getCharts(List<Set<Arc>> arcsInInput, List<List<String>> tokensList, StringSegment stringSegment) throws IOException {
+    public List<Chart> getCharts(ArcParsing arcParsing, List<List<String>> tokensList, StringSegment stringSegment) throws IOException {
         int inputPosition = 0;
 
-        if (arcsInInput.size() == 0 || tokensList.size() == 0)
+        if (arcParsing.getFurthestReachingPosition() == -1 ||
+                arcParsing.length() == 0 || tokensList.size() == 0)
             return new ArrayList<>();
 
         // tokenPositions indicates where we can ignore tokens (the places where tokenPositions is false)
-        boolean tokenPositions[] = new boolean[arcsInInput.size()];
+        boolean tokenPositions[] = new boolean[arcParsing.getFurthestReachingPosition() + 1];
         for (int i = 0 ; i < tokenPositions.length ; i++)
             tokenPositions[i] = true;
         for (List<String> s : tokensList) {
             for (String token : s) {
-                for (Arc arc : arcsInInput.get(inputPosition))
+                for (Arc arc : arcParsing.getArcsStartingAt(inputPosition))
                     if (!arc.isVisible())
                         for (int i = arc.getStart(); i <= arc.getEnd(); i++)
                             tokenPositions[i] = false;
@@ -96,7 +98,7 @@ public class DefaultLexicalAnalyzer extends LexicalAnalyzer {
             tokenPos = 1;
             for (String token : s) {
                 if (tokenPositions[inputPosition]) {
-                    for (Arc arc : arcsInInput.get(inputPosition)) {
+                    for (Arc arc : arcParsing.getArcsStartingAt(inputPosition)) {
                         mappingToStartPos.put(arc, tokenPos);
 
                         if (!bufferGetLength.containsKey(arc.getEnd() + 1))
@@ -137,7 +139,7 @@ public class DefaultLexicalAnalyzer extends LexicalAnalyzer {
 
             for (String token : s) {
                 if (tokenPositions[inputPosition]) {
-                    for (Arc arc : arcsInInput.get(inputPosition)) {
+                    for (Arc arc : arcParsing.getArcsStartingAt(inputPosition)) {
                         List<String> possibleTags = getTags(arc.getString());
                         if (!possibleTags.isEmpty()) {
                             for (String tag : possibleTags)
@@ -157,7 +159,7 @@ public class DefaultLexicalAnalyzer extends LexicalAnalyzer {
         }
 
         // checking the last arc to see if the last chart is a complete sentence
-        if (Tokenization.getFurthestReachingArcs(arcsInInput).stream().anyMatch(Arc::isEOS))
+        if (arcParsing.getFurthestReachingArcSet().stream().anyMatch(Arc::isEOS))
             out.getLast().setCompleteSentence(true);
         else
             out.getLast().setCompleteSentence(false);
@@ -166,8 +168,8 @@ public class DefaultLexicalAnalyzer extends LexicalAnalyzer {
     }
 
     /**
-     * Simply executes the whole getChart pipeline (getArcs, tokenizeFromArcs, getCharts). Unlike the other methods, errors are
-     * logged to the ErrorLogger
+     * Simply executes the whole getChart pipeline (parseArcs, tokenizeFromArcs, markSpacesInTokens, getCharts).
+     * Errors are logged to the ErrorLogger
      *
      * @param input the string to extract charts from
      * @return list of charts that can be passed later to a CFG parser
@@ -176,22 +178,24 @@ public class DefaultLexicalAnalyzer extends LexicalAnalyzer {
     public List<Chart> getCharts(String input, StringSegment stringSegment) throws IOException {
         if (input.equals(""))
             errorLogger.lexicalError("Empty StringSegment", stringSegment);
-        List<Set<Arc>> arcsInInput = Tokenization.getArcs(input, wordFSA, separatorFSA, invisibleCharacterPattern, eosSeparatorPattern);
-        int lastArcEnd = Tokenization.getFurthestReachingArcPosition(arcsInInput);
-        if (lastArcEnd < input.length() - 1) {
-            if (lastArcEnd == -1) {
+        ArcParsing arcsParsing = ArcParsing.parseArcs(input, wordFSA, separatorFSA, invisibleCharacterPattern, eosSeparatorPattern);
+
+        if (arcsParsing.getFurthestReachingPosition() < input.length() - 1) {
+            if (arcsParsing.getFurthestReachingPosition() == -1) {
                 errorLogger.lexicalError("No possible tokenization", stringSegment);
                 return new ArrayList<>();
             } else {
                 errorLogger.lexicalError(
-                        String.format("Partial tokenization that stopped at position %d", lastArcEnd), stringSegment
-                );
+                        String.format(
+                                "Partial tokenization that stopped at position %d",
+                                arcsParsing.getFurthestReachingPosition()),
+                        stringSegment);
             }
         }
-        Tokenization.filterImpossibleTokenization(arcsInInput, lastArcEnd);
-        List<List<String>> tokenization = Tokenization.tokenizeFromArcs(arcsInInput, input);
-        tokenization = Tokenization.markSpacesInTokens(arcsInInput, tokenization, invisibleCharacterPattern, input);
-        return getCharts(arcsInInput, tokenization, stringSegment);
+        arcsParsing.filterImpossibleTokenization();
+        List<List<String>> tokenization = Tokenization.tokenizeFromArcs(arcsParsing, input);
+        tokenization = Tokenization.markSpacesInTokens(arcsParsing, tokenization, invisibleCharacterPattern, input);
+        return getCharts(arcsParsing, tokenization, stringSegment);
     }
 
     /**
