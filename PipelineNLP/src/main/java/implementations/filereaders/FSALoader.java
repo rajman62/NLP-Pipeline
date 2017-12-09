@@ -71,10 +71,14 @@ public class FSALoader {
         return out;
     }
 
-    private String parseSpecialCharacters(String input) {
+    private static String parseSpecialCharacters(String input) {
         String out = input.replace("\\n", "\n");
         out = out.replace("\\t", "\t");
         out = out.replace("\\\\", "\\");
         return out;
+    }
+
+    public static Automaton parseRegex(String regex) {
+        return new RegExp(parseSpecialCharacters(regex)).toAutomaton();
     }
 }

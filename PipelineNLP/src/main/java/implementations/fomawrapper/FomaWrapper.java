@@ -132,6 +132,11 @@ public class FomaWrapper {
             readLength = stdoutFoma.read(buffer, bufferElementCount, bufferLength - bufferElementCount);
         }
 
+        if (readLength == -1) {
+            errorLogger.lexicalError("End of Stream returned by foma", null);
+            throw new IOException("End of Stream returned by foma");
+        }
+
         bufferElementCount += readLength;
 
         while (readOffset < bufferElementCount && buffer[readOffset] != '\n') {

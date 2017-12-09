@@ -1,12 +1,12 @@
 package implementations;
 
 import com.google.common.collect.Multiset;
-import dk.brics.automaton.Automaton;
-import dk.brics.automaton.State;
+import dk.brics.automaton.RunAutomaton;
 import implementations.conffile.LexicalConf;
 import implementations.filereaders.FSALoader;
 import implementations.fomawrapper.FomaWrapper;
 import implementations.lexicalutils.Arc;
+import implementations.lexicalutils.Tokenization;
 import nlpstack.analyzers.LexicalAnalyzer;
 import nlpstack.analyzers.ReservedTags;
 import nlpstack.annotations.LexicalChart;
@@ -23,9 +23,10 @@ import java.util.stream.Stream;
 import static java.util.stream.Collectors.toList;
 
 public class DefaultLexicalAnalyzer extends LexicalAnalyzer {
-    private Automaton wordFSA;
-    private Automaton separatorFSA;
-    private Automaton eosSeparatorFSA;
+    private RunAutomaton wordFSA;
+    private RunAutomaton separatorFSA;
+    private RunAutomaton invisibleCharacterPattern;
+    private RunAutomaton eosSeparatorPattern;
     private FomaWrapper foma;
     private ErrorLogger errorLogger;
 
@@ -37,9 +38,10 @@ public class DefaultLexicalAnalyzer extends LexicalAnalyzer {
 
     public DefaultLexicalAnalyzer(LexicalConf conf, ErrorLogger errorLogger) throws Exception {
         FSALoader fsaLoader = new FSALoader();
-        wordFSA = fsaLoader.loadFromFile(conf.wordFSAPath);
-        separatorFSA = fsaLoader.loadFromFile(conf.separatorFSAPath);
-        eosSeparatorFSA = fsaLoader.loadFromFile(conf.eosSeparatorFSAPath);
+        wordFSA = new RunAutomaton(fsaLoader.loadFromFile(conf.wordFSAPath));
+        separatorFSA = new RunAutomaton(fsaLoader.loadFromFile(conf.separatorFSAPath));
+        invisibleCharacterPattern = new RunAutomaton(FSALoader.parseRegex(conf.invisibleCharacterRegex));
+        eosSeparatorPattern = new RunAutomaton(FSALoader.parseRegex(conf.eosSeparatorRegex));
         foma = new FomaWrapper(conf.FomaBinPath, conf.FomaConfPath, errorLogger);
         this.errorLogger = errorLogger;
     }
@@ -55,189 +57,10 @@ public class DefaultLexicalAnalyzer extends LexicalAnalyzer {
     }
 
     /**
-     * Returns all the prefixes that can be match on s, in increasing order.
-     * A pair (a, b) is the string that starts at position a, and ends at position b (included)
-     *
-     * @param automaton     The automaton to use to find the prefixes
-     * @param s             The string on which we want to find the prefixes
-     * @param startPosition The position in s where the prefixes are looked for
-     * @return List of pairs of the matched prefixes starting at position startPosition
-     */
-    static public List<Pair<Integer, Integer>> runAutomaton(Automaton automaton, String s, Integer startPosition) {
-        LinkedList<Pair<State, Integer>> exploredStatesWithStringPosition = new LinkedList<>();
-        LinkedList<Pair<Integer, Integer>> out = new LinkedList<>();
-
-        Set<State> nextStates = new HashSet<>();
-        exploredStatesWithStringPosition.add(Pair.of(automaton.getInitialState(), startPosition));
-
-        while (!exploredStatesWithStringPosition.isEmpty()) {
-            Pair<State, Integer> currentStateAndStringPosition = exploredStatesWithStringPosition.poll();
-
-            nextStates.clear();
-
-            currentStateAndStringPosition.getLeft().step(
-                    s.charAt(currentStateAndStringPosition.getRight()),
-                    nextStates
-            );
-
-            for (State nState : nextStates) {
-                if (nState.isAccept()) {
-                    out.add(Pair.of(startPosition, currentStateAndStringPosition.getRight()));
-                }
-
-                if (currentStateAndStringPosition.getRight() < s.length() - 1)
-                    exploredStatesWithStringPosition.add(
-                            Pair.of(
-                                    nState,
-                                    currentStateAndStringPosition.getRight() + 1
-                            )
-                    );
-            }
-        }
-
-        return out;
-    }
-
-    /**
-     * An arc is a space in the string that can be accepted by one of the automatons (wordFSA, separatorFSA, eosSeparatorFSA)
-     * They are characterised by a start and a end position in the input string
-     *
-     * @param input String to extract arcs from
-     * @return a list of arcs
-     */
-    public List<Set<Arc>> getArcs(String input) {
-        LinkedList<Integer> stack = new LinkedList<>();
-        HashSet<Integer> processedPositions = new HashSet<>();
-        // we have to use 'positionsAddedToStack' because 'stack.contains' is a O(n) operation
-        HashSet<Integer> positionsAddedToStack = new HashSet<>();
-
-        List<Set<Arc>> out = new ArrayList<>(input.length());
-        for (int i = 0; i < input.length(); i++) {
-            out.add(i, new HashSet<>());
-        }
-
-        stack.add(0);
-
-        while (!stack.isEmpty()) {
-            arcDiscoveryAlgorithmStep(separatorFSA, input, stack.peek(), stack, Arc.Type.SEP, out,
-                    processedPositions, positionsAddedToStack);
-            arcDiscoveryAlgorithmStep(eosSeparatorFSA, input, stack.peek(), stack, Arc.Type.ENDSEP, out,
-                    processedPositions, positionsAddedToStack);
-            arcDiscoveryAlgorithmStep(wordFSA, input, stack.peek(), stack, Arc.Type.TOKEN, out,
-                    processedPositions, positionsAddedToStack);
-            processedPositions.add(stack.pop());
-        }
-
-        return out;
-    }
-
-    /**
-     * @param automaton the automaton that will try to read a new token (can be multiple)
-     * @param input     the input string to tokenize
-     * @param position  the position to start at in input
-     * @param stack     the stack the will be filled with the end of the sequences found by the automaton
-     * @param type      the type Arc.Type that should be used when when instantiating and adding arcs to out
-     * @param out       the output that will be returned by getArcs
-     */
-    private void arcDiscoveryAlgorithmStep(Automaton automaton, String input, int position, LinkedList<Integer> stack,
-                                           Arc.Type type, List<Set<Arc>> out, HashSet<Integer> processedPositions, HashSet<Integer> positionsAddedToStack) {
-        List<Pair<Integer, Integer>> prefixes = runAutomaton(automaton, input, position);
-        for (Pair<Integer, Integer> prefix : prefixes) {
-            int stackPos = prefix.getRight() + 1;
-            if (stackPos < input.length() && !processedPositions.contains(stackPos) && !positionsAddedToStack.contains(stackPos)) {
-                stack.add(stackPos);
-                positionsAddedToStack.add(stackPos);
-            }
-            out.get(position).add(new Arc(prefix, input, type));
-        }
-    }
-
-    /**
-     * Any arc that points to a position where no other arcs exist cannot make a valid tokenization later, so we filter
-     * them out.
-     */
-    public void filterImpossibleTokenization(List<Set<Arc>> out, Integer from) {
-        for (int i = from - 1; i >= 0; i--) {
-            out.get(i).removeIf(a -> a.getEnd() + 1 < out.size() && out.get(a.getEnd() + 1).size() == 0);
-        }
-    }
-
-    /**
-     * tokenize uses the arcs calculated in getArcs to return a list of sentences. Each sentence is a list of string,
-     * where each string is either a separator, an eos, or a part of a token (wordFsa). These unit serve as the basis
-     * for the chart
-     *
-     * @param arcsInInput the output of the getArcs function
-     * @param input       the string to apply tokenization on
-     * @return the tokenized input
-     */
-    public List<List<String>> tokenize(List<Set<Arc>> arcsInInput, String input) {
-        // buffer storing the position where tokens can be extracted
-        boolean[] cut = new boolean[arcsInInput.size()];
-        cut[arcsInInput.size() - 1] = true;
-
-        // buffer storing where eos are
-        // no arcs should jump over an eos, in that case we have an ambiguity
-        boolean[] eos = new boolean[arcsInInput.size()];
-
-        // filling in cut and eos
-        for (Set<Arc> set : arcsInInput) {
-            for (Arc arc : set) {
-                cut[arc.getEnd()] = true;
-
-                if (arc.getType().equals(Arc.Type.ENDSEP))
-                    for (int i = arc.getStart(); i <= arc.getEnd(); i++)
-                        eos[i] = true;
-            }
-        }
-
-        // filtering out unsafe eos
-        for (Set<Arc> set : arcsInInput) {
-            for (Arc arc : set) {
-                if (!arc.getType().equals(Arc.Type.ENDSEP))
-                    for (int i = arc.getStart(); i <= arc.getEnd(); i++)
-                        eos[i] = false;
-            }
-        }
-
-        // finding subTokens (the smallest unit in the chart)
-        List<List<String>> subTokensList = new LinkedList<>();
-        ArrayList<String> subTokens = new ArrayList<>();
-        int start = 0;
-        int i = 0;
-        boolean sentenceFinished = false;
-
-        while (i < arcsInInput.size()) {
-            if (eos[i]) {
-                i++;
-                while (i < eos.length && eos[i])
-                    i++;
-                subTokens.add(input.substring(start, i));
-                start = i;
-                subTokensList.add(subTokens);
-                subTokens = new ArrayList<>();
-                sentenceFinished = true;
-            } else if (i < cut.length && cut[i]) {
-                i++;
-                subTokens.add(input.substring(start, i));
-                start = i;
-                sentenceFinished = false;
-            } else {
-                i++;
-            }
-        }
-
-        if (!sentenceFinished)
-            subTokensList.add(subTokens);
-
-        return subTokensList;
-    }
-
-    /**
      * Using the output of get arcs and the tokenizer, this function uses foma to fill in charts
      *
      * @param arcsInInput output of getArcs
-     * @param tokensList  output of tokenize
+     * @param tokensList  output of tokenizeFromArcs
      * @return list of charts that can be passed later to a CFG parser
      * @throws IOException if there is a problem communicating with foma
      */
@@ -247,14 +70,16 @@ public class DefaultLexicalAnalyzer extends LexicalAnalyzer {
         if (arcsInInput.size() == 0 || tokensList.size() == 0)
             return new ArrayList<>();
 
-        // tokenPositions indicates where we can ignore tokens
+        // tokenPositions indicates where we can ignore tokens (the places where tokenPositions is false)
         boolean tokenPositions[] = new boolean[arcsInInput.size()];
+        for (int i = 0 ; i < tokenPositions.length ; i++)
+            tokenPositions[i] = true;
         for (List<String> s : tokensList) {
             for (String token : s) {
                 for (Arc arc : arcsInInput.get(inputPosition))
-                    if (!arc.getType().equals(Arc.Type.SEP))
+                    if (!arc.isVisible())
                         for (int i = arc.getStart(); i <= arc.getEnd(); i++)
-                            tokenPositions[i] = true;
+                            tokenPositions[i] = false;
                 inputPosition += token.length();
             }
         }
@@ -332,42 +157,16 @@ public class DefaultLexicalAnalyzer extends LexicalAnalyzer {
         }
 
         // checking the last arc to see if the last chart is a complete sentence
-        Pair<Integer, Set<Arc>> p = getLastArcSet(arcsInInput);
-        Set<Arc> lastArcSet = p.getRight();
-        int lastArcPosition = p.getLeft();
-        if (lastArcSet != null
-                && lastArcSet.stream().allMatch(x -> x.getType().equals(Arc.Type.ENDSEP))
-                && !tokenPositions[lastArcPosition]) {
+        if (Tokenization.getFurthestReachingArcs(arcsInInput).stream().anyMatch(Arc::isEOS))
             out.getLast().setCompleteSentence(true);
-        } else
+        else
             out.getLast().setCompleteSentence(false);
-
 
         return out;
     }
 
-    private Pair<Integer, Set<Arc>> getLastArcSet(List<Set<Arc>> arcsInInput) {
-        ListIterator<Set<Arc>> li = arcsInInput.listIterator(arcsInInput.size());
-        int lastArcPosition = arcsInInput.size();
-        while (li.hasPrevious()) {
-            Set<Arc> arcs = li.previous();
-            lastArcPosition -= 1;
-            if (!arcs.isEmpty())
-                return Pair.of(lastArcPosition, arcs);
-        }
-        return Pair.of(0, null);
-    }
-
-    private Integer getFurthestReachingPos(List<Set<Arc>> arcsInInput) {
-        Optional<Integer> out = arcsInInput.stream()
-                .flatMap(Collection::stream)
-                .map(Arc::getEnd)
-                .max(Comparator.comparingInt(x -> x));
-        return out.orElse(-1);
-    }
-
     /**
-     * Simply executes the whole getChart pipeline (getArcs, tokenize, getCharts). Unlike the other methods, errors are
+     * Simply executes the whole getChart pipeline (getArcs, tokenizeFromArcs, getCharts). Unlike the other methods, errors are
      * logged to the ErrorLogger
      *
      * @param input the string to extract charts from
@@ -377,8 +176,8 @@ public class DefaultLexicalAnalyzer extends LexicalAnalyzer {
     public List<Chart> getCharts(String input, StringSegment stringSegment) throws IOException {
         if (input.equals(""))
             errorLogger.lexicalError("Empty StringSegment", stringSegment);
-        List<Set<Arc>> arcsInInput = getArcs(input);
-        int lastArcEnd = getFurthestReachingPos(arcsInInput);
+        List<Set<Arc>> arcsInInput = Tokenization.getArcs(input, wordFSA, separatorFSA, invisibleCharacterPattern, eosSeparatorPattern);
+        int lastArcEnd = Tokenization.getFurthestReachingArcPosition(arcsInInput);
         if (lastArcEnd < input.length() - 1) {
             if (lastArcEnd == -1) {
                 errorLogger.lexicalError("No possible tokenization", stringSegment);
@@ -389,8 +188,10 @@ public class DefaultLexicalAnalyzer extends LexicalAnalyzer {
                 );
             }
         }
-        filterImpossibleTokenization(arcsInInput, lastArcEnd);
-        return getCharts(arcsInInput, tokenize(arcsInInput, input), stringSegment);
+        Tokenization.filterImpossibleTokenization(arcsInInput, lastArcEnd);
+        List<List<String>> tokenization = Tokenization.tokenizeFromArcs(arcsInInput, input);
+        tokenization = Tokenization.markSpacesInTokens(arcsInInput, tokenization, invisibleCharacterPattern, input);
+        return getCharts(arcsInInput, tokenization, stringSegment);
     }
 
     /**

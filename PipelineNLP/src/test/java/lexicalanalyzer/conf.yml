@@ -1,6 +1,7 @@
 lexicalConf:
   wordFSAPath: src/test/java/lexicalanalyzer/word_fsa_example.txt
   separatorFSAPath: src/test/java/lexicalanalyzer/sep_fsa_example.txt
-  eosSeparatorFSAPath: src/test/java/lexicalanalyzer/eos_fsa_example.txt
+  eosSeparatorRegex: '[ \t\n]*[.?!]+[ \t\n]*'
+  invisibleCharacterRegex: '[ \t\n]+'
   FomaBinPath: bin/foma
   FomaConfPath: src/test/java/lexicalanalyzer/example.lexec

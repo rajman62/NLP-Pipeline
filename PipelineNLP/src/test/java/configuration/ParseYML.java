@@ -39,7 +39,8 @@ public class ParseYML {
                 ConfFile.class);
         assertEquals("word/fsa", conf.lexicalConf.wordFSAPath);
         assertEquals("separator/fsa", conf.lexicalConf.separatorFSAPath);
-        assertEquals("separator/eof", conf.lexicalConf.eosSeparatorFSAPath);
+        assertEquals("[.?!]+", conf.lexicalConf.eosSeparatorRegex);
+        assertEquals("[ \\t\\n]+", conf.lexicalConf.invisibleCharacterRegex);
         assertEquals("morphological/analyzer", conf.lexicalConf.FomaBinPath);
         assertEquals("morphological/path", conf.lexicalConf.FomaConfPath);
         assertEquals("trees/path", conf.syntacticConf.syntacticTreesPath);

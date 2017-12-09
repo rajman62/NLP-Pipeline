@@ -1,7 +1,8 @@
 lexicalConf:
   wordFSAPath: word/fsa
   separatorFSAPath: separator/fsa
-  eosSeparatorFSAPath: separator/eof
+  eosSeparatorRegex: '[.?!]+'
+  invisibleCharacterRegex: '[ \t\n]+'
   FomaBinPath: morphological/analyzer
   FomaConfPath: morphological/path
 
