@@ -1,7 +1,6 @@
 package implementations.filereaders.conlluobjects;
 
 import com.scalified.tree.TreeNode;
-import com.scalified.tree.multinode.ArrayMultiTreeNode;
 import com.scalified.tree.multinode.LinkedMultiTreeNode;
 
 import java.util.*;
@@ -34,7 +33,7 @@ public class Sentence implements Iterable<Word> {
     }
 
     /**
-     * Sanitize takes care of mutlitoken fields (ids described as a range or float). It fills in word.id and word.multiTokenHead.
+     * Sanitize takes care of multitoken fields (ids described as a range or float). It fills in word.id and word.multiTokenHead.
      * In the case of a range id, word.id becomes word.idRange.getMinimum(). All words included in that range have
      * their word.id = null and their word.multiTokenHead set.
      * In the case of a float id, word.id = null and the multiTokenHead takes the decimal value

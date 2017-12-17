@@ -65,7 +65,7 @@ public class DefaultLexicalAnalyzer extends LexicalAnalyzer {
      * @return list of charts that can be passed later to a CFG parser
      * @throws IOException if there is a problem communicating with foma
      */
-    public List<Chart> getCharts(ArcParsing arcParsing, List<List<String>> tokensList, StringSegment stringSegment) throws IOException {
+    public List<Chart<String, String>> getCharts(ArcParsing arcParsing, List<List<String>> tokensList, StringSegment stringSegment) throws IOException {
         int inputPosition = 0;
 
         if (arcParsing.getFurthestReachingPosition() == -1 ||
@@ -123,7 +123,7 @@ public class DefaultLexicalAnalyzer extends LexicalAnalyzer {
         }
 
         // creating and filling charts
-        LinkedList<Chart> out = new LinkedList<>();
+        LinkedList<Chart<String, String>> out = new LinkedList<>();
         inputPosition = 0;
         for (List<String> s : tokensList) {
             List<String> sCopy = new ArrayList<>(s);
@@ -135,7 +135,7 @@ public class DefaultLexicalAnalyzer extends LexicalAnalyzer {
                     it.remove();
                 position2 += next.length();
             }
-            Chart chart = Chart.getEmptyChart(sCopy);
+            Chart<String, String> chart = Chart.getEmptyChart(sCopy);
 
             for (String token : s) {
                 if (tokenPositions[inputPosition]) {
@@ -175,7 +175,7 @@ public class DefaultLexicalAnalyzer extends LexicalAnalyzer {
      * @return list of charts that can be passed later to a CFG parser
      * @throws IOException if there is a problem communicating with foma
      */
-    public List<Chart> getCharts(String input, StringSegment stringSegment) throws IOException {
+    public List<Chart<String, String>> getCharts(String input, StringSegment stringSegment) throws IOException {
         if (input.equals(""))
             errorLogger.lexicalError("Empty StringSegment", stringSegment);
         ArcParsing arcsParsing = ArcParsing.parseArcs(input, wordFSA, separatorFSA, invisibleCharacterPattern, eosSeparatorPattern);
@@ -203,13 +203,13 @@ public class DefaultLexicalAnalyzer extends LexicalAnalyzer {
      * @return initialized charts that can be passed later to a CFG parser
      * @throws IOException if there is a problem communicating with foma
      */
-    public List<Chart> getCharts(List<StringSegment> input) throws IOException {
-        LinkedList<Chart> out = new LinkedList<>();
+    public List<Chart<String, String>> getCharts(List<StringSegment> input) throws IOException {
+        LinkedList<Chart<String, String>> out = new LinkedList<>();
         LastSegmentType lastSegmentType = LastSegmentType.END;
 
         for (StringSegment stringSegment : input) {
             if (!stringSegment.isAnnotated()) {
-                List<Chart> charts = getCharts(stringSegment.getNoneAnnotatedString(), stringSegment);
+                List<Chart<String, String>> charts = getCharts(stringSegment.getNoneAnnotatedString(), stringSegment);
                 charts.removeIf(x -> x.getSize() == 0);
 
                 if (!charts.isEmpty() && !out.isEmpty() && lastSegmentType.equals(LastSegmentType.MIDDLE)) {
@@ -258,19 +258,19 @@ public class DefaultLexicalAnalyzer extends LexicalAnalyzer {
         return out;
     }
 
-    private Chart chartFromAnnotatedString(Pair<String, String> annotation) {
+    private Chart<String, String> chartFromAnnotatedString(Pair<String, String> annotation) {
         ArrayList<String> tokens = new ArrayList<>();
         tokens.add(annotation.getLeft());
-        Chart chart = Chart.getEmptyChart(tokens);
+        Chart<String, String> chart = Chart.getEmptyChart(tokens);
         chart.addRule(1, 1, annotation.getRight());
         return chart;
     }
 
-    private Chart combineCharts(Chart chart1, Chart chart2) {
+    private Chart<String, String> combineCharts(Chart<String, String> chart1, Chart<String, String> chart2) {
         List<String> tokens = chart1.getTokens();
         tokens.addAll(chart2.getTokens());
 
-        Chart out = Chart.getEmptyChart(tokens);
+        Chart<String, String> out = Chart.getEmptyChart(tokens);
 
         for (Triple<Integer, Integer, Multiset<String>> el : chart1) {
             for (String tag : el.getRight())

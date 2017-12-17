@@ -52,7 +52,7 @@ public class TestLexicalAnalyzer {
         reset(errorLogger);
         ArgumentCaptor<String> message = ArgumentCaptor.forClass(String.class);
         ArgumentCaptor<StringSegment> segments = ArgumentCaptor.forClass(StringSegment.class);
-        List<Chart> charts = lexicalAnalyzer.getCharts(input, StringSegment.fromString(input));
+        List<Chart<String, String>> charts = lexicalAnalyzer.getCharts(input, StringSegment.fromString(input));
         assertEquals(0, charts.size());
         verify(errorLogger, times(1)).lexicalError(message.capture(), segments.capture());
     }
@@ -68,7 +68,7 @@ public class TestLexicalAnalyzer {
         ArgumentCaptor<String> message = ArgumentCaptor.forClass(String.class);
         ArgumentCaptor<StringSegment> segments = ArgumentCaptor.forClass(StringSegment.class);
 
-        List<Chart> charts = lexicalAnalyzer.getCharts(input, StringSegment.fromString(input));
+        List<Chart<String, String>> charts = lexicalAnalyzer.getCharts(input, StringSegment.fromString(input));
         verify(errorLogger, times(2)).lexicalError(message.capture(), segments.capture());
 
         assertEquals(1, charts.size());
@@ -83,7 +83,7 @@ public class TestLexicalAnalyzer {
         ArgumentCaptor<StringSegment> segments = ArgumentCaptor.forClass(StringSegment.class);
 
         String input = "M. Smith. Mr. Smith.";
-        List<Chart> charts = lexicalAnalyzer.getCharts(input, StringSegment.fromString(input));
+        List<Chart<String, String>> charts = lexicalAnalyzer.getCharts(input, StringSegment.fromString(input));
         assertEquals(2, charts.size());
         String[] t1 = {"M", ".", "Smith", "."};
         String[] t2 = {"Mr.", "Smith", "."};
@@ -98,7 +98,7 @@ public class TestLexicalAnalyzer {
     @Test
     public void testSimpleSentence() throws IOException {
         String input = "the green card of bob.";
-        List<Chart> charts = lexicalAnalyzer.getCharts(input, StringSegment.fromString(input));
+        List<Chart<String, String>> charts = lexicalAnalyzer.getCharts(input, StringSegment.fromString(input));
         String[] t = {"the", "green", " ", "card", "of", "bob"};
         assertEquals(1, charts.size());
     }
@@ -114,7 +114,7 @@ public class TestLexicalAnalyzer {
         ).toArrayList();
         assertEquals(1, test.size());
         List<StringSegment> stringSegments = test.get(0).getStrings();
-        List<Chart> charts = lexicalAnalyzer.getCharts(stringSegments);
+        List<Chart<String, String>> charts = lexicalAnalyzer.getCharts(stringSegments);
         assertEquals(2, charts.size());
 
         verify(errorLogger, times(1)).lexicalError(message.capture(), segments.capture());
@@ -122,7 +122,7 @@ public class TestLexicalAnalyzer {
 
     @Test
     public void testSingleWord() throws IOException {
-        List<Chart> charts = lexicalAnalyzer.getCharts("bob", StringSegment.fromString("bob"));
+        List<Chart<String, String>> charts = lexicalAnalyzer.getCharts("bob", StringSegment.fromString("bob"));
         assertEquals(1, charts.size());
         String[] t = {"bob"};
         assertEquals(Arrays.asList(t), charts.get(0).getTokens());
