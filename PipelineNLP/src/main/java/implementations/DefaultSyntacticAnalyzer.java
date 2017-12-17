@@ -1,19 +1,26 @@
 package implementations;
 
 import implementations.conffile.SyntacticConf;
+import implementations.filereaders.GrammarLoader;
+import implementations.syntacticutils.CYK;
+import implementations.syntacticutils.Grammar;
 import nlpstack.analyzers.SyntacticAnalyzer;
 import nlpstack.annotations.LexicalChart;
 import nlpstack.annotations.SyntacticChart;
 import nlpstack.communication.Chart;
-import nlpstack.communication.Occurences;
 
 public class DefaultSyntacticAnalyzer extends SyntacticAnalyzer {
-    public DefaultSyntacticAnalyzer(SyntacticConf conf) {
+    Grammar grammar;
 
+    public DefaultSyntacticAnalyzer(SyntacticConf conf) throws Exception {
+        grammar = (new GrammarLoader()).loadFromFile(conf.grammarPath);
+        grammar = CYK.normalizeGrammarForCYK(grammar);
     }
 
     @Override
     public SyntacticChart apply(LexicalChart lexicalChart) {
-        return null;
+        Chart<String, String> chart = lexicalChart.getChart();
+        (new CYK(grammar, chart)).runCYK();
+        return new SyntacticChart(chart);
     }
 }

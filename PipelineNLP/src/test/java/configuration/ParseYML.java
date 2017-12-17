@@ -43,6 +43,6 @@ public class ParseYML {
         assertEquals("[ \\t\\n]+", conf.lexicalConf.invisibleCharacterRegex);
         assertEquals("morphological/analyzer", conf.lexicalConf.FomaBinPath);
         assertEquals("morphological/path", conf.lexicalConf.FomaConfPath);
-        assertEquals("trees/path", conf.syntacticConf.syntacticTreesPath);
+        assertEquals("trees/path", conf.syntacticConf.grammarPath);
     }
 }

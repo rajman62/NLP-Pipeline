@@ -7,4 +7,4 @@ lexicalConf:
   FomaConfPath: morphological/path
 
 syntacticConf:
-  syntacticTreesPath: trees/path
+  grammarPath: trees/path

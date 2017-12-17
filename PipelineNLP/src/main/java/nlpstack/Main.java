@@ -50,6 +50,16 @@ public class Main {
                             configuration.getLexicalAnalyzer()
                     );
                 }
+            } else if (commandLine.hasOption(CliArguments.SYNTACTIC_ANALYZER)) {
+                BufferedReader input = new BufferedReader(new InputStreamReader(System.in));
+                while (true) {
+                    String line = input.readLine();
+                    syntacticAnalyzer(
+                            AnnotationParser.parse(line).toArrayList().stream(),
+                            configuration.getLexicalAnalyzer(),
+                            configuration.getSyntacticAnalyzer()
+                    );
+                }
             }
         }
     }

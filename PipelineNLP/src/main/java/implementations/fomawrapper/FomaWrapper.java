@@ -17,7 +17,8 @@ public class FomaWrapper {
 
     private Pattern commandLineRegex = Pattern.compile("foma\\[\\d+]: ");
     private Pattern warningLineRegex = Pattern.compile("\\**Warning:.*\n");
-    private Pattern applyUpLineRegex = Pattern.compile("apply up> ");
+    private Pattern applyUpLineRegex = Pattern.compile("apply up> \n?");
+    private Pattern extractLineRegex = Pattern.compile("^(.*)\n$");
 
     private char[] buffer;
     private int bufferLength = 1024;
@@ -43,7 +44,8 @@ public class FomaWrapper {
         stdinFoma.flush();
         ArrayList<String> out = new ArrayList<>();
         for (Matcher match : getAll(
-                Pattern.compile(String.format("(%s.*)\n", Pattern.quote(word))),
+                // Pattern.compile(String.format("(%s.*)\n", Pattern.quote(word)), Pattern.CASE_INSENSITIVE),
+                extractLineRegex,
                 applyUpLineRegex,
                 Pattern.compile(Pattern.quote(word).concat("\n")))) {
             if (!match.group(1).equals("???"))
