@@ -12,7 +12,12 @@ public class AbstractNonTerminal extends NonTerminal {
     }
 
     @Override
-    public String getString() {
-        throw new IllegalStateException("GhostNonTerminal cannot be used as a standard non terminal");
+    public String getName() {
+        throw new IllegalStateException("AbstractNonTerminal is an not a named terminal");
+    }
+
+    @Override
+    public String toString() {
+        return String.format("AbstractNonTerminal@%d", hashCode());
     }
 }

@@ -19,7 +19,7 @@ public class CYK {
         this.chart = chart;
     }
 
-    static public Grammar adaptGrammarForCYK(Grammar grammar) {
+    static public Grammar normalizeGrammarForCYK(Grammar grammar) {
         Grammar out = new Grammar();
         for (Rule rule : grammar) {
             NonTerminal left = rule.getLeft();
@@ -70,7 +70,7 @@ public class CYK {
 
         // executing CYK on the other lines
         for (int len = 2; len <= workChart.getSize(); len++)
-            for (int pos = 1; pos < workChart.getSize(); pos++) {
+            for (int pos = 1; pos <= workChart.getSize() - len + 1; pos++) {
                 for (int i = 1; i < len; i++) {
                     Multiset<NonTerminal> m1;
                     Terminal t1 = null;
@@ -82,6 +82,9 @@ public class CYK {
                     m2 = workChart.getRule(len - i, pos + i);
                     if (i == len - 1)
                         t2 = workChart.getToken(pos + i);
+
+                    if ((m1.isEmpty() && t1 == null) || (m2.isEmpty() && t2 == null))
+                        continue;
 
                     for (Rule rule : grammar.getMultiRightSideRules()) {
                         if (t1 != null && t1.equals(rule.getRight()[0]) && t2 != null && t2.equals(rule.getRight()[1]))
@@ -104,7 +107,7 @@ public class CYK {
 
     private void addNewRule(Chart<NonTerminal, Terminal> workChart, int length, int pos, NonTerminal t, int count) {
         if (t instanceof RealNonTerminal)
-            chart.addRule(length, pos, t.getString(), count);
+            chart.addRule(length, pos, t.getName(), count);
         workChart.addRule(length, pos, t, count);
     }
 
@@ -136,7 +139,7 @@ public class CYK {
 
     private static <T> void copyMultiSet(Multiset<T> in, Multiset<T> out) {
         out.clear();
-        for (T t : in)
-            out.add(t, in.count(t));
+        for (Multiset.Entry<T> t : in.entrySet())
+            out.add(t.getElement(), t.getCount());
     }
 }

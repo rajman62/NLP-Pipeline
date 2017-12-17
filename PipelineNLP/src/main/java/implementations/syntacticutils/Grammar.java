@@ -17,7 +17,7 @@ public class Grammar implements Iterable<Rule> {
     public Grammar() {
         allRules = new HashSet<>();
         leftSideIndexing = new HashMap<>();
-        singleRightSideRules =  new HashSet<>();
+        singleRightSideRules = new HashSet<>();
         multiRightSideRules = new HashSet<>();
     }
 
@@ -27,7 +27,7 @@ public class Grammar implements Iterable<Rule> {
             singleRightSideRules.add(rule);
         else if (rule.getRight().length >= 2)
             multiRightSideRules.add(rule);
-        if(leftSideIndexing.containsKey(rule.getLeft()))
+        if (leftSideIndexing.containsKey(rule.getLeft()))
             leftSideIndexing.get(rule.getLeft()).add(rule);
         else {
             HashSet<Rule> hashSet = new HashSet<>();
@@ -45,11 +45,21 @@ public class Grammar implements Iterable<Rule> {
         return allRules.iterator();
     }
 
-    public HashSet<Rule> getSingleRightSideRules() {
+    public Set<Rule> getSingleRightSideRules() {
         return singleRightSideRules;
     }
 
-    public HashSet<Rule> getMultiRightSideRules() {
+    public Set<Rule> getMultiRightSideRules() {
         return multiRightSideRules;
     }
+
+    public Set<Rule> getAllRules() {
+        return allRules;
+    }
+
+    public boolean equals(Object other) {
+        return other instanceof Grammar && allRules.equals(((Grammar) other).allRules);
+    }
 }
+
+

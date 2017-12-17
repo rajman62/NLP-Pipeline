@@ -67,7 +67,8 @@ public class FSALoader {
         for (RegExp reg : regexList) {
             out = out.union(reg.toAutomaton());
         }
-
+        
+        input.close();
         return out;
     }
 

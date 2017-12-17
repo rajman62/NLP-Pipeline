@@ -91,7 +91,7 @@ public class EarlyParser {
         LinkedList<EarlyItem> POut = new LinkedList<>();
         LinkedList<EarlyItem> SOut = new LinkedList<>();
         for (EarlyItem earlyItem : toBeScanned.get(pos)) {
-            if (earlyItem.getDotElement().getString().equals(chart.getToken(pos + 1))) {
+            if (earlyItem.getDotElement().getName().equals(chart.getToken(pos + 1))) {
                 earlyItem.dot += 1;
                 earlyItem.i += 1;
                 if (!tryCompletion(earlyItem)) {
@@ -110,7 +110,7 @@ public class EarlyParser {
         if (earlyItem.isComplete()) {
             chart.addRule(
                     earlyItem.i - earlyItem.k, earlyItem.k + 1,
-                    earlyItem.rule.getLeft().getString()
+                    earlyItem.rule.getLeft().getName()
             );
             if (earlyItem.parent != null) {
                 EarlyItem parent = earlyItem.parent;

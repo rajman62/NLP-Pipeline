@@ -21,7 +21,6 @@ public class Terminal extends Sigma {
 
     @Override
     public int hashCode() {
-        // +1 is just meant to give it a different hash from the NonTerminals
         return name.hashCode();
     }
 

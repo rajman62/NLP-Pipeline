@@ -1,11 +1,15 @@
 package syntacticanalyzer;
 
+import implementations.filereaders.GrammarLoader;
 import implementations.syntacticutils.*;
 import nlpstack.communication.Chart;
 import org.junit.Test;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 public class TestCYK {
+    static final String TEST_PATH = "src/test/java/syntacticanalyzer/";
+
     @Test
     public void testSimpleCase() {
         Grammar grammar = new Grammar();
@@ -21,5 +25,34 @@ public class TestCYK {
         assertEquals(1, chart.getRule(1, 1).size());
         assertEquals(1, chart.getRule(1, 2).size());
         assertEquals(2, chart.getRule(2, 1).size());
+    }
+
+    @Test
+    public void testComplicatedCase() throws Exception {
+        GrammarLoader grammarLoader = new GrammarLoader();
+        Grammar grammar = grammarLoader.loadFromFile(TEST_PATH + "grammar_example.cfg");
+        Grammar normalizedGrammar = CYK.normalizeGrammarForCYK(grammar);
+
+        // a normalized grammar has only two elements on the right side
+        for (Rule rule : normalizedGrammar)
+            assertTrue(rule.getRight().length == 1 || rule.getRight().length == 2);
+
+        // a normalized grammar is not changed
+        assertEquals(normalizedGrammar, CYK.normalizeGrammarForCYK(normalizedGrammar));
+
+        Chart<String, String> chart = Chart.getEmptyChart("Time", "flies", "like", "an", "arrow");
+        chart.addRule(1, 1, "N");
+        chart.addRule(1, 1, "V");
+        chart.addRule(1, 2, "N");
+        chart.addRule(1, 2, "V");
+        chart.addRule(1, 3, "Conj");
+        chart.addRule(1, 3, "Prep");
+        chart.addRule(1, 4, "Det");
+        chart.addRule(1, 5, "N");
+
+        CYK cykAlgo = new CYK(normalizedGrammar, chart);
+        cykAlgo.runCYK();
+        assertEquals(2, chart.getRule(5, 1).size());
+        assertTrue(chart.getRule(5, 1).contains("S"));
     }
 }

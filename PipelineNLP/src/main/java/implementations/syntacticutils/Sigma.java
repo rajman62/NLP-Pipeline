@@ -6,7 +6,7 @@ public abstract class Sigma {
     public abstract boolean isTerminal();
     public abstract boolean isNonTerminal();
 
-    public String getString() {
+    public String getName() {
         return name;
     }
 }

@@ -78,6 +78,7 @@ public class ConlluIterator implements Iterator<Sentence> {
 
     @Override
     public boolean hasNext() {
+        // TODO: close the file when the iteration is finished
         if (nextSentence == null)
             try {
                 nextSentence = getNextSentence();
