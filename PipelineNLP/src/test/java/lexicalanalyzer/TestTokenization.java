@@ -145,4 +145,20 @@ public class TestTokenization {
         String[] t4 = {"very", " ", "long", " \t \t " , "token", "  ", "with", " \t ", "multiple", " \n " ,"spaces"};
         assertEquals(Arrays.asList(t4), tokenizedSentencesWithoutSpaces.get(0));
     }
+
+    @Test
+    public void testMakeSpacesInTokensEndOfSentence() throws IOException {
+        String input = "hello? hello.";
+        ArcParsing arcParsing = ArcParsing.parseArcs(input, wordFSA, separatorFSA,
+                invisibleCharacterPattern, eosSeparatorPattern);
+        arcParsing.filterImpossibleTokenization();
+        List<List<String>> tokenizedSentences = Tokenization.tokenizeFromArcs(arcParsing, input);
+        List<List<String>> tokenizedSentencesWithoutSpaces = Tokenization.markSpacesInTokens(arcParsing, tokenizedSentences,
+                invisibleCharacterPattern, input);
+        assertEquals(2, tokenizedSentencesWithoutSpaces.size());
+        String[] t1 = {"hello", "?", " "};
+        String[] t2 = {"hello", "."};
+        assertEquals(Arrays.asList(t1), tokenizedSentencesWithoutSpaces.get(0));
+        assertEquals(Arrays.asList(t2), tokenizedSentencesWithoutSpaces.get(1));
+    }
 }
