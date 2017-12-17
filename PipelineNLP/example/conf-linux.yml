@@ -1,0 +1,10 @@
+lexicalConf:
+  wordFSAPath: example/word_fsa_example.txt
+  separatorFSAPath: example/sep_fsa_example.txt
+  eosSeparatorRegex: '[ \t\n]*[.?!]+[ \t\n]*'
+  invisibleCharacterRegex: '[ \t\n]+'
+  FomaBinPath: bin/foma
+  FomaConfPath: example/extracted-lexec.lexec
+
+syntacticConf:
+  grammarPath: example/extracted-grammar.cfg
