@@ -48,6 +48,8 @@ public class Main {
                 while (true) {
                     System.out.print(">>> ");
                     String line = input.readLine();
+                    if (line == null)
+                        break;
                     if (line.equals(""))
                         continue;
 
@@ -76,6 +78,8 @@ public class Main {
                 while (true) {
                     System.out.print(">>> ");
                     String line = input.readLine();
+                    if (line == null)
+                        break;
                     if (line.equals(""))
                         continue;
 
