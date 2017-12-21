@@ -1,0 +1,1 @@
+java -jar bin\PipelineNLP.jar -c example\conf-win.yml -syntax

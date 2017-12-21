@@ -3,6 +3,7 @@ package implementations.syntacticutils;
 import com.google.common.collect.HashMultiset;
 import com.google.common.collect.Multiset;
 import nlpstack.communication.Chart;
+import org.apache.commons.lang3.tuple.Pair;
 import org.apache.commons.lang3.tuple.Triple;
 
 import java.util.ArrayList;
@@ -11,38 +12,12 @@ import java.util.List;
 
 
 public class CYK {
-    private Grammar grammar;
+    private BinaryGrammar grammar;
     private Chart<String, String> chart;
 
-    public CYK(Grammar grammar, Chart<String, String> chart) {
+    public CYK(BinaryGrammar grammar, Chart<String, String> chart) {
         this.grammar = grammar;
         this.chart = chart;
-    }
-
-    static public Grammar normalizeGrammarForCYK(Grammar grammar) {
-        Grammar out = new Grammar();
-        for (Rule rule : grammar) {
-            NonTerminal left = rule.getLeft();
-            Sigma[] right = rule.getRight();
-
-            if (right.length == 1)
-                out.addRule(rule);
-
-            else if (right.length >= 2) {
-                int i;
-                for (i = 0; i < right.length - 2; i++) {
-                    AbstractNonTerminal newLeft = new AbstractNonTerminal();
-                    Sigma[] newRight = new Sigma[2];
-                    newRight[0] = right[i];
-                    newRight[1] = newLeft;
-                    out.addRule(new Rule(left, newRight));
-                    left = newLeft;
-                }
-
-                out.addRule(new Rule(left, Arrays.copyOfRange(right, right.length - 2, right.length)));
-            }
-        }
-        return out;
     }
 
     public void runCYK() {
@@ -60,7 +35,7 @@ public class CYK {
         }
 
         // executing CYK on the first line
-        for (int pos = 1 ; pos <= workChart.getSize() ; pos++) {
+        for (int pos = 1; pos <= workChart.getSize(); pos++) {
             for (Rule rule : grammar.getSingleRightSideRules()) {
                 if (workChart.getToken(pos).equals(rule.getRight()[0]))
                     addNewRule(workChart, 1, pos, rule.getLeft(), 1);
@@ -86,23 +61,38 @@ public class CYK {
                     if ((m1.isEmpty() && t1 == null) || (m2.isEmpty() && t2 == null))
                         continue;
 
-                    for (Rule rule : grammar.getMultiRightSideRules()) {
-                        if (t1 != null && t1.equals(rule.getRight()[0]) && t2 != null && t2.equals(rule.getRight()[1]))
-                            addNewRule(workChart, len, pos, rule.getLeft(), 1);
-
-                        else if (t1 != null && t1.equals(rule.getRight()[0]) && m2.contains(rule.getRight()[1]))
-                            addNewRule(workChart, len, pos, rule.getLeft(), m2.count(rule.getRight()[1]));
-
-                        else if (m1.contains(rule.getRight()[0]) && t2 != null && t2.equals(rule.getRight()[1]))
-                            addNewRule(workChart, len, pos, rule.getLeft(), m1.count(rule.getRight()[1]));
-
-                        else if (m1.contains(rule.getRight()[0]) && m2.contains(rule.getRight()[1]))
-                            addNewRule(workChart, len, pos, rule.getLeft(), Math.min(m1.count(rule.getRight()[0]), m2.count(rule.getRight()[1])));
+                    if (m1.entrySet().size() * m2.entrySet().size() < grammar.getMultiRightSideRules().size()) {
+                        for (Multiset.Entry<NonTerminal> entry1 : m1.entrySet())
+                            for (Multiset.Entry<NonTerminal> entry2 : m2.entrySet()) {
+                                Pair<Sigma, Sigma> right = Pair.of(entry1.getElement(), entry2.getElement());
+                                if (grammar.containsRulesWithRight(right))
+                                    for (Rule rule : grammar.getRulesWithRight(right))
+                                        processRule(workChart, rule, m1, t1, m2, t2, len, pos);
+                            }
+                    } else {
+                        for (Rule rule : grammar.getMultiRightSideRules())
+                            processRule(workChart, rule, m1, t1, m2, t2, len, pos);
                     }
                 }
 
                 fixPoint(workChart, len, pos);
             }
+    }
+
+    private void processRule(Chart<NonTerminal, Terminal> workChart, Rule rule,
+                             Multiset<NonTerminal> m1, Terminal t1, Multiset<NonTerminal> m2, Terminal t2,
+                             int len, int pos) {
+        if (t1 != null && t1.equals(rule.getRight()[0]) && t2 != null && t2.equals(rule.getRight()[1]))
+            addNewRule(workChart, len, pos, rule.getLeft(), 1);
+
+        else if (t1 != null && t1.equals(rule.getRight()[0]) && m2.contains(rule.getRight()[1]))
+            addNewRule(workChart, len, pos, rule.getLeft(), m2.count(rule.getRight()[1]));
+
+        else if (m1.contains(rule.getRight()[0]) && t2 != null && t2.equals(rule.getRight()[1]))
+            addNewRule(workChart, len, pos, rule.getLeft(), m1.count(rule.getRight()[1]));
+
+        else if (m1.contains(rule.getRight()[0]) && m2.contains(rule.getRight()[1]))
+            addNewRule(workChart, len, pos, rule.getLeft(), Math.min(m1.count(rule.getRight()[0]), m2.count(rule.getRight()[1])));
     }
 
     private void addNewRule(Chart<NonTerminal, Terminal> workChart, int length, int pos, NonTerminal t, int count) {
@@ -113,9 +103,10 @@ public class CYK {
 
     /**
      * Fix Point develops single hand sided rules on the cell (len, pos) until no new rule are added.
+     *
      * @param workChart the chart to apply fix point to
-     * @param len the cell
-     * @param pos the cell
+     * @param len       the cell
+     * @param pos       the cell
      */
     private void fixPoint(Chart<NonTerminal, Terminal> workChart, int len, int pos) {
         Multiset<NonTerminal> previousMultiSet = HashMultiset.create();

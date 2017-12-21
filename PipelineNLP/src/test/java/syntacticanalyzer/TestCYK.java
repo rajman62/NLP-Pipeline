@@ -20,7 +20,7 @@ public class TestCYK {
         grammar.addRule(Rule.from(RealNonTerminal.of("N"), Terminal.of("string")));
 
         Chart<String, String> chart = Chart.getEmptyChart("the", "string");
-        CYK cyk = new CYK(grammar, chart);
+        CYK cyk = new CYK(new BinaryGrammar(grammar), chart);
         cyk.runCYK();
         assertEquals(1, chart.getRule(1, 1).size());
         assertEquals(1, chart.getRule(1, 2).size());
@@ -30,15 +30,14 @@ public class TestCYK {
     @Test
     public void testComplicatedCase() throws Exception {
         GrammarLoader grammarLoader = new GrammarLoader();
-        Grammar grammar = grammarLoader.loadFromFile(TEST_PATH + "grammar_example.cfg");
-        Grammar normalizedGrammar = CYK.normalizeGrammarForCYK(grammar);
+        BinaryGrammar grammar = new BinaryGrammar(grammarLoader.loadFromFile(TEST_PATH + "grammar_example.cfg"));
 
         // a normalized grammar has only two elements on the right side
-        for (Rule rule : normalizedGrammar)
+        for (Rule rule : grammar.getAllRules())
             assertTrue(rule.getRight().length == 1 || rule.getRight().length == 2);
 
         // a normalized grammar is not changed
-        assertEquals(normalizedGrammar, CYK.normalizeGrammarForCYK(normalizedGrammar));
+        assertEquals(grammar, new BinaryGrammar(grammar));
 
         Chart<String, String> chart = Chart.getEmptyChart("Time", "flies", "like", "an", "arrow");
         chart.addRule(1, 1, "N");
@@ -50,7 +49,7 @@ public class TestCYK {
         chart.addRule(1, 4, "Det");
         chart.addRule(1, 5, "N");
 
-        CYK cykAlgo = new CYK(normalizedGrammar, chart);
+        CYK cykAlgo = new CYK(grammar, chart);
         cykAlgo.runCYK();
         assertEquals(2, chart.getRule(5, 1).size());
         assertTrue(chart.getRule(5, 1).contains("S"));
