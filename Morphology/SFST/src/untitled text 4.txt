@@ -1,1 +1,0 @@
-swig -keyword -threads -O -DGRAPHVIZ -DWXWINDOWS -python -c++ -I$/Users/MeryemMhamdi/Downloads/pysfst-1.1.3/SFST/src sfst.i
