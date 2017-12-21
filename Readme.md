@@ -27,7 +27,8 @@ downloading and replacing the executable with the correct one for your system mi
 The main configuration files are `conf-linux.yml` and `conf-win.yml`. One for linux, the other for windows.
 These two files are exactly identical, paths to executable just needed an extra `.exe` extension on windows.
 The entire behavior of the program is dictated by these .yml configuration files. We will describe the composition
-of these files and show how they affected the parsing of sentences.
+of these files and show how they affected the parsing of sentences. Every example file contains comments to explain 
+the syntax to us in them.
 
 For the moment there are two parts in the configuration files: one for the lexical module, and the other for the 
 syntactic module.
@@ -88,6 +89,10 @@ are recognized as a word and a separator, but `M.` is also a possible token.
 4. the foma transducer is called with every remaining token. The tokens are passed as is to the transducer. For example
 `"! "` is passed to the transducer, not `"!"`.
 5. every match of invisibleCharacterRegex inside the tokens is removed.
+
+
+## Transducer
+For the moment, only lexec files are loaded. Soon the file loading will be extended to foma files.
 
 
 ## Syntactic configuration and execution example

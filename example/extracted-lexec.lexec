@@ -21,6 +21,11 @@ LEXICON Punctuation
 
 LEXICON ExtractedLexicon
 
+!! entries in the transducer have the form "lemma+tag:form  #;". The "#;" means end of sequence
+Amy+PROPN:Amy #;
+
+!! special characters can be escaped using the % sign. For example, in the punctuation, escaping a space is done with "% "
+
 A+PROPN:A #;
 AAA+PROPN:AAA #;
 ABB+PROPN:ABB #;
@@ -154,7 +159,6 @@ Amore+PROPN:Amore #;
 Amount+PROPN:Amount #;
 Amrullah+PROPN:Amrullah #;
 Amsterdam+PROPN:Amsterdam #;
-Amy+PROPN:Amy #;
 Ana+PROPN:Ana #;
 Analysis+PROPN:Analysis #;
 Anbar+PROPN:Anbar #;
