@@ -16,15 +16,25 @@ public class FomaWrapper {
     private ErrorLogger errorLogger;
 
     private Pattern commandLineRegex = Pattern.compile("foma\\[\\d+]: ");
-    private Pattern warningLineRegex = Pattern.compile("\\**Warning:.*\n");
+    private Pattern warningLineRegex = Pattern.compile("(\\**Warning:)|(Error).*\n");
     private Pattern applyUpLineRegex = Pattern.compile("apply up> \n?");
     private Pattern extractLineRegex = Pattern.compile("^(.*)\n$");
+
+    private Pattern lexecFilePattern = Pattern.compile("^.*\\.lexe?c$");
+    private Pattern fomaFilePattern = Pattern.compile("^.*\\.foma$");
 
     private char[] buffer;
     private int bufferLength = 1024;
     private int bufferElementCount;
 
-    public FomaWrapper(String binPath, String lexecPath, ErrorLogger errorLogger) throws IOException {
+    /**
+     * object that read and writes to a foma terminal. It is only meant for reading and executing foma and lexec files.
+     * @param binPath path to the foma executable
+     * @param confPath path to a lexec of foma file.
+     * @param errorLogger error logger to use
+     * @throws IOException if communication with foma fails
+     */
+    public FomaWrapper(String binPath, String confPath, ErrorLogger errorLogger) throws IOException {
         fomaProcess = Runtime.getRuntime().exec(binPath);
         stdinFoma = new BufferedWriter(new OutputStreamWriter(fomaProcess.getOutputStream()));
         stderrFoma = new BufferedReader(new InputStreamReader(fomaProcess.getErrorStream()));
@@ -36,7 +46,13 @@ public class FomaWrapper {
 
         waitForInputLine(commandLineRegex);
         flushInputBuffer();
-        initUp(lexecPath);
+        if (lexecFilePattern.matcher(confPath).matches())
+            initLexec(confPath);
+        else if (fomaFilePattern.matcher(confPath).matches())
+            initFoma(confPath);
+        else
+            throw new IllegalArgumentException(String.format("%s is neither a .lexec or .foma file", confPath));
+        up();
     }
 
     public List<String> applyUp(String word) throws IOException {
@@ -64,11 +80,31 @@ public class FomaWrapper {
      * @param lexecPath path to the lexec file
      * @throws IOException if communication error with foma
      */
-    private void initUp(String lexecPath) throws IOException {
+    private void initLexec(String lexecPath) throws IOException {
         stdinFoma.write("read lexc " + lexecPath + "\n");
         stdinFoma.flush();
         waitForInputLine(commandLineRegex);
         flushInputBuffer();
+    }
+
+    /**
+     * Load foma file
+     * @param fomaPath path to the foma file
+     * @throws IOException if communication error with foma
+     *
+     */
+    private void initFoma(String fomaPath) throws IOException {
+        stdinFoma.write(String.format("source %s\n", fomaPath));
+        stdinFoma.flush();
+        waitForInputLine(commandLineRegex);
+        flushInputBuffer();
+    }
+
+    /**
+     * execute up command in foma terminal
+     * @throws IOException if communication error with foma
+     */
+    private void up() throws IOException {
         stdinFoma.write("up\n");
         stdinFoma.flush();
         waitForInputLine(applyUpLineRegex);
@@ -85,7 +121,7 @@ public class FomaWrapper {
         while (true) {
             String line = getNextLine();
 
-            warningLineHandling(line);
+            warningAndErrorLineHandling(line);
 
             Matcher inputPatternMatcher = pattern.matcher(line);
             if (inputPatternMatcher.matches())
@@ -106,7 +142,7 @@ public class FomaWrapper {
         while (true) {
             String line = getNextLine();
 
-            warningLineHandling(line);
+            warningAndErrorLineHandling(line);
 
             Matcher untilPatternMatcher = until.matcher(line);
             if (untilPatternMatcher.matches())
@@ -160,13 +196,12 @@ public class FomaWrapper {
 
     /**
      * Removes all the data from the input buffer
-     * @throws IOException if communication error with foma
      */
-    private void flushInputBuffer() throws IOException {
+    private void flushInputBuffer() {
         bufferElementCount = 0;
     }
 
-    private void warningLineHandling(String line) {
+    private void warningAndErrorLineHandling(String line) {
         Matcher warningMatcher = warningLineRegex.matcher(line);
         if (warningMatcher.matches())
             errorLogger.lexicalError(String.format("Warning in foma: %s", line), null);
