@@ -51,7 +51,7 @@ public class TestCYK {
 
         CYK cykAlgo = new CYK(grammar, chart);
         cykAlgo.runCYK();
-        assertEquals(2, chart.getRule(5, 1).size());
+        assertEquals(4, chart.getRule(5, 1).size());
         assertTrue(chart.getRule(5, 1).contains("S"));
     }
 }

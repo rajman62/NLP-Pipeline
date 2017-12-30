@@ -7,7 +7,6 @@ import org.apache.commons.lang3.tuple.Pair;
 import org.apache.commons.lang3.tuple.Triple;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 
@@ -92,7 +91,7 @@ public class CYK {
             addNewRule(workChart, len, pos, rule.getLeft(), m1.count(rule.getRight()[1]));
 
         else if (m1.contains(rule.getRight()[0]) && m2.contains(rule.getRight()[1]))
-            addNewRule(workChart, len, pos, rule.getLeft(), Math.min(m1.count(rule.getRight()[0]), m2.count(rule.getRight()[1])));
+            addNewRule(workChart, len, pos, rule.getLeft(), m1.count(rule.getRight()[0]) * m2.count(rule.getRight()[1]));
     }
 
     private void addNewRule(Chart<NonTerminal, Terminal> workChart, int length, int pos, NonTerminal t, int count) {
