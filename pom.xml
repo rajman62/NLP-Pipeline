@@ -44,7 +44,6 @@
                         <manifest>
                             <addClasspath>true</addClasspath>
                             <mainClass>nlpstack.Main</mainClass>
-                            <!-- <classpathPrefix>dependency-jars/</classpathPrefix> -->
                         </manifest>
                     </archive>
                 </configuration>
@@ -133,6 +132,25 @@
             <groupId>org.antlr</groupId>
             <artifactId>antlr4-runtime</artifactId>
             <version>4.7</version>
+        </dependency>
+
+        <!-- nd4j for matrix manipulation in the semantic module -->
+        <dependency>
+            <groupId>org.nd4j</groupId>
+            <artifactId>nd4j-native</artifactId>
+            <version>0.9.1</version>
+        </dependency>
+
+        <!-- logger -->
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
+            <version>1.7.25</version>
+        </dependency>
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-simple</artifactId>
+            <version>1.7.25</version>
         </dependency>
     </dependencies>
 </project>

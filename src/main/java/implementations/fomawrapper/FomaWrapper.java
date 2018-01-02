@@ -112,7 +112,7 @@ public class FomaWrapper {
     }
 
     /**
-     * Waits until pattern has been matched on the output of fome
+     * Waits until pattern has been matched on the output of foma
      * @param pattern the pattern that indicates when we can stop waiting
      * @return the matched object of pattern
      * @throws IOException if communication error with foma
