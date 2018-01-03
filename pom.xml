@@ -60,6 +60,11 @@
         </plugins>
     </build>
 
+    <properties>
+        <maven.compiler.source>1.8</maven.compiler.source>
+        <maven.compiler.target>1.8</maven.compiler.target>
+    </properties>
+
     <dependencies>
         <!-- testing (junit and mockito) -->
         <dependency>
@@ -88,7 +93,7 @@
             <artifactId>commons-lang3</artifactId>
             <version>3.6</version>
         </dependency>
-        
+
         <!-- useful google utils -->
         <dependency>
             <groupId>com.google.guava</groupId>
@@ -100,17 +105,17 @@
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-core</artifactId>
-            <version>2.9.2</version>
+            <version>2.6.7</version>
         </dependency>
         <dependency>
             <groupId>com.fasterxml.jackson.dataformat</groupId>
             <artifactId>jackson-dataformat-yaml</artifactId>
-            <version>2.9.2</version>
+            <version>2.6.7</version>
         </dependency>
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-databind</artifactId>
-            <version>2.9.2</version>
+            <version>2.6.7.1</version>
         </dependency>
 
         <!-- FSA -->
@@ -139,6 +144,19 @@
             <groupId>org.nd4j</groupId>
             <artifactId>nd4j-native</artifactId>
             <version>0.9.1</version>
+        </dependency>
+
+        <!-- spark to parallelize word embeddings -->
+        <dependency>
+            <groupId>org.apache.spark</groupId>
+            <artifactId>spark-core_2.11</artifactId>
+            <version>2.2.1</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.slf4j</groupId>
+                    <artifactId>slf4j-log4j12</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
 
         <!-- logger -->
