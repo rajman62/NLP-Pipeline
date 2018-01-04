@@ -4,7 +4,6 @@ import implementations.semanticutils.GradientCalculations;
 import org.apache.spark.broadcast.Broadcast;
 import org.junit.Test;
 import org.nd4j.linalg.api.ndarray.INDArray;
-import org.nd4j.linalg.exception.ND4JException;
 import org.nd4j.linalg.factory.Nd4j;
 import scala.reflect.ClassTag;
 
@@ -48,7 +47,7 @@ public class GradientCalculationTest {
             }
         };
 
-        INDArray result = gradientCalculations.gradientDescent(nd1, train, b);
+        INDArray result = gradientCalculations.gradient(nd1, train, b);
         INDArray expectedResult = Nd4j.create(
                 new float[]{0.9683448f,  0.9683448f,  0.9683448f,  0.9683448f},
                 new int[]{4, 1});
