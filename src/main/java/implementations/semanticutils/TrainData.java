@@ -1,5 +1,6 @@
 package implementations.semanticutils;
 
+import com.google.common.collect.Multiset;
 import com.google.common.collect.Streams;
 import org.apache.spark.api.java.JavaPairRDD;
 import org.apache.spark.api.java.JavaRDD;
@@ -7,17 +8,18 @@ import scala.Tuple2;
 
 import java.util.*;
 
-import static java.util.stream.Collectors.toList;
+import static com.google.common.collect.Multisets.toMultiset;
+
 
 public class TrainData<C, W> {
     public long trainSetSize;
     public long numberOfWords;
     public long numberOfContexts;
     public JavaRDD<Tuple2<C, W>> trainSet;
-    public JavaPairRDD<IDContext, List<IDWord>> contextTrainSet;
-    public JavaPairRDD<IDWord, List<IDContext>> wordTrainSet;
-    public JavaPairRDD<IDWord, List<IDContext>> wordNegativeSamplesTrainSet;
-    public JavaPairRDD<IDContext, List<IDWord>> contextNegativeSamplesTrainSet;
+    public JavaPairRDD<IDContext, Multiset<IDWord>> contextTrainSet;
+    public JavaPairRDD<IDWord, Multiset<IDContext>> wordTrainSet;
+    public JavaPairRDD<IDWord, Multiset<IDContext>> wordNegativeSamplesTrainSet;
+    public JavaPairRDD<IDContext, Multiset<IDWord>> contextNegativeSamplesTrainSet;
     public JavaPairRDD<C, IDContext> contextsZippedWithID;
     public JavaPairRDD<W, IDWord> wordsZippedWithID;
 
@@ -48,11 +50,11 @@ public class TrainData<C, W> {
 
         contextTrainSet = contextTrainSetIDMapping
                 .groupBy(x -> x._1)
-                .mapToPair(x -> new Tuple2<>(x._1, Streams.stream(x._2).map(y -> y._2).collect(toList())));
+                .mapToPair(x -> new Tuple2<>(x._1, Streams.stream(x._2).collect(toMultiset(y -> y._2, e -> 1, new MultisetSupplier<>()))));
 
         wordTrainSet = wordTrainSetIdMapping
                 .groupBy(x -> x._1)
-                .mapToPair(x -> new Tuple2<>(x._1, Streams.stream(x._2).map(y -> y._2).collect(toList())));
+                .mapToPair(x -> new Tuple2<>(x._1, Streams.stream(x._2).collect(toMultiset(y -> y._2, e -> 1, new MultisetSupplier<>()))));
 
         // getting the distribution of contexts
         JavaPairRDD<IDContext, Long> histogramContextRDD =
@@ -73,13 +75,13 @@ public class TrainData<C, W> {
         contextNegativeSamplesTrainSet = wordNegativeSamplesTrainSet
                 .flatMap(x -> x._2.stream().map(y -> new Tuple2<>(y, x._1)).iterator())
                 .groupBy(x -> x._1)
-                .mapToPair(x -> new Tuple2<>(x._1, Streams.stream(x._2).map(y -> y._2).collect(toList())));
+                .mapToPair(x -> new Tuple2<>(x._1, Streams.stream(x._2).collect(toMultiset(y -> y._2, e -> 1, new MultisetSupplier<>()))));
     }
 
 
-    private JavaPairRDD<IDWord, List<IDContext>> negativeSampling(JavaPairRDD<IDContext, Long> histogramContextRDD,
-                                                                  long seed, int negativeSamplingPerWord,
-                                                                  long trainSetSize, long numberOfWords) {
+    private JavaPairRDD<IDWord, Multiset<IDContext>> negativeSampling(JavaPairRDD<IDContext, Long> histogramContextRDD,
+                                                                      long seed, int negativeSamplingPerWord,
+                                                                      long trainSetSize, long numberOfWords) {
         double n = (double) trainSetSize;
         double z = histogramContextRDD.mapToDouble(x -> Math.pow(((double) x._2) / n, 0.75)).sum();
 
@@ -102,7 +104,7 @@ public class TrainData<C, W> {
             weights[i] = w;
 
         // now we spread the expended context randomly on the words, and remove the pairs that are part of the train set
-        return expendedContext
+        JavaPairRDD<IDWord, Multiset<IDContext>> tmp = expendedContext
                 .mapPartitionsWithIndex((index, iteratorContext) -> {
                     Random random = new Random(Objects.hash(seed, index, 1));
                     int max = Math.toIntExact(numberOfWords);
@@ -110,12 +112,13 @@ public class TrainData<C, W> {
                             .map(x -> new Tuple2<>(new IDWord((long) random.nextInt(max)), x)).iterator();
                 }, false)
                 .groupBy(x -> x._1)
-                .mapToPair(x -> new Tuple2<>(x._1, Streams.stream(x._2).map(y -> y._2).collect(toList())))
-                .join(wordTrainSet)
+                .mapToPair(x -> new Tuple2<>(x._1, Streams.stream(x._2).collect(toMultiset(y -> y._2, e -> 1, new MultisetSupplier<>()))));
+        return tmp.join(wordTrainSet)
                 .mapToPair(x -> {
-                    List<IDContext> newList = new ArrayList<>(x._2._1);
-                    newList.removeAll(x._2._2);
-                    return new Tuple2<>(x._1, newList);
+                    Multiset<IDContext> newMultiset = (new MultisetSupplier<IDContext>()).get();
+                    newMultiset.addAll(x._2._1);
+                    newMultiset.removeAll(x._2._2);
+                    return new Tuple2<>(x._1, newMultiset);
                 });
     }
 }

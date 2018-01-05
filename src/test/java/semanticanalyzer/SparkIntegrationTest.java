@@ -1,5 +1,7 @@
 package semanticanalyzer;
 
+import com.google.common.collect.HashMultiset;
+import com.google.common.collect.Multiset;
 import org.apache.spark.SparkConf;
 import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.JavaSparkContext;
@@ -39,5 +41,18 @@ public class SparkIntegrationTest {
             data.add(Nd4j.rand(new int[]{4, 1}));
         JavaRDD<INDArray> rdd = sc.parallelize(data);
         assertEquals(16, rdd.count());
+    }
+
+    @Test
+    public void testSparkWithMultiSet() {
+        List<Multiset<Integer>> data = new LinkedList<>();
+        for (int i = 0; i < 16; i++) {
+            Multiset<Integer> toAdd = HashMultiset.create();
+            toAdd.add(i);
+            toAdd.add(i);
+            data.add(toAdd);
+        }
+        JavaRDD<Multiset<Integer>> rdd = sc.parallelize(data);
+        assertEquals(16L, rdd.count());
     }
 }

@@ -14,7 +14,6 @@ import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.JavaSparkContext;
 import scala.Tuple2;
 
-import java.io.IOException;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.LinkedList;
@@ -77,7 +76,7 @@ public class WordEmbeddingsUtils {
                 .setMaster(master);
         JavaSparkContext sc = new JavaSparkContext(conf);
         WordEmbeddings<StringContext, String> wordEmbeddings = new WordEmbeddings<>(
-                10, 0.00001f, 0f, 0f, 100, sc);
+                10, 0.00000005f, 0f, 0f, 100, sc);
 
         System.out.println(String.format("%s - loading conllu file...", (new Date()).toString()));
         JavaRDD<Tuple2<StringContext, String>> trainSet = sc.parallelize(getTrainData(conlluFilePath));

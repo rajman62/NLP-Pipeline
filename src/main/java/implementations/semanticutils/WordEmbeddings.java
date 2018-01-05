@@ -41,15 +41,15 @@ public class WordEmbeddings<C, W> {
         wordVectors.cache();
         contextVectors.cache();
 
-        int numPartitionWords = (int)trainData.numberOfWords/4;
-        wordVectors.repartition(numPartitionWords);
-        trainData.wordTrainSet.repartition(numPartitionWords);
-        trainData.wordNegativeSamplesTrainSet.repartition(numPartitionWords);
-
-        int numPartitionContexts = (int)trainData.numberOfContexts/4;
-        contextVectors.repartition(numPartitionContexts);
-        trainData.contextTrainSet.repartition(numPartitionContexts);
-        trainData.contextNegativeSamplesTrainSet.repartition(numPartitionContexts);
+//        int numPartitionWords = (int)trainData.numberOfWords/4;
+//        wordVectors.repartition(numPartitionWords);
+//        trainData.wordTrainSet.repartition(numPartitionWords);
+//        trainData.wordNegativeSamplesTrainSet.repartition(numPartitionWords);
+//
+//        int numPartitionContexts = (int)trainData.numberOfContexts/4;
+//        contextVectors.repartition(numPartitionContexts);
+//        trainData.contextTrainSet.repartition(numPartitionContexts);
+//        trainData.contextNegativeSamplesTrainSet.repartition(numPartitionContexts);
 
         for (int i = 0; i < maxIter; i++) {
             Map<IDContext, INDArray> contextToVecMap = contextVectors.collectAsMap();
@@ -66,7 +66,6 @@ public class WordEmbeddings<C, W> {
             Map<IDWord, INDArray> wordToVecMap = newWordVectors.collectAsMap();
             Broadcast<Map<IDWord, INDArray>> broadcastedWordIDToVecMap = sc.broadcast(wordToVecMap);
 
-            wordVectors.unpersist();
             wordVectors = newWordVectors;
 
             JavaPairRDD<IDContext, INDArray> newContextVectors = contextVectors
@@ -84,7 +83,8 @@ public class WordEmbeddings<C, W> {
                     Model.getTrainLoss(trainData, newContextVectors, broadcastedWordIDToVecMap, sc)
             ));
 
-            contextVectors.unpersist();
+            // contextVectors.unpersist();
+            // wordVectors.unpersist();
             contextVectors = newContextVectors;
 
             broadcastedContextIDToVecMap.unpersist();
