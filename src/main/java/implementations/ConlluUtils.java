@@ -5,7 +5,6 @@ import com.scalified.tree.TreeNode;
 import implementations.filereaders.ConlluReader;
 import implementations.filereaders.conlluobjects.Sentence;
 import implementations.filereaders.conlluobjects.Word;
-import implementations.syntacticutils.Rule;
 import org.apache.commons.cli.*;
 
 import static java.util.stream.Collectors.toList;
@@ -13,7 +12,6 @@ import static java.util.stream.Collectors.toList;
 import java.io.*;
 import java.util.*;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 
 public class ConlluUtils {
     private static String HELP_LONG = "help";

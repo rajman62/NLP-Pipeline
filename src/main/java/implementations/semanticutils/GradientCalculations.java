@@ -42,7 +42,7 @@ public class GradientCalculations implements Serializable {
     public <T> INDArray gradient(INDArray vc, List<T> train,
                                  Broadcast<Map<T, INDArray>> broadcastedMap) {
         INDArray newVC = vc.dup();
-        Map<T, INDArray> wordVectorMapping = broadcastedMap.getValue();
+        Map<T, INDArray> wordVectorMapping = broadcastedMap.value();
         for(T idWord : train) {
             newVC.addi(gradient(vc, wordVectorMapping.get(idWord)).muli(-gamma));
         }
@@ -60,7 +60,7 @@ public class GradientCalculations implements Serializable {
     public <T> INDArray negativeSampleGradient(INDArray vc, List<T> train,
                                                Broadcast<Map<T, INDArray>> broadcastedMap) {
         INDArray newVC = vc.dup();
-        Map<T, INDArray> wordVectorMapping = broadcastedMap.getValue();
+        Map<T, INDArray> wordVectorMapping = broadcastedMap.value();
         for(T idWord : train) {
             newVC.addi(gradient(vc, wordVectorMapping.get(idWord).neg()).muli(-gamma));
         }

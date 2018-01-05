@@ -17,7 +17,7 @@ import java.util.Map;
 public class GradientCalculationTest {
     @Test
     public void contextGradientCalculationTest() {
-        GradientCalculations gradientCalculations = new GradientCalculations(0.5f);
+        GradientCalculations gradientCalculations = new GradientCalculations(0.5f, 10);
         INDArray nd1 = Nd4j.create(new float[]{1, 1, 1, 1}, new int[]{4, 1});
 
         List<Integer> train = new ArrayList<>();

@@ -5,7 +5,6 @@ import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.spark.broadcast.Broadcast;
 import org.nd4j.linalg.api.ndarray.INDArray;
-import org.nd4j.linalg.api.rng.DefaultRandom;
 import scala.Tuple2;
 import scala.Tuple3;
 
@@ -18,50 +17,78 @@ public class WordEmbeddings<C, W> {
     private float lambdaC;
     private int maxIter;
     private JavaSparkContext sc;
-    private int negativeSamplingPerWord;
 
-    public WordEmbeddings(int k, float gamma, float lambdaW, float lambdaC, int maxIter, int negativeSamplingPerWord, JavaSparkContext sc) {
+    public WordEmbeddings(int k, float gamma, float lambdaW, float lambdaC, int maxIter, JavaSparkContext sc) {
         this.k = k;
         this.gamma = gamma;
         this.lambdaW = lambdaW;
         this.lambdaC = lambdaC;
         this.maxIter = maxIter;
-        this.negativeSamplingPerWord = negativeSamplingPerWord;
         this.sc = sc;
     }
 
-    public void train(JavaRDD<Tuple2<C, W>> trainSet, long seed) {
-        TrainData<C, W> trainData = new TrainData<>(trainSet, negativeSamplingPerWord, sc, seed);
-
+    public void train(TrainData<C, W> trainData, long seed) {
         JavaPairRDD<IDContext, INDArray> contextVectors = initContextVectors(seed + 1L, trainData.contextsZippedWithID.map(x -> x._2));
         JavaPairRDD<IDWord, INDArray> wordVectors = initWordVectors(seed + 2L, trainData.wordsZippedWithID.map(x -> x._2));
 
         GradientCalculations gradientCalculations = new GradientCalculations(gamma, k);
 
+        trainData.wordTrainSet.cache();
+        trainData.contextTrainSet.cache();
+        trainData.wordNegativeSamplesTrainSet.cache();
+        trainData.contextNegativeSamplesTrainSet.cache();
+
+        wordVectors.cache();
+        contextVectors.cache();
+
+        int numPartitionWords = (int)trainData.numberOfWords/4;
+        wordVectors.repartition(numPartitionWords);
+        trainData.wordTrainSet.repartition(numPartitionWords);
+        trainData.wordNegativeSamplesTrainSet.repartition(numPartitionWords);
+
+        int numPartitionContexts = (int)trainData.numberOfContexts/4;
+        contextVectors.repartition(numPartitionContexts);
+        trainData.contextTrainSet.repartition(numPartitionContexts);
+        trainData.contextNegativeSamplesTrainSet.repartition(numPartitionContexts);
+
         for (int i = 0; i < maxIter; i++) {
             Map<IDContext, INDArray> contextToVecMap = contextVectors.collectAsMap();
             Broadcast<Map<IDContext, INDArray>> broadcastedContextIDToVecMap = sc.broadcast(contextToVecMap);
 
-            wordVectors = wordVectors
+            JavaPairRDD<IDWord, INDArray> newWordVectors = wordVectors
                     .leftOuterJoin(trainData.wordTrainSet)
                     .leftOuterJoin(trainData.wordNegativeSamplesTrainSet)
                     .mapToPair(x -> new Tuple2<>(x._1, new Tuple3<>(x._2._1._1, x._2._1._2, x._2._2))) // <IDWord, <Vc, trainSet, negativeSampleTrainSet>>
                     .mapToPair(x -> gradientCalculations.gradientDescentStep(broadcastedContextIDToVecMap, x));
 
-            Map<IDWord, INDArray> wordToVecMap = wordVectors.collectAsMap();
+            newWordVectors.cache();
+
+            Map<IDWord, INDArray> wordToVecMap = newWordVectors.collectAsMap();
             Broadcast<Map<IDWord, INDArray>> broadcastedWordIDToVecMap = sc.broadcast(wordToVecMap);
 
-            contextVectors = contextVectors
+            wordVectors.unpersist();
+            wordVectors = newWordVectors;
+
+            JavaPairRDD<IDContext, INDArray> newContextVectors = contextVectors
                     .leftOuterJoin(trainData.contextTrainSet)
                     .leftOuterJoin(trainData.contextNegativeSamplesTrainSet)
                     .mapToPair(x -> new Tuple2<>(x._1, new Tuple3<>(x._2._1._1, x._2._1._2, x._2._2))) // <IDContext, <Vc, trainSet, negativeSampleTrainSet>>
                     .mapToPair(x -> gradientCalculations.gradientDescentStep(broadcastedWordIDToVecMap, x));
 
+            newContextVectors.cache();
+
             System.out.println(String.format(
-                    "Iteration %d training error: %f",
+                    "%s - iteration %d training error: %f",
+                    (new Date()).toString(),
                     i,
-                    Model.getTrainLoss(trainData, contextVectors, wordVectors, sc)
+                    Model.getTrainLoss(trainData, newContextVectors, broadcastedWordIDToVecMap, sc)
             ));
+
+            contextVectors.unpersist();
+            contextVectors = newContextVectors;
+
+            broadcastedContextIDToVecMap.unpersist();
+            broadcastedWordIDToVecMap.unpersist();
         }
 
         trainData.wordTrainSet.unpersist();
@@ -71,28 +98,32 @@ public class WordEmbeddings<C, W> {
     }
 
     private <W2> JavaPairRDD<W2, INDArray> initWordVectors(long seed, JavaRDD<W2> words) {
+        int newK = k;
         return words.mapPartitionsWithIndex(
                 (index, iterWords) ->
                         new RandomINDArrayInit<>(
-                                new DefaultRandom(Objects.hash(seed, index)),
+                                new Random(Objects.hash(seed, index)),
                                 iterWords,
-                                new int[]{k, 1},
-                                -1.0,
-                                1.0),
-                false
+                                newK,
+                                1,
+                                -1.0f,
+                                1.0f),
+                true
         ).mapToPair(x -> x);
     }
 
     private <C2> JavaPairRDD<C2, INDArray> initContextVectors(long seed, JavaRDD<C2> contexts) {
+        int newK = k;
         return contexts.mapPartitionsWithIndex(
                 (index, iterContext) ->
                         new RandomINDArrayInit<>(
-                                new DefaultRandom(Objects.hash(seed, index)),
+                                new Random(Objects.hash(seed, index)),
                                 iterContext,
-                                new int[]{k, 1},
-                                -1.0,
-                                1.0),
-                false
+                                newK,
+                                1,
+                                -1.0f,
+                                1.0f),
+                true
         ).mapToPair(x -> x);
     }
 }

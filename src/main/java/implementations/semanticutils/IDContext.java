@@ -1,6 +1,8 @@
 package implementations.semanticutils;
 
-class IDContext {
+import java.io.Serializable;
+
+class IDContext implements Serializable {
     private Long value;
 
     IDContext(Long value) {
@@ -18,6 +20,6 @@ class IDContext {
 
     @Override
     public boolean equals(Object o) {
-        return value.equals(o);
+        return o instanceof IDContext && value.equals(((IDContext)o).value);
     }
 }

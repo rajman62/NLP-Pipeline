@@ -21,22 +21,29 @@ public class Model<C, W> {
 
     public static <C, W> double getTrainLoss(TrainData<C, W> trainData,
                                              JavaPairRDD<IDContext, INDArray> contextVectors,
-                                             JavaPairRDD<IDWord, INDArray> wordVectors,
+                                             Broadcast<Map<IDWord, INDArray>> word2VecMapping,
                                              JavaSparkContext sc) {
-        Map<IDWord, INDArray> word2VecMapping = wordVectors.collectAsMap();
-        Broadcast<Map<IDWord, INDArray>> b = sc.broadcast(word2VecMapping);
-        double out = contextVectors
+        return contextVectors
                 .join(trainData.contextTrainSet)
                 .join(trainData.contextNegativeSamplesTrainSet)
                 .map(x -> new Tuple3<>(x._2._1._1, x._2._1._2, x._2._2))
                 .mapToDouble(
                         x -> {
-                            Map<IDWord, INDArray> word2vec = b.getValue();
+                            Map<IDWord, INDArray> word2vec = word2VecMapping.getValue();
                             return loss(x._1(), x._2().stream().map(word2vec::get).collect(Collectors.toList()))
                                     +
                                     loss(x._1().neg(), x._3().stream().map(word2vec::get).collect(Collectors.toList()));
                         })
                 .sum();
+    }
+
+    public static <C, W> double getTrainLoss(TrainData<C, W> trainData,
+                                             JavaPairRDD<IDContext, INDArray> contextVectors,
+                                             JavaPairRDD<IDWord, INDArray> wordVectors,
+                                             JavaSparkContext sc) {
+        Map<IDWord, INDArray> word2VecMapping = wordVectors.collectAsMap();
+        Broadcast<Map<IDWord, INDArray>> b = sc.broadcast(word2VecMapping);
+        double out = getTrainLoss(trainData, contextVectors, b, sc);
         b.unpersist();
         return out;
     }

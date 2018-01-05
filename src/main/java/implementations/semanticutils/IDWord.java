@@ -1,6 +1,8 @@
 package implementations.semanticutils;
 
-class IDWord {
+import java.io.Serializable;
+
+class IDWord implements Serializable {
     private Long value;
 
     IDWord(Long value) {
@@ -18,6 +20,6 @@ class IDWord {
 
     @Override
     public boolean equals(Object o) {
-        return value.equals(o);
+        return o instanceof IDWord && value.equals(((IDWord)o).value);
     }
 }

@@ -1,11 +1,12 @@
 package implementations.semanticutils;
 
-import org.nd4j.linalg.api.rng.Random;
+import java.util.Random;
+import scala.Serializable;
 import scala.Tuple2;
 
 import java.util.Iterator;
 
-class SamplingExpensionIterator<T> implements Iterator<Tuple2<T, Long>> {
+class SamplingExpensionIterator<T> implements Iterator<Tuple2<T, Long>>, Serializable {
     private Random randomGenerator;
     private Iterator<Tuple2<T, Double>> iterator;
     private double numberOfWords;
