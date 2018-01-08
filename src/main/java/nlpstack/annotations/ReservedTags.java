@@ -1,4 +1,4 @@
-package nlpstack.analyzers;
+package nlpstack.annotations;
 
 public class ReservedTags {
     public static final String UNKNOWN = "UNKNOWN";

@@ -14,7 +14,7 @@ import java.util.stream.Stream;
 import static java.util.stream.Collectors.toList;
 
 import nlpstack.annotations.Parser.AnnotationParser;
-import nlpstack.communication.Occurences;
+import nlpstack.communication.WordEmbeddings;
 import org.apache.commons.cli.*;
 
 public class Main {
@@ -115,7 +115,7 @@ public class Main {
         }
     }
 
-    static Options setupCliInterface() {
+    static private Options setupCliInterface() {
         Options cliInterface = new Options();
 
         OptionGroup mainCommand = new OptionGroup();
@@ -135,22 +135,22 @@ public class Main {
         return cliInterface;
     }
 
-    static List<LexicalChart> lexicalAnalyzer(Stream<StringWithAnnotations> input, LexicalAnalyzer analyzer) {
+    static private List<LexicalChart> lexicalAnalyzer(Stream<StringWithAnnotations> input, LexicalAnalyzer analyzer) {
         Stream<LexicalChart> sentenceStream = analyzer.tokenize(input);
         return sentenceStream.collect(toList());
     }
 
-    static List<SyntacticChart> syntacticAnalyzer(Stream<StringWithAnnotations> input, LexicalAnalyzer lexicalAnalyzer, SyntacticAnalyzer syntacticAnalyzer) {
+    static private List<SyntacticChart> syntacticAnalyzer(Stream<StringWithAnnotations> input, LexicalAnalyzer lexicalAnalyzer, SyntacticAnalyzer syntacticAnalyzer) {
         Stream<LexicalChart> sentenceStream = lexicalAnalyzer.tokenize(input);
         Stream<SyntacticChart> chartStream = syntacticAnalyzer.parse(sentenceStream);
         return chartStream.collect(toList());
     }
 
-    static void semanticAnalyzer(Stream<StringWithAnnotations> input, LexicalAnalyzer lexicalAnalyzer,
+    static private void semanticAnalyzer(Stream<StringWithAnnotations> input, LexicalAnalyzer lexicalAnalyzer,
                                  SyntacticAnalyzer syntacticAnalyzer, SemanticAnalyzer semanticAnalyzer) {
         Stream<LexicalChart> sentenceStream = lexicalAnalyzer.tokenize(input);
         Stream<SyntacticChart> chartStream = syntacticAnalyzer.parse(sentenceStream);
-        Occurences occurrences = semanticAnalyzer.findOccurrences(chartStream);
+        WordEmbeddings occurrences = semanticAnalyzer.findEmbeddings(chartStream);
         System.out.println(occurrences.toString());
     }
 }

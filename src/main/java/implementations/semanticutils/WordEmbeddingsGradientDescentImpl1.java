@@ -10,7 +10,7 @@ import scala.Tuple3;
 
 import java.util.*;
 
-public class WordEmbeddings<C, W> {
+public class WordEmbeddingsGradientDescentImpl1<C, W> {
     private int k;
     private float gamma;
     private float lambdaW;
@@ -18,7 +18,7 @@ public class WordEmbeddings<C, W> {
     private int maxIter;
     private JavaSparkContext sc;
 
-    public WordEmbeddings(int k, float gamma, float lambdaW, float lambdaC, int maxIter, JavaSparkContext sc) {
+    public WordEmbeddingsGradientDescentImpl1(int k, float gamma, float lambdaW, float lambdaC, int maxIter, JavaSparkContext sc) {
         this.k = k;
         this.gamma = gamma;
         this.lambdaW = lambdaW;
@@ -41,15 +41,18 @@ public class WordEmbeddings<C, W> {
         wordVectors.cache();
         contextVectors.cache();
 
-//        int numPartitionWords = (int)trainData.numberOfWords/4;
-//        wordVectors.repartition(numPartitionWords);
-//        trainData.wordTrainSet.repartition(numPartitionWords);
-//        trainData.wordNegativeSamplesTrainSet.repartition(numPartitionWords);
-//
-//        int numPartitionContexts = (int)trainData.numberOfContexts/4;
-//        contextVectors.repartition(numPartitionContexts);
-//        trainData.contextTrainSet.repartition(numPartitionContexts);
-//        trainData.contextNegativeSamplesTrainSet.repartition(numPartitionContexts);
+        int numPartitionWords = (int) Math.ceil(((double) trainData.numberOfWords) / 100.0);
+        wordVectors.repartition(numPartitionWords);
+        trainData.wordTrainSet.repartition(numPartitionWords);
+        trainData.wordNegativeSamplesTrainSet.repartition(numPartitionWords);
+
+        int numPartitionContexts = (int) Math.ceil(((double) trainData.numberOfContexts) / 100.0);
+        contextVectors.repartition(numPartitionContexts);
+        trainData.contextTrainSet.repartition(numPartitionContexts);
+        trainData.contextNegativeSamplesTrainSet.repartition(numPartitionContexts);
+
+        float lambdaW2 = lambdaW;
+        float lambdaC2 = lambdaC;
 
         for (int i = 0; i < maxIter; i++) {
             Map<IDContext, INDArray> contextToVecMap = contextVectors.collectAsMap();
@@ -59,7 +62,7 @@ public class WordEmbeddings<C, W> {
                     .leftOuterJoin(trainData.wordTrainSet)
                     .leftOuterJoin(trainData.wordNegativeSamplesTrainSet)
                     .mapToPair(x -> new Tuple2<>(x._1, new Tuple3<>(x._2._1._1, x._2._1._2, x._2._2))) // <IDWord, <Vc, trainSet, negativeSampleTrainSet>>
-                    .mapToPair(x -> gradientCalculations.gradientDescentStep(broadcastedContextIDToVecMap, x));
+                    .mapToPair(x -> gradientCalculations.gradientDescentStep(broadcastedContextIDToVecMap, x, lambdaW2));
 
             newWordVectors.cache();
 
@@ -72,16 +75,18 @@ public class WordEmbeddings<C, W> {
                     .leftOuterJoin(trainData.contextTrainSet)
                     .leftOuterJoin(trainData.contextNegativeSamplesTrainSet)
                     .mapToPair(x -> new Tuple2<>(x._1, new Tuple3<>(x._2._1._1, x._2._1._2, x._2._2))) // <IDContext, <Vc, trainSet, negativeSampleTrainSet>>
-                    .mapToPair(x -> gradientCalculations.gradientDescentStep(broadcastedWordIDToVecMap, x));
+                    .mapToPair(x -> gradientCalculations.gradientDescentStep(broadcastedWordIDToVecMap, x, lambdaC2));
 
             newContextVectors.cache();
 
-            System.out.println(String.format(
-                    "%s - iteration %d training error: %f",
-                    (new Date()).toString(),
-                    i,
-                    Model.getTrainLoss(trainData, newContextVectors, broadcastedWordIDToVecMap, sc)
-            ));
+            if (i % 10 == 0) {
+                System.out.println(String.format(
+                        "%s - iteration %d training error: %f",
+                        (new Date()).toString(),
+                        i,
+                        Model.getTrainLoss(trainData, newContextVectors, broadcastedWordIDToVecMap, sc)
+                ));
+            }
 
             // contextVectors.unpersist();
             // wordVectors.unpersist();

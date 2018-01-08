@@ -9,7 +9,7 @@ import implementations.lexicalutils.Arc;
 import implementations.lexicalutils.ArcParsing;
 import implementations.lexicalutils.Tokenization;
 import nlpstack.analyzers.LexicalAnalyzer;
-import nlpstack.analyzers.ReservedTags;
+import nlpstack.annotations.ReservedTags;
 import nlpstack.annotations.LexicalChart;
 import nlpstack.annotations.StringSegment;
 import nlpstack.communication.Chart;

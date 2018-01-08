@@ -1,4 +1,4 @@
-package implementations.semanticutils.SimpleContexts;
+package implementations.semanticutils;
 
 import java.io.Serializable;
 import java.util.List;

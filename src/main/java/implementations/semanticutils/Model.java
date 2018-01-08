@@ -4,15 +4,16 @@ import org.apache.spark.api.java.JavaPairRDD;
 import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.spark.broadcast.Broadcast;
 import org.nd4j.linalg.api.ndarray.INDArray;
+import scala.Serializable;
 import scala.Tuple3;
 
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-public class Model<C, W> {
-    Map<C, INDArray> contextVectors;
-    Map<W, INDArray> wordVectors;
+public class Model<C, W> implements Serializable {
+    private Map<C, INDArray> contextVectors;
+    private Map<W, INDArray> wordVectors;
 
     public Model(Map<C, INDArray> contextVectors, Map<W, INDArray> wordVectors) {
         this.contextVectors = contextVectors;
@@ -55,7 +56,7 @@ public class Model<C, W> {
         return out;
     }
 
-    private static float sigmoid(INDArray v1, INDArray v2) {
+    public static float sigmoid(INDArray v1, INDArray v2) {
         return (float) (1.0 / (1.0 + Math.exp(-v1.transpose().mmul(v2).getFloat(0))));
     }
 }

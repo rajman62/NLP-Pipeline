@@ -15,7 +15,7 @@ import java.util.Map;
 public class GradientCalculationTest {
     @Test
     public void contextGradientCalculationTest() {
-        GradientCalculations gradientCalculations = new GradientCalculations(0.5f, 10);
+        GradientCalculations gradientCalculations = new GradientCalculations(0.5f, 4);
         INDArray nd1 = Nd4j.create(new float[]{1, 1, 1, 1}, new int[]{4, 1});
 
         Multiset<Integer> train = HashMultiset.create();
@@ -29,7 +29,7 @@ public class GradientCalculationTest {
 
         INDArray result = gradientCalculations.positiveSampleGradient(nd1, train, mapping);
         INDArray expectedResult = Nd4j.create(
-                new float[]{0.9683448f, 0.9683448f, 0.9683448f, 0.9683448f},
+                new float[]{-0.031655196f,  -0.031655196f,  -0.031655196f,  -0.031655196f},
                 new int[]{4, 1});
         assertTrue(
                 String.format("Expected %s but got %s", expectedResult.toString(), result.toString()),

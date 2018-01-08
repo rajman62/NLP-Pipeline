@@ -1,4 +1,4 @@
 package nlpstack.communication;
 
-public class Occurences {
+public class WordEmbeddings {
 }

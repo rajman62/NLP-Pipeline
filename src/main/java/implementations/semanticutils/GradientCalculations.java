@@ -23,48 +23,48 @@ public class GradientCalculations implements Serializable {
 
     public <T, W> Tuple2<T, INDArray> gradientDescentStep(
             Broadcast<Map<W, INDArray>> broadcastedMap,
-            Tuple2<T, Tuple3<INDArray, Optional<Multiset<W>>, Optional<Multiset<W>>>> x) {
+            Tuple2<T, Tuple3<INDArray, Optional<Multiset<W>>, Optional<Multiset<W>>>> x,
+            float lambda) {
 
         INDArray vp;
         INDArray vn;
 
         Map<W, INDArray> map = broadcastedMap.value();
 
-        int tpSize, tnSize;
-
-        if (x._2._2().isPresent()) {
-            tpSize = x._2._2().get().size();
+        if (x._2._2().isPresent())
             vp = positiveSampleGradient(x._2._1(), x._2._2().get(), map);
-        }
-        else {
-            tpSize = 0;
+        else
             vp = zeroVector;
-        }
 
-        if (x._2._3().isPresent()) {
-            tnSize = x._2._3().get().size();
+
+        if (x._2._3().isPresent())
             vn = negativeSampleGradient(x._2._1(), x._2._3().get(), map);
-        }
-        else {
-            tnSize = 0;
+        else
             vn = zeroVector;
-        }
 
-        vp.divi(tpSize + tnSize);
-        vn.divi(tpSize + tnSize);
-
-        return new Tuple2<>(x._1, vp.addi(x._2._1()).addi(vn));
+        return new Tuple2<>(x._1, vp.addi(x._2._1()).addi(vn).addi(x._2._1().mul(lambda)));
     }
 
 
     public <T> INDArray positiveSampleGradient(INDArray vc, Multiset<T> train,
                                                Map<T, INDArray> wordVectorMapping) {
+        float n = train.size();
         INDArray newVC = zeroVector.dup();
-        for(T id : train) {
-            newVC.addi(gradient(vc, wordVectorMapping.get(id)).muli(train.count(id)));
+        for(Multiset.Entry<T> id : train.entrySet()) {
+            newVC.addi(gradient(vc, wordVectorMapping.get(id.getElement())).muli(id.getCount()));
         }
 
-        return newVC.muli(-gamma);
+        return newVC.muli(gamma/n);
+    }
+
+    public INDArray positiveSampleGradient(INDArray v1, INDArray v2,
+                                               Integer count) {
+        return gradient(v1, v2).muli(count).muli(gamma);
+    }
+
+    public INDArray negativeSampleGradient(INDArray v1, INDArray v2,
+                                               Integer count) {
+        return gradient(v1, v2.neg()).muli(count).muli(gamma);
     }
 
     private INDArray gradient(INDArray v1, INDArray v2) {
@@ -76,11 +76,12 @@ public class GradientCalculations implements Serializable {
 
     public <T> INDArray negativeSampleGradient(INDArray vc, Multiset<T> train,
                                                Map<T, INDArray> wordVectorMapping) {
+        float n = train.size();
         INDArray newVC = zeroVector.dup();
         for(T id : train) {
             newVC.addi(gradient(vc, wordVectorMapping.get(id).neg()).muli(train.count(id)));
         }
 
-        return newVC.muli(-gamma);
+        return newVC.muli(gamma/n);
     }
 }

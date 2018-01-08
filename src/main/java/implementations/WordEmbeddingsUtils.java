@@ -5,19 +5,16 @@ import com.scalified.tree.TreeNode;
 import implementations.filereaders.ConlluReader;
 import implementations.filereaders.conlluobjects.Sentence;
 import implementations.filereaders.conlluobjects.Word;
-import implementations.semanticutils.SimpleContexts.StringContext;
+import implementations.semanticutils.StringContext;
 import implementations.semanticutils.TrainData;
-import implementations.semanticutils.WordEmbeddings;
+import implementations.semanticutils.WordEmbeddingsGradientDescentImpl1;
+import implementations.sparkutils.SparkSetup;
 import org.apache.commons.cli.*;
-import org.apache.spark.SparkConf;
 import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.JavaSparkContext;
 import scala.Tuple2;
 
-import java.util.Comparator;
-import java.util.Date;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.*;
 
 import static java.util.stream.Collectors.toList;
 
@@ -70,17 +67,16 @@ public class WordEmbeddingsUtils {
     }
 
     private static void trainWordEmbeddings(String conlluFilePath) {
-        String master = "local[3]";
-        SparkConf conf = new SparkConf()
-                .setAppName(WordEmbeddingsUtils.class.getName())
-                .setMaster(master);
-        JavaSparkContext sc = new JavaSparkContext(conf);
-        WordEmbeddings<StringContext, String> wordEmbeddings = new WordEmbeddings<>(
-                10, 0.00000005f, 0f, 0f, 100, sc);
+        Long seed = 1000L;
+
+        JavaSparkContext sc = (new SparkSetup()).get();
+
+        WordEmbeddingsGradientDescentImpl1<StringContext, String> wordEmbeddings = new WordEmbeddingsGradientDescentImpl1<>(
+                5, 0.001f, 0.0001f, 0.0001f, 100, sc);
 
         System.out.println(String.format("%s - loading conllu file...", (new Date()).toString()));
         JavaRDD<Tuple2<StringContext, String>> trainSet = sc.parallelize(getTrainData(conlluFilePath));
-        TrainData<StringContext, String> trainData = new TrainData<>(trainSet, 10, 1000L);
+        TrainData<StringContext, String> trainData = new TrainData<>(trainSet, 4, seed);
 
         System.out.println(
                 String.format(
@@ -89,7 +85,7 @@ public class WordEmbeddingsUtils {
                         trainData.trainSetSize, trainData.numberOfWords, trainData.numberOfContexts)
         );
 
-        wordEmbeddings.train(trainData, System.currentTimeMillis());
+        wordEmbeddings.train(trainData, Objects.hash(seed, 1));
     }
 
     private static List<Tuple2<StringContext, String>> getTrainData(String pathToConllu) {
@@ -103,8 +99,10 @@ public class WordEmbeddingsUtils {
                 public void perform(TreeNode<Word> wordTreeNode) {
                     List<Word> words = wordTreeNode.subtrees().stream().map(TreeNode::data)
                             .sorted(Comparator.comparingInt(o -> o.id)).collect(toList());
-                    List<String> context = words.stream().map(WordEmbeddingsUtils::mapWordToString).collect(toList());
-                    trainData.add(new Tuple2<>(new StringContext(context), mapWordToString(wordTreeNode.data())));
+                    List<String> context = words.stream().map(x -> x.upostag).collect(toList());
+                    Word head = wordTreeNode.data();
+                    if (!context.isEmpty())
+                        trainData.add(new Tuple2<>(new StringContext(context), String.format("%s+%s", head.lemma, head.upostag)));
                 }
 
                 @Override
