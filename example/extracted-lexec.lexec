@@ -1,9 +1,24 @@
 Multichar_Symbols +ADJ +ADP +ADV +AUX +CCONJ +DET +INTJ +NOUN +NUM +PART +PRON +PROPN +PUNCT +SCONJ +SYM +VERB +X
 
+!! Comments start with the !! characters
+!! The root lexicon is the one that will be loaded in foma. If a lexicon doesn't appear in the Root lexicon, it
+!! will not be considered.
+
 LEXICON Root
 
 ExtractedLexicon ;
 Punctuation ;
+ReportExample ;
+
+Mr+NOUN:Mr                      #;
+Mr.+NOUN:Mr                     #;
+green% card+NOUN:green% card    #;
+
+LEXICON ReportExample
+
+!! entries in the lexicons have the form "lemma+tag:form  #;". The "#;" means end of sequence
+!! special characters can be escaped using the % sign. For example, in the punctuation, escaping a space is done with "% "
+
 
 LEXICON Punctuation
 
@@ -12,20 +27,21 @@ LEXICON Punctuation
 %!+PUNCT:%!  #;
 ?+PUNCT:?    #;
 ,+PUNCT:,    #;
+'+PUNCT:'    #;
+%"+PUNCT:%"    #;
 
 %,+PUNCT:%,%  #;
 %.+PUNCT:%.%  #;
 %!+PUNCT:%!%  #;
 ?+PUNCT:?%    #;
 ,+PUNCT:,%    #;
+'+PUNCT:'%    #;
+%"+PUNCT:%"%    #;
+
 
 LEXICON ExtractedLexicon
 
-!! entries in the transducer have the form "lemma+tag:form  #;". The "#;" means end of sequence
 Amy+PROPN:Amy #;
-
-!! special characters can be escaped using the % sign. For example, in the punctuation, escaping a space is done with "% "
-
 A+PROPN:A #;
 AAA+PROPN:AAA #;
 ABB+PROPN:ABB #;

@@ -42,7 +42,7 @@ public class GradientCalculations implements Serializable {
         else
             vn = zeroVector;
 
-        return new Tuple2<>(x._1, vp.addi(x._2._1()).addi(vn).addi(x._2._1().mul(lambda)));
+        return new Tuple2<>(x._1, vp.addi(x._2._1()).addi(vn).addi(x._2._1().mul(-lambda)));
     }
 
 

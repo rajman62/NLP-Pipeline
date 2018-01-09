@@ -11,4 +11,5 @@
 
 # separator characters can be included in wordFSA
 M\.
+'s
 # in that case, the ambiguity will be left in the chart, and the syntactic or semantic modules will have to solve it.
