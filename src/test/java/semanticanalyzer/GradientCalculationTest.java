@@ -29,7 +29,7 @@ public class GradientCalculationTest {
 
         INDArray result = gradientCalculations.positiveSampleGradient(nd1, train, mapping);
         INDArray expectedResult = Nd4j.create(
-                new float[]{-0.031655196f,  -0.031655196f,  -0.031655196f,  -0.031655196f},
+                new float[]{0.015827598f, 0.015827598f, 0.015827598f, 0.015827598f},
                 new int[]{4, 1});
         assertTrue(
                 String.format("Expected %s but got %s", expectedResult.toString(), result.toString()),

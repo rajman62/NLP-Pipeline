@@ -10,14 +10,17 @@ ExtractedLexicon ;
 Punctuation ;
 ReportExample ;
 
-Mr+NOUN:Mr                      #;
-Mr.+NOUN:Mr                     #;
-green% card+NOUN:green% card    #;
 
 LEXICON ReportExample
 
 !! entries in the lexicons have the form "lemma+tag:form  #;". The "#;" means end of sequence
 !! special characters can be escaped using the % sign. For example, in the punctuation, escaping a space is done with "% "
+
+Mr+PROPN:Mr                     #;
+Mr.+PROPN:Mr.                   #;
+green% card+NOUN:green% card    #;
+Smith+PROPN:Smith               #;
+'s+PART:'s                      #;
 
 
 LEXICON Punctuation

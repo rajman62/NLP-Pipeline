@@ -1,16 +1,35 @@
+Word embeddings algorithms such as word2vec and
+fastText   gained   massive   popularity,   as   they   can   be   applied
+to  huge  unannotated  corpuses  in  an  efficient  way.  A  possible
+amelioration  of  those  algorithms  is  exploiting  more  linguistic
+features.  Work  has  already  been  done  in  this  domain,  with
+very  encouraging  results.  In  this  work,  we  build  a  full  NLP-
+pipeline  that  implements  dependency  based  word  embeddings.
+The  main  goal  is  to  reach  enterprise  level  code  quality  of  an
+NLP-pipeline that can easily be used and extended to experiment
+new  techniques.
+
+The getting started section below can be used to execute the example code. The detailed concepts of the pipeline is
+described in the `concepts.pdf` file. To extend the code, by far the easiest is to import it in a IntelliJ. Otherwise,
+this is just a standard maven project and can be compiled with the mvn command. Javadocs are used in the code,
+and the JUnit tests can also be useful as documentation for the modules.
+
+
 # Getting started
 
-Java 8+ is required to run the code. Example configuration files are given in the `example/` folder. To try them out, 
-simply double click on launch.cmd or launch.sh depending if you are on windows or linux. A command prompt should open, 
+Java 8 is required to run the code. Example configuration files are given in the `example/` folder. To try them out, 
+simply double click on launch.cmd if you are on windows, if you are on linux or mac you can run the code from the
+command line, as described below. A command prompt should open, 
 type any english sentence and the parsed sentence should appear in a chart.
 
-Otherwise the program can be run by navigating to the project root, and running the `.jar` file in the `bin/` folder
+The program can be run by navigating to the project root, and running the `.jar` file in the `bin/` folder
 ```
 java -jar bin/PipelineNLP.jar -c example/conf-linux.yml -syntax
 ```
 The `-c` option specifies which configuration file to load, and the `-syntax` option specifies we want fully parsed charts
 on the output. Be careful of which directory you run the program from, as all the paths specified in the configuration file
-are relative to where the program is executed. A full list of parameters can be printed with the `-h` option:
+are relative to where the program is executed. The `conf-linux.yml` is written for linux and mac, and the `conf-win.yml`
+ file is for windows. A full list of parameters can be printed with the `-h` option:
 ```
 java -jar bin/PipelineNLP.jar -h
 ```
@@ -24,11 +43,11 @@ downloading and replacing the executable with the correct one for your system mi
 
 # The Example folder
 
-The main configuration files are `conf-linux.yml` and `conf-win.yml`. One for linux, the other for windows.
+The main configuration files are `conf-linux.yml` and `conf-win.yml`. One for linux and mac, the other for windows.
 These two files are exactly identical, paths to executable just needed an extra `.exe` extension on windows.
 The entire behavior of the program is dictated by these .yml configuration files. We will describe the composition
 of these files and show how they affected the parsing of sentences. Every example file contains comments to explain 
-the syntax to us in them.
+the syntax.
 
 For the moment there are two parts in the configuration files: one for the lexical module, and the other for the 
 syntactic module.
@@ -79,7 +98,7 @@ Total execution time: 129.141756ms
 What we see here are two charts that have just been initialized by the lexical analyzer, one chart for each sentence.
 Step by step, what happened is:
 
-1. wordFSA and separator FSA have been called alternatively to find all the tokens of the sentence. WordFSA tried all match
+1. wordFSA and separator FSA have been called alternatively to find all the tokens of the sentences. WordFSA tried all match
 from the start of the sentence and found Hello. Then separatorFSA was called and tried a longest match after Hello
 and matched just a space. wordFSA was called again and matched word and so on.
 2. eosSeparatorRegex is applied on every separator token. Every separator tokens matching eosSeparatorRegex that
@@ -92,7 +111,8 @@ are recognized as a word and a separator, but `M.` is also a possible token.
 
 
 ## Transducer
-For the moment, only lexec files are loaded. Soon the file loading will be extended to foma files.
+`foma` and `lexc` files can be used. Their [website](https://fomafst.github.io/) is the best place to find documentation
+on how to write them.
 
 
 ## Syntactic configuration and execution example
@@ -120,12 +140,12 @@ S PRON PROPN VERB NOUN         | ADV S PRON VERB NOUN           | S ADV PRON P
 PRON PROPN                     | VERB NOUN                      | ADV PRON AUX VERB              | PROPN                          | PUNCT
 My                             | name                           | is                             | Bob                            | .
 
-74 full charts.
+982 full charts.
 
-Total execution time: 388.259517ms
+Total execution time: 653.041521ms
 
 
 >>>
 ```
-The S rule is built in as the Start rule. As we can see, the grammar is very ambiguous. We will let the semantic module
-solve the ambiguities for us.
+The `S` rule is built in as the Start rule. As we can see, the grammar is very ambiguous. The grammar can be changed
+to a less ambiguous grammar, and the semantic layer can solve the remaining ambiguities.

@@ -12,8 +12,6 @@ public class EarlyParser {
     /*
     TODO: Implement an Early Parser
 
-    This is a first implementation that I stopped to implement CYK.
-
     Early parser is the same complexity, or lower than CYK. It would be better to have an Early Parser.
     The implementation is a little trickier than CYK though: How to deal with left recursive rules?
     CYK is also simpler to understand, it's a good tool for debugging purposes. It might be an idea to

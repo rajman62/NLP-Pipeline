@@ -1,5 +1,5 @@
 # general rule, any sequence of non separator character is matched:
-[^ \t\n.?!,]+
+[^ \t\n.?!'",]+
 
 # The '#' character is used to put comments. All lines not starting with '#' is considered as a regex to be added to the
 # FSA. The regex syntax is the one defined by the brics automaton lib: http://www.brics.dk/automaton/doc/index.html
@@ -12,4 +12,5 @@
 # separator characters can be included in wordFSA
 M\.
 's
+Mr.
 # in that case, the ambiguity will be left in the chart, and the syntactic or semantic modules will have to solve it.

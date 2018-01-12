@@ -1,5 +1,5 @@
 # sep fsa uses the same format as word FSA.
-# general saying any sequence of these characters are separators.
+# general rule saying any sequence of these characters are separators.
 [ \t\n.?!,'"]+
 
 # the < > notation come in handy when the regex starts or finishes with a white space. For example:
